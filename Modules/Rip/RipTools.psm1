@@ -7,9 +7,8 @@
 $ModuleRoot = $PSScriptRoot
 
 # Dot-source shared functions
-$SharedPath = Join-Path $ModuleRoot '..\Shared\Public'
-. (Join-Path $SharedPath 'Get-Path.ps1')
-. (Join-Path $SharedPath 'Write-Message.ps1')
+$SharedPath = Join-Path $ModuleRoot '..\Shared'
+. (Join-Path -Path $SharedPath -ChildPath 'Shared.ps1')
 
 # Load private functions first (these won't be exported)
 $PrivatePath = Join-Path $ModuleRoot 'Private'
