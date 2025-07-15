@@ -4,18 +4,6 @@ param(
     [switch]$Quiet
 )
 
-# Get the script directory
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ModulesPath = Join-Path $ScriptDir "Modules"
-
-# Define the modules to install (excluding Shared as it's a dependency module)
-$ModulesToInstall = @(
-    "Git",
-    "Media", 
-    "Plex",
-    "Rip"
-)
-
 # Function to write messages based on Quiet switch
 function Write-InstallMessage {
     param([string]$Message, [string]$Type = "Info")
@@ -33,6 +21,19 @@ function Write-InstallMessage {
     }
 }
 
+# Get the script directory
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ModulesPath = Join-Path $ScriptDir "Modules"
+Write-InstallMessage "Modules path: $ModulesPath" "Verbose"
+
+# Define the modules to install (excluding Shared as it's a dependency module)
+$ModulesToInstall = @(
+    "Git",
+    "Media", 
+    "Plex",
+    "Rip"
+)
+
 Write-InstallMessage "Starting module installation..." "Info"
 
 # Check if modules directory exists
@@ -46,9 +47,18 @@ $FailedModules = @()
 
 foreach ($ModuleName in $ModulesToInstall) {
     $ModulePath = Join-Path $ModulesPath $ModuleName
-    
+    Write-InstallMessage "Module path: $ModulePath" "Verbose"
+
     if (-not (Test-Path $ModulePath)) {
         Write-InstallMessage "Module directory not found: $ModulePath" "Warning"
+        $FailedModules += $ModuleName
+        continue
+    }
+
+    $ManifestPath = Join-Path $ModulePath "$ModuleName`Tools.psd1"
+    Write-InstallMessage "Manifest path: $ManifestPath" "Verbose"
+    if (-not (Test-Path $ManifestPath)) {
+        Write-InstallMessage "Module manifest not found: $ManifestPath" "Warning"
         $FailedModules += $ModuleName
         continue
     }
@@ -58,7 +68,7 @@ foreach ($ModuleName in $ModulesToInstall) {
         
         # Build import parameters
         $ImportParams = @{
-            Name = $ModulePath
+            Name = $ManifestPath
             Force = $Force
             ErrorAction = "Stop"
         }

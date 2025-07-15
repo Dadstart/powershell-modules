@@ -8,7 +8,7 @@ param(
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # Function to write messages based on Quiet switch
-function Write-QuickInstallMessage {
+function Write-InstallMessage {
     param([string]$Message, [string]$Type = "Info")
     
     switch ($Type) {
@@ -24,7 +24,8 @@ function Write-QuickInstallMessage {
     }
 }
 
-Write-QuickInstallMessage "Starting quick install (uninstall + install)..." "Info"
+
+Write-InstallMessage "Starting quick install (uninstall + install)..." "Info"
 
 # Build parameters to pass to uninstall and install scripts
 $ScriptParams = @{}
@@ -32,51 +33,51 @@ if ($Force) { $ScriptParams.Force = $true }
 if ($Quiet) { $ScriptParams.Quiet = $true }
 
 # Step 1: Uninstall all modules
-Write-QuickInstallMessage "Step 1: Uninstalling all modules..." "Info"
+Write-InstallMessage "Step 1: Uninstalling all modules..." "Info"
 $UninstallScript = Join-Path $ScriptDir "uninstall.ps1"
 
 if (Test-Path $UninstallScript) {
     try {
         & $UninstallScript @ScriptParams
         if ($LASTEXITCODE -ne 0) {
-            Write-QuickInstallMessage "Uninstall failed with exit code: $LASTEXITCODE" "Warning"
+            Write-InstallMessage "Uninstall failed with exit code: $LASTEXITCODE" "Warning"
         }
         else {
-            Write-QuickInstallMessage "Uninstall completed successfully" "Info"
+            Write-InstallMessage "Uninstall completed successfully" "Info"
         }
     }
     catch {
-        Write-QuickInstallMessage "Error during uninstall: $($_.Exception.Message)" "Error"
+        Write-InstallMessage "Error during uninstall: $($_.Exception.Message)" "Error"
     }
 }
 else {
-    Write-QuickInstallMessage "Uninstall script not found at: $UninstallScript" "Error"
+    Write-InstallMessage "Uninstall script not found at: $UninstallScript" "Error"
     exit 1
 }
 
 # Step 2: Install all modules
-Write-QuickInstallMessage "Step 2: Installing all modules..." "Info"
+Write-InstallMessage "Step 2: Installing all modules..." "Info"
 $InstallScript = Join-Path $ScriptDir "install.ps1"
 
 if (Test-Path $InstallScript) {
     try {
         & $InstallScript @ScriptParams
         if ($LASTEXITCODE -ne 0) {
-            Write-QuickInstallMessage "Install failed with exit code: $LASTEXITCODE" "Error"
+            Write-InstallMessage "Install failed with exit code: $LASTEXITCODE" "Error"
             exit $LASTEXITCODE
         }
         else {
-            Write-QuickInstallMessage "Install completed successfully" "Info"
+            Write-InstallMessage "Install completed successfully" "Info"
         }
     }
     catch {
-        Write-QuickInstallMessage "Error during install: $($_.Exception.Message)" "Error"
+        Write-InstallMessage "Error during install: $($_.Exception.Message)" "Error"
         exit 1
     }
 }
 else {
-    Write-QuickInstallMessage "Install script not found at: $InstallScript" "Error"
+    Write-InstallMessage "Install script not found at: $InstallScript" "Error"
     exit 1
 }
 
-Write-QuickInstallMessage "Quick install completed successfully!" "Info" 
+Write-InstallMessage "Quick install completed successfully!" "Info" 
