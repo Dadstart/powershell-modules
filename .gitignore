@@ -1,0 +1,53 @@
+# PowerShell Module Development
+*.psm1.bak
+*.psd1.bak
+*.ps1.bak
+
+# Module build artifacts
+*.nupkg
+*.zip
+BuildOutput/
+Release/
+
+# PowerShell session files
+*.ps1xml
+*.ps1session
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test results
+TestResults/
+*.testresults
+
+# Coverage reports
+*.coverage
+*.coveragexml
+
+# Pester test results
+PesterResults.xml
+
+# Module documentation
+docs/_build/
+
+# Local configuration
+*.local.psd1
+config.local.psd1 
