@@ -24,7 +24,11 @@
     RootModule = 'Git.psm1'
 
     # Functions to export from this module
-    FunctionsToExport = @()
+    FunctionsToExport = @(
+        'Move-GitDirectory',
+        'New-GitCommit',
+        'New-GitPullRequest'
+    )
 
     # Cmdlets to export from this module
     CmdletsToExport = @()

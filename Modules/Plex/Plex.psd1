@@ -24,7 +24,14 @@
     RootModule = 'Plex.psm1'
 
     # Functions to export from this module
-    FunctionsToExport = @()
+    FunctionsToExport = @(
+        'Get-PlexCredential',
+        'Get-PlexLibraries',
+        'Get-PlexLibraryItems',
+        'Get-PlexMediaInfo',
+        'PlexCredential',
+        'Test-PlexConnection'
+    )
 
     # Cmdlets to export from this module
     CmdletsToExport = @()

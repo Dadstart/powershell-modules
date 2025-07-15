@@ -39,12 +39,18 @@ if (Test-Path $ClassesPath)
 }
 
 # Export public functions
-$PublicFunctions = Get-ChildItem -Path $PublicPath -Filter '*.ps1' -Recurse | ForEach-Object {
-    $FunctionName = $_.BaseName
-    if (Get-Command -Name $FunctionName -ErrorAction SilentlyContinue)
-    {
-        $FunctionName
-    }
+# Get all functions that were loaded from the Public directory
+$PublicFunctions = @()
+if (Test-Path $PublicPath)
+{
+    $PublicFunctions = Get-ChildItem -Path $PublicPath -Filter '*.ps1' -Recurse | ForEach-Object {
+        $FunctionName = $_.BaseName
+        # Check if the function actually exists after being loaded
+        if (Get-Command -Name $FunctionName -ErrorAction SilentlyContinue)
+        {
+            $FunctionName
+        }
+    } | Where-Object { $_ -ne $null }
 }
 
 Export-ModuleMember -Function $PublicFunctions 

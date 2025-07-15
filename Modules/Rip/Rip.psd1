@@ -24,7 +24,14 @@
     RootModule = 'Rip.psm1'
 
     # Functions to export from this module
-    FunctionsToExport = @()
+    FunctionsToExport = @(
+        'Convert-VideoFiles',
+        'Invoke-BonusContentProcessing',
+        'Invoke-DvdProcessing',
+        'Invoke-HandbrakeConversion',
+        'Invoke-RemuxProcessing',
+        'Invoke-SeasonScan'
+    )
 
     # Cmdlets to export from this module
     CmdletsToExport = @()
