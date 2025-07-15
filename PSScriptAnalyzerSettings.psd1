@@ -41,7 +41,16 @@
             CheckOperator = $true
             CheckSeparator = $true
         }
-        
+
+        PSPlaceOpenBraceOnNewLine = @{
+            Enable = $true
+        }
+
+        PSPlaceCloseBraceOnNewLine = @{
+            Enable = $true
+            NewLineAfter = $true
+        }
+
         # Naming conventions
         PSAvoidDefaultValueForMandatoryParameter = @{
             Enable = $true
@@ -183,10 +192,6 @@
             Enable = $true
         }
         
-        PSAvoidUsingUsernameAndPasswordParams = @{
-            Enable = $true
-        }
-        
         # Module and manifest specific
         PSReservedCmdletChar = @{
             Enable = $true
@@ -214,7 +219,7 @@
         
         PSUseCompatibleCommands = @{
             Enable = $true
-            TargetProfiles = @('win-8_x64_10.0.17763.0_x64_4.0.30319.42000_core', 'ubuntu_x64_18.04')
+            TargetProfiles = @('win-8_x64_10.0.17763.0_7.0.0_x64_3.1.2_core', 'ubuntu_x64_18.04_7.0.0_x64_3.1.2_core')
         }
         
         PSUseCompatibleSyntax = @{
@@ -224,7 +229,7 @@
         
         PSUseCompatibleTypes = @{
             Enable = $true
-            TargetProfiles = @('win-8_x64_10.0.17763.0_x64_4.0.30319.42000_core', 'ubuntu_x64_18.04')
+            TargetProfiles = @('win-8_x64_10.0.17763.0_7.0.0_x64_3.1.2_core', 'ubuntu_x64_18.04_7.0.0_x64_3.1.2_core')
         }
         
         PSUseCorrectCasing = @{
