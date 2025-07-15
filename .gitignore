@@ -1,53 +1,67 @@
-# PowerShell Module Development
-*.psm1.bak
-*.psd1.bak
-*.ps1.bak
-
-# Module build artifacts
-*.nupkg
-*.zip
+# Build outputs
 BuildOutput/
 Release/
+*.zip
 
-# PowerShell session files
-*.ps1xml
-*.ps1session
+# Logs
+Logs/
+*.log
+
+# PowerShell modules
+*.psm1.bak
+*.psd1.bak
+
+# Test results
+TestResults.xml
+CodeCoverage.xml
+
+# VS Code
+.vscode/settings.json.bak
+.vscode/launch.json.bak
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
 
 # Temporary files
 *.tmp
 *.temp
-*.log
-
-# IDE and Editor files
-.vscode/
-.idea/
 *.swp
 *.swo
-*~
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# Backup files
+*.bak
+*.backup
 
-# Test results
-TestResults/
-*.testresults
+# IDE files
+.vs/
+.idea/
+*.sublime-*
 
-# Coverage reports
-*.coverage
-*.coveragexml
+# Environment files
+.env
+.env.local
+.env.*.local
 
-# Pester test results
+# PowerShell profile backups
+PowerShellProfile.ps1.bak
+
+# Module cache
+*.ps1.cache
+
+# Pester
 PesterResults.xml
+PesterResults.json
 
-# Module documentation
-docs/_build/
-
-# Local configuration
-*.local.psd1
-config.local.psd1 
+# Code coverage
+*.coverage.xml
+*.coverage.json 
