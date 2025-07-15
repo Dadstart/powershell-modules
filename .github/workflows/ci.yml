@@ -1,0 +1,123 @@
+name: PowerShell Module CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test PowerShell Modules
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        pwsh: ['7.4', '7.5']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup PowerShell ${{ matrix.pwsh }}
+      uses: actions/setup-powershell@v1
+      with:
+        powershell-version: ${{ matrix.pwsh }}
+    
+    - name: Verify PowerShell version
+      run: |
+        $version = $PSVersionTable.PSVersion
+        Write-Host "PowerShell version: $version"
+        if ($version -lt [Version]'7.4.0') {
+          throw "PowerShell 7.4+ is required. Current version: $version"
+        }
+    
+    - name: Install Pester
+      run: |
+        Install-Module -Name Pester -Force -Scope CurrentUser
+        Import-Module Pester
+        Write-Host "Pester version: $(Get-Module Pester | Select-Object -ExpandProperty Version)"
+    
+    - name: Run build script
+      run: |
+        .\build.ps1 -Task Build
+    
+    - name: Run tests
+      run: |
+        .\build.ps1 -Task Test
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.pwsh }}
+        path: BuildOutput/TestResults.xml
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: build-artifacts-${{ matrix.os }}-${{ matrix.pwsh }}
+        path: BuildOutput/
+
+  package:
+    name: Package Modules
+    runs-on: windows-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup PowerShell 7.4
+      uses: actions/setup-powershell@v1
+      with:
+        powershell-version: '7.4'
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-artifacts-windows-latest-7.4
+        path: BuildOutput/
+    
+    - name: Create packages
+      run: |
+        .\build.ps1 -Task Package
+    
+    - name: Upload packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: packages
+        path: Release/
+
+  publish:
+    name: Publish to PowerShell Gallery
+    runs-on: windows-latest
+    needs: [test, package]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup PowerShell 7.4
+      uses: actions/setup-powershell@v1
+      with:
+        powershell-version: '7.4'
+    
+    - name: Download packages
+      uses: actions/download-artifact@v4
+      with:
+        name: packages
+        path: Release/
+    
+    - name: Publish to PowerShell Gallery
+      run: |
+        # This is a placeholder - you'll need to configure your API key
+        # and implement the actual publishing logic
+        Write-Host "Publishing to PowerShell Gallery..."
+        Write-Host "To implement publishing, add your PSGallery API key as a secret"
+        Write-Host "and use Publish-Module cmdlet"
+      env:
+        PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }} 
