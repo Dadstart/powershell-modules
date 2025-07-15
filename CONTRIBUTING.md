@@ -53,7 +53,7 @@ Each module manifest (`.psd1`) must include:
 
 ```powershell
 @{
-    ModuleVersion = '1.0.0'
+    ModuleVersion = '0.0.1'
     PowerShellVersion = '7.4'
     CompatiblePSEditions = @('Core')
     # ... other manifest properties
