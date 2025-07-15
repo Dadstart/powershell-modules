@@ -1,4 +1,0 @@
-{
-  "powershell.scriptAnalysis.settingsPath": "./PSScriptAnalyzerSettings.psd1",
-  "powershell.codeFormatting.expandAlias": false
-}

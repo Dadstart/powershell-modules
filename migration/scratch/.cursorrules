@@ -1,5 +1,0 @@
-rules:
-  - Always use PowerShell best practices and community standards
-  - Using Windows 11. Paths and commands should be in Windows format
-  - Using PowerShell 7.5
-  - Always update documentation and comments
