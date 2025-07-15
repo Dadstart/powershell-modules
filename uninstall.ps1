@@ -42,13 +42,26 @@ foreach ($ModuleName in $ModulesToUninstall) {
     try {
         Write-UninstallMessage "Uninstalling module: $ModuleName" "Verbose"
         
-        # Check if module is loaded
+        # Check if module is loaded (try both folder name and actual module name)
         $LoadedModule = Get-Module -Name $ModuleName -ErrorAction SilentlyContinue
+        if (-not $LoadedModule) {
+            # Try to find the module by checking what's actually loaded from this path
+            $ModulePath = Join-Path $ModulesPath $ModuleName
+            if (Test-Path $ModulePath) {
+                $ManifestPath = Join-Path $ModulePath "$ModuleName.psd1"
+                if (Test-Path $ManifestPath) {
+                    $Manifest = Import-PowerShellDataFile -Path $ManifestPath
+                    if ($Manifest.ModuleName) {
+                        $LoadedModule = Get-Module -Name $Manifest.ModuleName -ErrorAction SilentlyContinue
+                    }
+                }
+            }
+        }
         
         if ($LoadedModule) {
             # Build remove parameters
             $RemoveParams = @{
-                Name = $ModuleName
+                Name = $LoadedModule.Name
                 Force = $Force
                 ErrorAction = "Stop"
             }
@@ -56,8 +69,8 @@ foreach ($ModuleName in $ModulesToUninstall) {
             # Remove the module
             Remove-Module @RemoveParams
             
-            $UninstalledModules += $ModuleName
-            Write-UninstallMessage "Successfully uninstalled module: $ModuleName" "Info"
+            $UninstalledModules += $LoadedModule.Name
+            Write-UninstallMessage "Successfully uninstalled module: $($LoadedModule.Name)" "Info"
         }
         else {
             Write-UninstallMessage "Module $ModuleName is not currently loaded" "Verbose"

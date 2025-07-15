@@ -64,10 +64,12 @@ foreach ($ModuleName in $ModulesToInstall) {
         }
         
         # Import the module
-        Import-Module @ImportParams
+        $ImportedModule = Import-Module @ImportParams -PassThru
         
-        $InstalledModules += $ModuleName
-        Write-InstallMessage "Successfully installed module: $ModuleName" "Info"
+        # Use the actual module name from the manifest, or fall back to folder name
+        $ActualModuleName = if ($ImportedModule) { $ImportedModule.Name } else { $ModuleName }
+        $InstalledModules += $ActualModuleName
+        Write-InstallMessage "Successfully installed module: $ActualModuleName" "Info"
     }
     catch {
         Write-InstallMessage "Failed to install module $ModuleName`: $($_.Exception.Message)" "Error"
