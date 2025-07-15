@@ -94,6 +94,11 @@
     "powershell.codeFormatting.ignoreRedundantWhitespaceAroundNullConditionalCheck": false,
     "powershell.codeFormatting.ignoreRedundantWhitespaceAroundNullConditionalUncheck": false,
     "powershell.codeFormatting.ignoreRedundantWhitespaceAroundNullConditionalDefault": false,
+    
+    "powershell.scriptAnalysis.enable": true,
+    "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
+    "powershell.scriptAnalysis.updateBuildProblemMatcher": "automatic",
+    
     "files.associations": {
         "*.ps1": "powershell",
         "*.psd1": "powershell",

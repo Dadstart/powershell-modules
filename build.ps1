@@ -22,7 +22,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('Clean', 'Build', 'Test', 'Package', 'Publish', 'All')]
+    [ValidateSet('Clean', 'Build', 'Test', 'Analyze', 'Package', 'Publish', 'All')]
     [string]$Task = 'Build',
     
     [Parameter()]
@@ -82,7 +82,7 @@ function Invoke-Build {
     
     # Find all module manifest files
     $ModuleManifests = Get-ChildItem -Path $BuildRoot -Filter '*.psd1' -Recurse | 
-        Where-Object { $_.Name -ne '*.psd1' }
+        Where-Object { $_.Name -ne '*.psd1' -and $_.Directory.Name -ne 'Tests' }
     
     foreach ($Manifest in $ModuleManifests) {
         $ModuleName = $Manifest.BaseName
@@ -111,6 +111,88 @@ function Invoke-Build {
     }
     
     Write-Host "Build completed successfully!" -ForegroundColor Green
+}
+
+function Invoke-Analyze {
+    <#
+    .SYNOPSIS
+        Runs PSScriptAnalyzer on PowerShell modules.
+    #>
+    Write-Host "Running PSScriptAnalyzer..." -ForegroundColor Yellow
+    
+    # Check if PSScriptAnalyzer is available
+    if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
+        Write-Warning "PSScriptAnalyzer module not found. Installing PSScriptAnalyzer..."
+        Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+    }
+    
+    # Import PSScriptAnalyzer
+    Import-Module PSScriptAnalyzer -Force
+    
+    # Define paths to analyze
+    $PathsToAnalyze = @(
+        Join-Path $BuildRoot 'Modules'
+        Join-Path $BuildRoot 'Tests'
+    )
+    
+    # Check if custom settings file exists
+    $SettingsPath = Join-Path $BuildRoot 'PSScriptAnalyzerSettings.psd1'
+    $SettingsParam = if (Test-Path $SettingsPath) { @{ Settings = $SettingsPath } } else { @{} }
+    
+    $AnalysisResults = @()
+    
+    foreach ($Path in $PathsToAnalyze) {
+        if (Test-Path $Path) {
+            Write-Host "Analyzing: $Path" -ForegroundColor Cyan
+            
+            $Results = Invoke-ScriptAnalyzer -Path $Path -Recurse @SettingsParam
+            
+            if ($Results) {
+                $AnalysisResults += $Results
+                
+                # Group results by severity
+                $Errors = $Results | Where-Object { $_.Severity -eq 'Error' }
+                $Warnings = $Results | Where-Object { $_.Severity -eq 'Warning' }
+                $Information = $Results | Where-Object { $_.Severity -eq 'Information' }
+                
+                Write-Host "  Found $($Errors.Count) errors, $($Warnings.Count) warnings, $($Information.Count) information items" -ForegroundColor Yellow
+                
+                # Display errors and warnings
+                if ($Errors) {
+                    Write-Host "  Errors:" -ForegroundColor Red
+                    foreach ($AnalysisError in $Errors) {
+                        Write-Host "    $($AnalysisError.RuleName): $($AnalysisError.Message) at $($AnalysisError.ScriptName):$($AnalysisError.Line)" -ForegroundColor Red
+                    }
+                }
+                
+                if ($Warnings) {
+                    Write-Host "  Warnings:" -ForegroundColor Yellow
+                    foreach ($Warning in $Warnings) {
+                        Write-Host "    $($Warning.RuleName): $($Warning.Message) at $($Warning.ScriptName):$($Warning.Line)" -ForegroundColor Yellow
+                    }
+                }
+            }
+            else {
+                Write-Host "  ✓ No issues found" -ForegroundColor Green
+            }
+        }
+    }
+    
+    # Save analysis results
+    if ($AnalysisResults) {
+        $AnalysisOutputPath = Join-Path $Script:BuildOutput 'PSScriptAnalyzerResults.xml'
+        $AnalysisResults | Export-Clixml -Path $AnalysisOutputPath
+        Write-Host "Analysis results saved to: $AnalysisOutputPath" -ForegroundColor Cyan
+    }
+    
+    # Fail build if there are errors
+    $ErrorCount = ($AnalysisResults | Where-Object { $_.Severity -eq 'Error' }).Count
+    if ($ErrorCount -gt 0) {
+        Write-Error "PSScriptAnalyzer found $ErrorCount errors. Build failed."
+        exit 1
+    }
+    
+    Write-Host "PSScriptAnalyzer completed successfully!" -ForegroundColor Green
 }
 
 function Invoke-Test {
@@ -197,12 +279,14 @@ Write-Host ""
 switch ($Task) {
     'Clean' { Invoke-Clean }
     'Build' { Invoke-Build }
+    'Analyze' { Invoke-Analyze }
     'Test' { Invoke-Test }
     'Package' { Invoke-Package }
     'Publish' { Invoke-Publish }
     'All' { 
         Invoke-Clean
         Invoke-Build
+        Invoke-Analyze
         Invoke-Test
         Invoke-Package
     }

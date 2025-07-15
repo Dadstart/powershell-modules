@@ -60,6 +60,8 @@ powershell-modules/
 ├── .vscode/
 │   └── settings.json                 # VS Code configuration
 ├── PowerShellProfile.ps1             # Development profile
+├── PSScriptAnalyzerSettings.psd1     # Code analysis configuration
+├── PesterConfiguration.psd1          # Test configuration
 ├── build.ps1                         # Build script
 └── README.md
 ```
@@ -131,15 +133,38 @@ Write-Message -Message "Warning message" -Level Warning -LogToFile
 # Build all modules
 .\build.ps1 -Task Build
 
+# Run code analysis
+.\build.ps1 -Task Analyze
+
 # Run tests
 .\build.ps1 -Task Test
 
 # Clean build output
 .\build.ps1 -Task Clean
 
-# Build and package
+# Build, analyze, test, and package
 .\build.ps1 -Task All
 ```
+
+### Code Quality
+
+This project uses **PSScriptAnalyzer** to enforce PowerShell best practices and community guidelines:
+
+```powershell
+# Run PSScriptAnalyzer manually
+Invoke-ScriptAnalyzer -Path .\Modules -Settings .\PSScriptAnalyzerSettings.psd1
+
+# Run as part of build process
+.\build.ps1 -Task Analyze
+```
+
+**PSScriptAnalyzer Rules Enforced:**
+- **Code Formatting**: Consistent indentation, whitespace, and line length
+- **Naming Conventions**: Approved verbs, proper parameter names
+- **Security**: Avoid dangerous cmdlets and practices
+- **Performance**: Efficient code patterns and best practices
+- **Documentation**: Comment-based help for all functions
+- **Compatibility**: PowerShell 7.4+ compatibility checks
 
 ### Testing
 
@@ -152,6 +177,9 @@ Invoke-Pester -Path Tests\Unit\Media\Get-MediaInfo.Tests.ps1
 
 # Run tests with coverage
 Invoke-Pester -Path Tests -CodeCoverage Modules\Media\*.ps1
+
+# Run tests with Pester configuration
+Invoke-Pester -Configuration .\PesterConfiguration.psd1
 ```
 
 ### Module Development
@@ -174,12 +202,18 @@ Invoke-Pester -Path Tests -CodeCoverage Modules\Media\*.ps1
    - Include examples and parameter descriptions
    - Document return types and outputs
 
+4. **Code Quality**:
+   - Run PSScriptAnalyzer before committing
+   - Follow the established coding standards
+   - Use the shared functions for common operations
+
 ### VS Code Integration
 
 The project includes VS Code configuration for:
 - PowerShell 7.4 as the default version
 - Code formatting rules
 - IntelliSense support for modules
+- PSScriptAnalyzer integration with real-time analysis
 - File associations for PowerShell files
 
 ## Module Details
@@ -205,18 +239,31 @@ The project includes VS Code configuration for:
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes following the coding standards
-4. Add tests for new functionality
-5. Update documentation
-6. Submit a pull request
+4. Run PSScriptAnalyzer: `.\build.ps1 -Task Analyze`
+5. Add tests for new functionality
+6. Update documentation
+7. Submit a pull request
 
 ### Coding Standards
 
 - Use PowerShell 7.4+ features
-- Follow PSScriptAnalyzer rules
+- Follow PSScriptAnalyzer rules (see `PSScriptAnalyzerSettings.psd1`)
 - Use comment-based help for all functions
 - Implement proper error handling
 - Write unit tests for all public functions
 - Use the shared functions for common operations
+- Maximum line length: 120 characters
+- Use consistent indentation (4 spaces)
+- Follow approved PowerShell verbs
+
+### Pre-commit Checklist
+
+- [ ] Code passes PSScriptAnalyzer analysis
+- [ ] All tests pass
+- [ ] Documentation is updated
+- [ ] No hardcoded credentials or sensitive data
+- [ ] Error handling is implemented
+- [ ] Functions follow naming conventions
 
 ## License
 
