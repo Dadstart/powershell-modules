@@ -7,7 +7,7 @@ $functions = Get-ChildItem -Path $publicPath -File -Filter '*.ps1' | Select-Obje
 
 # Dot-source the shared functions
 foreach ($function in $functions) {
-    Write-Host "Dot-sourcing function: $function" -Verbose
+    Write-Verbose "Dot-sourcing function: $function"
     $path = Join-Path $publicPath "$function.ps1"
     . $path
 }
