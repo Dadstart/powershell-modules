@@ -21,7 +21,7 @@
     PowerShellVersion = '7.4'
 
     # Root module that applies when this module is imported
-    RootModule = 'Plex.psm1'
+    RootModule = 'PlexTools.psm1'
 
     # Functions to export from this module
     FunctionsToExport = @(
