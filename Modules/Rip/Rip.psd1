@@ -20,6 +20,9 @@
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '7.4'
     
+    # Root module that applies when this module is imported
+    RootModule = 'Rip.psm1'
+    
     # Functions to export from this module
     FunctionsToExport = @()
     
