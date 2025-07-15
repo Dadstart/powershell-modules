@@ -92,7 +92,7 @@ jobs:
         path: Release/
 
   publish:
-    name: Publish to PowerShell Gallery
+    name: Publish to PowerShell Gallery [disabled]
     runs-on: windows-latest
     needs: [test, package]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
