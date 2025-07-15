@@ -1,10 +1,15 @@
 # Shared functions module
 # This file provides IntelliSense support for shared functions
 
-# Dot-source the shared functions
-$SharedPath = $PSScriptRoot
-. (Join-Path $SharedPath 'Get-Path.ps1')
-. (Join-Path $SharedPath 'Write-Message.ps1')
-
 # Export functions for IntelliSense (these won't be exported by individual modules)
-Export-ModuleMember -Function Get-Path, Write-Message 
+$publicPath = Join-Path -Path $PSScriptRoot -ChildPath 'Public'
+$functions = Get-ChildItem -Path $publicPath -File -Filter '*.ps1' | Select-Object -ExpandProperty BaseName
+
+# Dot-source the shared functions
+foreach ($function in $functions) {
+    Write-Host "Dot-sourcing function: $function" -Verbose
+    $path = Join-Path $publicPath "$function.ps1"
+    . $path
+}
+
+Export-ModuleMember -Function $functions
