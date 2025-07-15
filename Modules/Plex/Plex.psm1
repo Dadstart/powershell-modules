@@ -13,7 +13,8 @@ $SharedPath = Join-Path $ModuleRoot '..\Shared\Public'
 
 # Load private functions first (these won't be exported)
 $PrivatePath = Join-Path $ModuleRoot 'Private'
-if (Test-Path $PrivatePath) {
+if (Test-Path $PrivatePath)
+{
     Get-ChildItem -Path $PrivatePath -Filter '*.ps1' -Recurse | ForEach-Object {
         . $_.FullName
     }
@@ -21,8 +22,18 @@ if (Test-Path $PrivatePath) {
 
 # Load public functions (these will be exported)
 $PublicPath = Join-Path $ModuleRoot 'Public'
-if (Test-Path $PublicPath) {
+if (Test-Path $PublicPath)
+{
     Get-ChildItem -Path $PublicPath -Filter '*.ps1' -Recurse | ForEach-Object {
+        . $_.FullName
+    }
+}
+
+## Load classes
+$ClassesPath = Join-Path $ModuleRoot 'Classes'
+if (Test-Path $ClassesPath)
+{
+    Get-ChildItem -Path $ClassesPath -Filter '*.ps1' -Recurse | ForEach-Object {
         . $_.FullName
     }
 }
@@ -30,7 +41,8 @@ if (Test-Path $PublicPath) {
 # Export public functions
 $PublicFunctions = Get-ChildItem -Path $PublicPath -Filter '*.ps1' -Recurse | ForEach-Object {
     $FunctionName = $_.BaseName
-    if (Get-Command -Name $FunctionName -ErrorAction SilentlyContinue) {
+    if (Get-Command -Name $FunctionName -ErrorAction SilentlyContinue)
+    {
         $FunctionName
     }
 }
