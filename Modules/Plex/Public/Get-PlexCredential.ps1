@@ -21,36 +21,32 @@ function Get-PlexCredential {
     
     .EXAMPLE
         Get-PlexCredential -ServerUrl "http://192.168.1.100:32400"
-        
+
         Prompts for credentials using the specified server URL.
-    
+
     .OUTPUTS
         [PlexCredential] Object containing server URL, credentials, and authentication token.
-    
+
     .NOTES
         This function uses the standard PowerShell credential retrieval for secure credential input.
         The returned PlexCredential object can be used with other Plex module functions
         that require authentication.
-        
+
         The function automatically generates an authentication token from the provided
         credentials using the Plex server's authentication endpoint.
     #>
     [CmdletBinding()]
     param(
         [Parameter()]
-        [string]$ServerUrl
+        [string]$ServerUrl,
+        [Parameter()]
+        [string]$UserName
     )
+    $cred = Get-Credential -Message 'Enter your Plex credentials' -UserName $UserName
+    $token = Get-PlexServerToken -Credential $cred
+    if (-not $ServerUrl) {
+        $ServerUrl = 'http://localhost:32400'
+    }
 
-    begin {
-        Set-DefaultParameters
-    }
-    process {
-        $cred = Get-Credential -Message 'Enter your Plex credentials'
-        $token = Get-PlexServerToken -Credential $cred
-        if (-not $ServerUrl) {
-            $ServerUrl = "$PlexDefaultProtocol`://$PlexDefaultServer`:$PlexDefaultPort"
-        }
-    
-        return [PlexCredential]::new($cred, $ServerUrl, $token)
-    }
+    return [PlexCredential]::new($cred, $ServerUrl, $token)
 }

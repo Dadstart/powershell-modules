@@ -45,8 +45,6 @@ function Invoke-RemuxProcessing {
     )
 
     begin {
-        Set-DefaultParameters
-
         Write-Message 'Starting remux processing' -Type Verbose
         Write-Message "Original directory: $Path" -Type Verbose
         Write-Message "HandBrake directory: $HandbrakeDirectory" -Type Verbose
