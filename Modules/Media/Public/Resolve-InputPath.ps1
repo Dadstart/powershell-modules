@@ -6,12 +6,10 @@ function Resolve-InputPath {
         [ValidateDirectoryExistsAttribute()]
         [string]$Path
     )
-
     try {
         Write-Message "Resolving path: $Path" -Type Verbose
         $resolvedPath = Get-Path -Path $Path -PathType Absolute
         Write-Message "Resolved path: $resolvedPath" -Type Verbose
-        
         return $resolvedPath
     }
     catch {

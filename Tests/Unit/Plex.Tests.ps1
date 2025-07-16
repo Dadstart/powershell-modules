@@ -3,7 +3,6 @@ Describe 'Plex Module' {
         # Import the entire Plex module
         Import-Module '.\Modules\Plex\PlexTools.psm1' -Force
     }
-
     # Import individual function tests
     # TODO: Add Plex function tests as they are created
     # . "$PSScriptRoot\Plex\Get-PlexCredential.Tests.ps1"

@@ -7,7 +7,6 @@ function Get-Bitrate {
     )
     process {
         Write-Message "Parameters: Path='$Path'" -Type Verbose
-
         try {
             # Validate file exists
             Write-Message "Validating file exists: $Path" -Type Verbose
@@ -17,18 +16,15 @@ function Get-Bitrate {
                 return $null
             }
             Write-Message 'File validation passed' -Type Verbose
-
             Write-Message 'Getting video stream using Get-MediaStream' -Type Verbose
             $stream = Get-MediaStream -Name $Path -Index 0 -Type Video
             Write-Message 'Retrieved video stream' -Type Verbose
-        
             Write-Message 'Extracting bitrate from stream' -Type Verbose
             $bps = $stream.bit_rate
             if (-not $bps -and $stream.tags.'BPS-eng') {
                 Write-Message 'Using BPS-eng tag for bitrate' -Type Verbose
                 $bps = $stream.tags.'BPS-eng'
             }
-        
             if ($bps) {
                 Write-Message "Found bitrate: $bps bps" -Type Verbose
                 return [int]$bps

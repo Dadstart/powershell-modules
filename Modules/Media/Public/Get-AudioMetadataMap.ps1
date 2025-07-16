@@ -5,27 +5,22 @@ function Get-AudioMetadataMap {
         [ValidateNotNullOrEmpty()]
         [string]$InputPath
     )
-
     begin {
         $allResults = @()
     }
-
     process {
         try {
             Write-Message "Processing file: $InputPath" -Type Verbose
-            
             # Validate input file
             if (-not (Test-Path -Path $InputPath -PathType Leaf -ErrorAction SilentlyContinue)) {
                 Write-Message "Input file does not exist: $InputPath" -Type Error
                 return
             }
-            
             # Check if ffprobe is available
             if (-not (Get-Command ffprobe -ErrorAction SilentlyContinue)) {
                 Write-Message "ffprobe is not available in PATH" -Type Error
                 return
             }
-
             $ffprobeOutput = Invoke-FFProbe -Arguments $ffprobeArgs
             if ($ffprobeOutput.ExitCode -ne 0) {
                 Write-Message "ffprobe failed with exit code: $($ffprobeOutput.ExitCode)" -Type Verbose
@@ -35,9 +30,7 @@ function Get-AudioMetadataMap {
             else {
                 Write-Message "ffprobe completed successfully" -Type Verbose
             }
-
             $metadataArgs = @()
-
             for ($i = 0; $i -lt $ffprobeOutput.Json.streams.Count; $i++) {
                 $stream = $ffprobeOutput.Json.streams[$i]
                 $tags   = $stream.tags
@@ -52,7 +45,6 @@ function Get-AudioMetadataMap {
                     }
                 }
             }
-
             # Add file info to results
             $result = [PSCustomObject]@{
                 File = $InputPath
@@ -64,7 +56,6 @@ function Get-AudioMetadataMap {
             Write-Message "Failed to get audio metadata map for $InputPath`: $($_.Exception.Message)" -Type Error
         }
     }
-
     end {
         return $allResults
     }

@@ -11,7 +11,6 @@ function Convert-ToConstantFrameRate {
         [ValidateRange(1, 300)]
         [double]$TargetFPS = 30.0
     )
-
     try {
         # Validate input file
         Write-Message "Validating input file exists: $InputPath" -Type Verbose
@@ -21,7 +20,6 @@ function Convert-ToConstantFrameRate {
             throw "Input file does not exist: $InputPath"
         }
         Write-Message 'Input file validation passed' -Type Verbose
-
         # Check if output file already exists
         Write-Message "Checking if output file already exists: $OutputPath" -Type Verbose
         if (Test-Path $OutputPath) {
@@ -30,7 +28,6 @@ function Convert-ToConstantFrameRate {
         else {
             Write-Message 'Output file does not exist, will be created' -Type Verbose
         }
-
         # Step 1: Get video codec information using ffprobe
         Write-Message 'Step 1: Getting video codec information using ffprobe' -Type Verbose
         $ffprobeArgs = @(
@@ -41,7 +38,6 @@ function Convert-ToConstantFrameRate {
             $InputPath
         )
         Write-Message "ffprobe command arguments: $($ffprobeArgs -join ' ')" -Type Verbose
-        
         $ffprobeOutput = Invoke-FFmpeg -Arguments $ffprobeArgs
         if ($ffprobeOutput.ExitCode -ne 0) {
             Write-Message "ffprobe failed with exit code: $($ffprobeOutput.ExitCode)" -Type Verbose
@@ -51,13 +47,11 @@ function Convert-ToConstantFrameRate {
         else {
             Write-Message 'ffprobe completed successfully' -Type Verbose
         }
-
         $streamInfo = $ffprobeOutput | ConvertFrom-Json
         $videoStream = $streamInfo.streams[0]
         $videoCodec = $videoStream.codec_name
         Write-Message "Video codec detected: $videoCodec" -Type Verbose
         Write-Message "Original video codec: $videoCodec" -Type Verbose
-
         # Step 2: Construct ffmpeg command
         Write-Message 'Step 2: Constructing ffmpeg command for constant frame rate conversion' -Type Verbose
         $ffmpegArgs = @(
@@ -71,7 +65,6 @@ function Convert-ToConstantFrameRate {
         )
         Write-Message "ffmpeg command arguments: $($ffmpegArgs -join ' ')" -Type Verbose
         Write-Message "`nRunning ffmpeg to enforce CFR at $TargetFPS fps using codec '$videoCodec'..." -Type Verbose
-
         $ffmpegOutput = Invoke-FFmpeg -Arguments $ffmpegArgs
         if ($ffmpegOutput.ExitCode -ne 0) {
             Write-Message "ffmpeg failed with exit code: $($ffmpegOutput.ExitCode)" -Type Verbose

@@ -14,7 +14,6 @@ function Export-Chapter {
         [ValidateRange(1, 3600)]
         [int]$MaxDuration = 300
     )
-
     try {
         # Validate input file
         Write-Message "Validating input file exists: $InputFile" -Type Verbose
@@ -24,7 +23,6 @@ function Export-Chapter {
             throw "Input file does not exist: $InputFile"
         }
         Write-Message 'Input file validation passed' -Type Verbose
-
         # Check if output file already exists
         Write-Message "Checking if output file already exists: $OutputFile" -Type Verbose
         if (Test-Path $OutputFile) {
@@ -33,28 +31,22 @@ function Export-Chapter {
         else {
             Write-Message 'Output file does not exist, will be created' -Type Verbose
         }
-
         Write-Message "Extracting chapter from: $InputFile" -Type Verbose
-
         # Get chapter information
         Write-Message "Getting chapter information for chapter $ChapterNumber" -Type Verbose
         $chapterInfo = Get-ChapterInfo -InputFile $InputFile -ChapterNumber $ChapterNumber
-        
         if (-not $chapterInfo) {
             Write-Message 'Failed to get chapter information' -Type Verbose
             Write-Message "Failed to get chapter information for chapter $ChapterNumber" -Type Error
             return
         }
         Write-Message 'Successfully retrieved chapter information' -Type Verbose
-
         # Calculate duration
         Write-Message 'Calculating chapter duration' -Type Verbose
         $fullDuration = [double]$chapterInfo.end_time - [double]$chapterInfo.start_time
         $duration = [Math]::Min($fullDuration, $MaxDuration)
         Write-Message "Chapter duration: $fullDuration seconds, will extract: $duration seconds" -Type Verbose
-
         Write-Message "Chapter duration: $fullDuration seconds, extracting first $duration seconds" -Type Verbose
-
         # Build ffmpeg command to extract chapter with audio and subtitles
         Write-Message 'Building ffmpeg command for chapter extraction' -Type Verbose
         $ffmpegArgs = @(
@@ -67,25 +59,18 @@ function Export-Chapter {
             $OutputFile
         )
         Write-Message "ffmpeg command arguments: $($ffmpegArgs -join ' ')" -Type Verbose
-
         if ($PSCmdlet.ShouldProcess("$InputFile ➡️ $OutputFile", 'Extract chapter')) {
             Write-Message 'Executing ffmpeg chapter extraction' -Type Verbose
-
             $ffmpegOutput = Invoke-FFmpeg -Arguments $ffmpegArgs            
             Write-Message "ffmpeg completed with exit code: $($ffmpegOutput.ExitCode)" -Type Success
             Write-Message "ffmpeg output $($ffmpegOutput.Output?.Length)" -Type Processing
             Write-Message "ffmpeg output $($ffmpegOutput.Error?.Length)" -Type Processing
-
             if ($ffmpegOutput.ExitCode -ne 0) {
                 Write-Message 'ffmpeg chapter extraction failed' -Type Verbose
                 Write-Message "ffmpeg failed with exit code: $($ffmpegOutput.ExitCode)" -Type Error
                 return
             }
-            
             Write-Message 'ffmpeg chapter extraction completed successfully' -Type Verbose
-
-
-
             # Verify output file was created
             Write-Message "Verifying output file was created: $OutputFile" -Type Verbose
             if (Test-Path -Path $OutputFile -ErrorAction SilentlyContinue) {

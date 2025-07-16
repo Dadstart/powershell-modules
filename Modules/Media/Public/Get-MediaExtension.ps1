@@ -2,39 +2,29 @@ function Get-MediaExtension {
     <#
     .SYNOPSIS
         Maps media codec names to appropriate file extensions based on codec type.
-
     .DESCRIPTION
         This function takes a codec type and codec name and returns the appropriate file extension
         for that codec. It handles common codecs for audio, subtitle, and video streams.
-
     .PARAMETER CodecType
         The type of codec: 'Audio', 'Subtitle', or 'Video'.
-
     .PARAMETER CodecName
         The codec name to map to an extension.
-
     .EXAMPLE
         Get-MediaExtension -CodecType Audio -CodecName 'aac'
         Returns: '.aac'
-
     .EXAMPLE
         Get-MediaExtension -CodecType Subtitle -CodecName 'subrip'
         Returns: '.srt'
-
     .EXAMPLE
         Get-MediaExtension -CodecType Video -CodecName 'h264'
         Returns: '.mp4'
-
     .EXAMPLE
         Get-MediaExtension -CodecType Audio -CodecName 'unknown'
         Returns: '.unknown'
-
     .OUTPUTS
         [string] - The file extension including the leading dot.
-
     .NOTES
         Common codec mappings by type:
-        
         Audio:
         - aac -> .aac (Advanced Audio Coding)
         - ac3 -> .ac3 (Dolby Digital)
@@ -42,14 +32,12 @@ function Get-MediaExtension {
         - mp3 -> .mp3 (MPEG Audio Layer III)
         - flac -> .flac (Free Lossless Audio Codec)
         - wav -> .wav (Waveform Audio File Format)
-        
         Subtitle:
         - subrip -> .srt (SubRip text format)
         - hdmv_pgs_subtitle -> .sup (Blu-ray PGS subtitles)
         - dvd_subtitle -> .mkv (DVD subtitles)
         - ass -> .ass (Advanced SubStation Alpha)
         - webvtt -> .vtt (WebVTT)
-        
         Video:
         - h264 -> .mp4 (H.264/AVC)
         - h265 -> .mp4 (H.265/HEVC)
@@ -63,11 +51,9 @@ function Get-MediaExtension {
         [Parameter(Mandatory)]
         [ValidateSet('Audio', 'Subtitle', 'Video')]
         [string]$CodecType,
-
         [Parameter(Mandatory)]
         [string]$CodecName
     )
-
     # Define codec extension mappings for each type
     $codecExtensionMaps = @{
         'Audio' = @{
@@ -136,7 +122,6 @@ function Get-MediaExtension {
             '8svx_fib'          = '.8svx'   # 8SVX fibonacci
             'bmv_audio'         = '.bmv'    # Discworld II BMV audio
         }
-        
         'Subtitle' = @{
             'subrip'             = '.srt'    # SubRip text format
             'hdmv_pgs_subtitle'  = '.sup'    # Blu-ray PGS subtitles
@@ -161,7 +146,6 @@ function Get-MediaExtension {
             'srt'                = '.srt'    # SubRip (already an extension)
             'vtt'                = '.vtt'    # WebVTT (already an extension)
         }
-        
         'Video' = @{
             'h264'               = '.mp4'    # H.264/AVC
             'h265'               = '.mp4'    # H.265/HEVC
@@ -187,18 +171,14 @@ function Get-MediaExtension {
             'qtsmc'              = '.mov'    # QuickTime SMC
         }
     }
-
     # Get the appropriate map for the codec type
     $codecMap = $codecExtensionMaps[$CodecType]
-    
     if (-not $codecMap) {
         Write-Message "Unsupported codec type: $CodecType" -Type Warning
         return ".$CodecName"
     }
-
     # Get the extension from the map, or use the codec name as fallback
     $extension = $codecMap[$CodecName.ToLower()]
-    
     if ($extension) {
         Write-Message "Mapped $CodecType codec '$CodecName' to extension '$extension'" -Type Verbose
         return $extension

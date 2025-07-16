@@ -2,45 +2,32 @@ function Get-PlexLibraryItems {
     <#
     .SYNOPSIS
         Retrieves items from a specific Plex library.
-    
     .DESCRIPTION
         Gets all items from a specified Plex library including movies, TV shows, episodes,
         music, or other media types. This function provides detailed information about
         each item in the library including metadata, ratings, and file information.
-    
     .PARAMETER Credential
         The Plex credential object containing server URL and authentication token.
-    
     .PARAMETER LibraryId
         The ID of the library to retrieve items from.
-    
     .PARAMETER Limit
         Maximum number of items to return. Defaults to all items.
-    
     .PARAMETER Offset
         Number of items to skip. Useful for pagination.
-    
     .PARAMETER Sort
         Sort order for the results (titleSort, addedAt, updatedAt, etc.).
-    
     .PARAMETER TimeoutSec
         The timeout in seconds for the request. Defaults to 30.
-    
     .EXAMPLE
         $cred = Get-PlexCredential
         Get-PlexLibraryItems -Credential $cred -LibraryId 1
-        
         Gets all items from library ID 1.
-    
     .EXAMPLE
         $cred = Get-PlexCredential
         Get-PlexLibraryItems -Credential $cred -LibraryId 2 -Limit 50 -Sort "titleSort"
-        
         Gets the first 50 items from library ID 2, sorted by title.
-    
     .OUTPUTS
         [PSCustomObject[]] Array of objects containing library item information.
-    
     .NOTES
         This function requires a valid Plex token and library ID.
         Use Get-PlexLibraries to find available library IDs.
@@ -49,50 +36,38 @@ function Get-PlexLibraryItems {
     param(
         [Parameter(Mandatory = $true)]
         [PSCustomObject]$Credential,
-        
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, [int]::MaxValue)]
         [int]$LibraryId,
-        
         [Parameter()]
         [ValidateRange(1, 10000)]
         [int]$Limit,
-        
         [Parameter()]
         [ValidateRange(0, [int]::MaxValue)]
         [int]$Offset,
-        
         [Parameter()]
         [ValidateSet('titleSort', 'addedAt', 'updatedAt', 'originallyAvailableAt', 'lastViewedAt', 'viewCount', 'rating', 'year', 'title')]
         [string]$Sort,
-        
         [Parameter()]
         [ValidateRange(1, 300)]
         [int]$TimeoutSec = $Script:PlexDefaultTimeout
     )
-    
     try {
         Write-Message "Retrieving items from library ID: $LibraryId" -Type Processing
-        
         # Build the request URI with query parameters
         $requestUri = $Script:PlexApiEndpoints.LibraryItems -f $LibraryId
-        
         # Build query parameters
         $queryParams = @()
         if ($Limit) { $queryParams += "X-Plex-Container-Size=$Limit" }
         if ($Offset) { $queryParams += "X-Plex-Container-Start=$Offset" }
         if ($Sort) { $queryParams += "sort=$Sort" }
-        
         if ($queryParams.Count -gt 0) {
             $requestUri += "?" + ($queryParams -join "&")
         }
-        
         # Make the request
         $response = Invoke-PlexApiRequest -Uri $requestUri -Credential $Credential -TimeoutSec $TimeoutSec
-        
         if ($response -and $response.MediaContainer -and $response.MediaContainer.Metadata) {
             $items = $response.MediaContainer.Metadata
-            
             # Convert to custom objects
             $result = $items | ForEach-Object {
                 [PSCustomObject]@{
@@ -183,9 +158,7 @@ function Get-PlexLibraryItems {
                     GrandparentMedia = $_.grandparentMedia
                 }
             }
-            
             Write-Message "✅ Successfully retrieved $($result.Count) items from library" -Type Success
-            
             return $result
         }
         else {

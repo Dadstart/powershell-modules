@@ -8,10 +8,8 @@ function Convert-TypeToMixdown {
         [ValidateSet('Surround 5.1', 'Stereo', 'Mono')]
         [string]$Type
     )
-    
     if ($Script:AudioMixdowns.ContainsKey($Type)) {
         return $Script:AudioMixdowns[$Type]
     }
-    
     throw "Unknown audio type: $Type"
 } 

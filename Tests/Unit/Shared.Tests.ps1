@@ -3,7 +3,6 @@ Describe 'Shared Module' {
         # Import the entire Shared module
         Import-Module '.\Modules\Shared\Shared.psm1' -Force
     }
-
     # Import individual function tests
     . "$PSScriptRoot\Shared\Write-Message.Tests.ps1"
     # TODO: Add other Shared function tests as they are created

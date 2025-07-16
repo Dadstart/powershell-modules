@@ -2,27 +2,20 @@ function Get-PlexServerInfo {
     <#
     .SYNOPSIS
         Retrieves detailed information about a Plex Media Server.
-    
     .DESCRIPTION
         Gets comprehensive information about a Plex Media Server including version,
         server name, platform, and other system details. This function provides
         detailed server information that can be useful for diagnostics and monitoring.
-    
     .PARAMETER Credential
         The Plex credential object containing server URL and authentication token.
-    
     .PARAMETER TimeoutSec
         The timeout in seconds for the request. Defaults to 30.
-    
     .EXAMPLE
         $cred = Get-PlexCredential
         Get-PlexServerInfo -Credential $cred
-        
         Gets server information using credentials.
-    
     .OUTPUTS
         [PSCustomObject] Object containing server information including version, name, platform, etc.
-    
     .NOTES
         This function provides detailed server information that can be useful for
         system administration and troubleshooting.
@@ -32,21 +25,16 @@ function Get-PlexServerInfo {
     param(
         [Parameter(Mandatory = $true)]
         [PlexCredential]$Credential,
-        
         [Parameter()]
         [ValidateRange(1, 300)]
         [int]$TimeoutSec = $Script:PlexDefaultTimeout
     )
-    
     try {
         Write-Message "Retrieving server information from: $($Credential.ServerUrl)" -Type Processing
-        
         # Make the request using relative path
         $response = Invoke-PlexApiRequest -Uri $Script:PlexApiEndpoints.ServerInfo -Credential $Credential -TimeoutSec $TimeoutSec
-        
         if ($response -and $response.MediaContainer) {
             $serverInfo = $response.MediaContainer
-            
             # Create a custom object with server information
             $result = [PSCustomObject]@{
                 ServerUrl = $Credential.ServerUrl
@@ -73,10 +61,8 @@ function Get-PlexServerInfo {
                 UpdatedAt = $serverInfo.updatedAt
                 Size = $serverInfo.size
             }
-            
             Write-Message "✅ Successfully retrieved server information" -Type Success
             Write-Message "Server: $($result.FriendlyName) (v$($result.Version))" -Type Info
-            
             return $result
         }
         else {

@@ -2,45 +2,33 @@ function Invoke-PlexApiRequest {
     <#
     .SYNOPSIS
         Makes HTTP requests to the Plex API with proper error handling and logging.
-    
     .DESCRIPTION
         This private function handles all HTTP requests to the Plex API, providing
         consistent error handling, logging, and response processing across the module.
         It automatically handles authentication headers, timeout settings, and common
         error scenarios.
-        
         The function automatically adds the X-Plex-Token header when a Plex credential is provided,
         and includes standard Plex API headers for proper client identification.
-    
     .PARAMETER Uri
         The relative path to request from the Plex API (e.g., "/library/sections").
-    
     .PARAMETER Method
         The HTTP method to use (GET, POST, PUT, DELETE). Defaults to GET.
-    
     .PARAMETER Credential
         The Plex credential object containing the authentication token. Required for most API endpoints.
-    
     .PARAMETER Headers
         Additional headers to include in the request.
-    
     .PARAMETER Body
         The request body for POST/PUT requests.
-    
     .PARAMETER TimeoutSec
         The timeout in seconds for the request. Defaults to 30.
-    
     .EXAMPLE
         $cred = Get-PlexCredential
         $response = Invoke-PlexApiRequest -Uri "/library/sections" -Credential $cred
-    
     .EXAMPLE
         $cred = Get-PlexCredential
         $response = Invoke-PlexApiRequest -Uri "/library/sections/1/refresh" -Method POST -Credential $cred
-    
     .OUTPUTS
         [PSCustomObject] The parsed JSON response from the Plex API.
-    
     .NOTES
         This function is designed to be used internally by other Plex module functions.
         It provides consistent error handling and logging for all API interactions.
@@ -51,36 +39,28 @@ function Invoke-PlexApiRequest {
         [Parameter(Mandatory = $true)]
         [ValidatePattern('^/[^\s]*$')]
         [string]$Uri,
-        
         [Parameter()]
         [ValidateSet('GET', 'POST', 'PUT', 'DELETE')]
         [string]$Method = 'GET',
-        
         [Parameter()]
         [PlexCredential]$Credential,
-        
         [Parameter()]
         [hashtable]$Headers = @{},
-        
         [Parameter()]
         [object]$Body,
-        
         [Parameter()]
         [ValidateRange(1, 300)]
         [int]$TimeoutSec = $Script:PlexDefaultTimeout
     )
-    
     try {
         # Build the full URI by combining server URL with relative path
         $fullUri = "$($Credential.ServerUrl)$Uri"
         Write-Message "Making $Method request to: $fullUri" -Type Verbose
-        
         # Merge default headers with provided headers
         $requestHeaders = $Script:PlexDefaultHeaders.Clone()
         foreach ($key in $Headers.Keys) {
             $requestHeaders[$key] = $Headers[$key]
         }
-        
         # Add authentication token if provided
         if ($Credential) {
             $requestHeaders['X-Plex-Token'] = $Credential.Token
@@ -89,7 +69,6 @@ function Invoke-PlexApiRequest {
         else {
             Write-Message "No authentication token provided - some endpoints may fail" -Type Warning
         }
-        
         # Prepare request parameters
         $requestParams = @{
             Uri = $fullUri
@@ -98,28 +77,22 @@ function Invoke-PlexApiRequest {
             TimeoutSec = $TimeoutSec
             ErrorAction = 'Stop'
         }
-        
         # Add body if provided
         if ($Body) {
             $requestParams['Body'] = $Body
             Write-Message "Request body: $Body" -Type Debug
         }
-        
         # Make the request
         $response = Invoke-RestMethod @requestParams
-        
         Write-Message "Request completed successfully" -Type Verbose
-        
         return $response
     }
     catch [System.Net.WebException] {
         $statusCode = $_.Exception.Response.StatusCode.value__
         $statusDescription = $_.Exception.Response.StatusDescription
-        
         Write-Message "HTTP request failed with status $statusCode : $statusDescription" -Type Error
         Write-Message "Request URI: $fullUri" -Type Debug
         Write-Message "Request Method: $Method" -Type Debug
-        
         # Provide more specific error messages based on status code
         switch ($statusCode) {
             401 { 
@@ -138,7 +111,6 @@ function Invoke-PlexApiRequest {
                 Write-Message "Unexpected HTTP error: $statusCode" -Type Error
             }
         }
-        
         throw
     }
     catch {
