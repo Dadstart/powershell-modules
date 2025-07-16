@@ -275,7 +275,7 @@ function Invoke-Analyze {
     $ErrorCount = ($AnalysisResults | Where-Object { $_.Severity -eq 'Error' }).Count
     if ($ErrorCount -gt 0) {
         Write-Error "PSScriptAnalyzer found $ErrorCount errors. Build failed."
-        exit 1
+        throw "PSScriptAnalyzer found $ErrorCount errors. Build failed."
     }
 
     Write-Host 'PSScriptAnalyzer completed successfully!' -ForegroundColor Green
@@ -308,7 +308,7 @@ function Invoke-Test {
     $PesterConfigScript = Join-Path $BuildRoot 'PesterConfig.ps1'
     if (-not (Test-Path $PesterConfigScript)) {
         Write-Error "Pester configuration script not found: $PesterConfigScript"
-        exit 1
+        throw "Pester configuration script not found: $PesterConfigScript"
     }
 
     Write-Host "Using Pester configuration from: $PesterConfigScript" -ForegroundColor Cyan
@@ -323,9 +323,10 @@ function Invoke-Test {
 
     $TestResults = Invoke-Pester -Configuration $pesterConfig
 
+    # Check if tests failed
     if ($TestResults.FailedCount -gt 0) {
         Write-Error "Tests failed: $($TestResults.FailedCount) failed, $($TestResults.PassedCount) passed"
-        exit 1
+        throw "Test execution failed with $($TestResults.FailedCount) failed tests"
     }
 
     Write-Host "All tests passed: $($TestResults.PassedCount) tests" -ForegroundColor Green
@@ -411,7 +412,7 @@ switch ($Task) {
     }
     default {
         Write-Error "Unknown task: $Task"
-        exit 1
+        throw "Unknown task: $Task"
     }
 }
 
