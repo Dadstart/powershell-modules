@@ -31,7 +31,7 @@ Thank you for your interest in contributing to this PowerShell modules project! 
 
 Each PowerShell module should follow this structure:
 
-```
+```text
 ModuleName/
 ├── ModuleName.psd1          # Module manifest
 ├── ModuleName.psm1          # Module script (optional)
@@ -41,10 +41,21 @@ ModuleName/
 ├── Private/                 # Internal functions
 │   ├── Internal-Function.ps1
 │   └── Helper-Function.ps1
-├── Tests/                   # Pester tests
-│   ├── ModuleName.Tests.ps1
-│   └── Get-Something.Tests.ps1
 └── README.md               # Module documentation
+```
+
+Tests are organized in a separate `Tests/` directory at the project root:
+
+```text
+Tests/
+├── Unit/                    # Unit tests
+│   ├── ModuleName/          # Module-specific tests
+│   │   ├── Get-Something.Tests.ps1
+│   │   └── Set-Something.Tests.ps1
+│   └── Shared/              # Shared module tests
+│       └── Write-Message.Tests.ps1
+├── Integration/             # Integration tests
+└── Performance/             # Performance tests
 ```
 
 ## Module Manifest Requirements
@@ -82,37 +93,93 @@ See [FORMATTING.md](FORMATTING.md).
 
 ### Writing Tests
 
-1. **Use Pester 5.x syntax**
+1. **Use Pester 5.x syntax with proper structure**
    ```powershell
+   BeforeAll {
+       # Import the module to test
+       $modulePath = Join-Path $PSScriptRoot '..\..\..\Modules\ModuleName\Public\Get-Something.ps1'
+       . $modulePath
+   }
+
    Describe 'Get-Something' {
-       BeforeAll {
-           # Setup code
+       BeforeEach {
+           # Setup for each test
        }
-       
-       It 'Should return expected result' {
-           $result = Get-Something -Parameter 'value'
-           $result | Should -Not -BeNullOrEmpty
+
+       Context 'Basic Functionality' {
+           It 'Should return expected result' {
+               $result = Get-Something -Parameter 'value'
+               $result | Should -Not -BeNullOrEmpty
+           }
+
+           It 'Should throw error for invalid input' {
+               { Get-Something -Parameter $null } | Should -Throw
+           }
        }
-       
-       It 'Should throw error for invalid input' {
-           { Get-Something -Parameter $null } | Should -Throw
+
+       Context 'Edge Cases' {
+           It 'Should handle empty input gracefully' {
+               { Get-Something -Parameter '' } | Should -Not -Throw
+           }
        }
    }
    ```
 
-2. **Test both positive and negative scenarios**
-3. **Mock external dependencies**
-4. **Use descriptive test names**
+2. **Test organization guidelines:**
+   - Use `BeforeAll` for module imports and one-time setup
+   - Use `BeforeEach` for per-test setup and cleanup
+   - Use `AfterAll` for cleanup
+   - Group related tests in `Context` blocks
+   - Test both positive and negative scenarios
+   - Mock external dependencies when appropriate
+   - Use descriptive test names that explain the expected behavior
+
+3. **Test file naming:**
+   - Unit tests: `FunctionName.Tests.ps1`
+   - Place in appropriate module directory under `Tests/Unit/`
+   - Shared module tests go in `Tests/Unit/Shared/`
 
 ### Running Tests
 
+#### Using the Build Script (Recommended)
 ```powershell
-# Run all tests
+# Run all tests with code coverage
 .\build.ps1 -Task Test
 
-# Run specific test file
-Invoke-Pester -Path "Tests/ModuleName.Tests.ps1"
+# Run tests only (no build)
+.\build.ps1 -Task TestOnly
+
+# Run tests with specific configuration
+.\build.ps1 -Task Test -Configuration Debug
 ```
+
+#### Using Pester Directly
+```powershell
+# Run all tests
+Invoke-Pester -Configuration PesterConfiguration.psd1
+
+# Run specific test file
+Invoke-Pester -Path 'Tests/Unit/ModuleName/Get-Something.Tests.ps1'
+
+# Run tests for a specific module
+Invoke-Pester -Path 'Tests/Unit/ModuleName/'
+
+# Run with verbose output
+Invoke-Pester -Configuration PesterConfiguration.psd1 -Output Detailed
+
+# Run tests and generate coverage report
+Invoke-Pester -Configuration PesterConfiguration.psd1 -CodeCoverageOutputFormat JaCoCo
+```
+
+#### Test Output
+- Test results are saved to `BuildOutput/TestResults.xml`
+- Code coverage reports are saved to `BuildOutput/CodeCoverage.xml`
+- Console output shows detailed test progress and results
+
+#### Test Categories
+- **Unit Tests**: Test individual functions in isolation
+- **Integration Tests**: Test interactions between modules
+- **Performance Tests**: Test performance characteristics
 
 ## Pull Request Process
 

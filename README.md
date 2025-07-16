@@ -27,6 +27,7 @@ powershell-modules/
 │   │       ├── Get-Path.ps1          # Shared path validation function
 │   │       ├── Write-Message.ps1     # Shared logging function
 │   │       └── Shared.ps1            # Shared module loader
+│   │       └── Shared.psm1           # Shared module manifest
 │   ├── Media/
 │   │   ├── Classes/
 │   │   │   └── MediaFile.ps1         # MediaFile class

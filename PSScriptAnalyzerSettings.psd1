@@ -13,7 +13,7 @@
         
         PSAvoidLongLines = @{
             Enable = $true
-            MaximumLineLength = 120
+            MaximumLineLength = 160
         }
         
         PSAvoidTrailingWhitespace = @{
@@ -33,20 +33,24 @@
             PipelineIndentation = 'IncreaseIndentationForFirstPipeline'
             Kind = 'space'
         }
-        
+
         PSUseConsistentWhitespace = @{
             Enable = $true
             CheckOpenBrace = $true
             CheckOpenParen = $true
             CheckOperator = $true
             CheckSeparator = $true
+            # OTBS (One True Brace Style) configuration
+            OpenBraceOnSameLine = $true
+            OpenBraceOnSameLineAsControlStatement = $true
+            OpenBraceOnSameLineAsKeyword = $true
         }
         
         # Naming conventions
         PSAvoidDefaultValueForMandatoryParameter = @{
             Enable = $true
         }
-        
+
         PSAvoidDefaultValueSwitchParameter = @{
             Enable = $true
         }
