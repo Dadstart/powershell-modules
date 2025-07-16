@@ -227,7 +227,7 @@ The ANSI escape code support has been successfully implemented with the followin
 ### Key Features Added:
 
 1. **Bright ANSI Color Mapping**: Uses bright foreground colors for better visibility:
-   - Red: 91, Green: 92, Yellow: 93, Blue: 94, Purple: 95, Cyan: 96, Gray: 90, White: 97
+   - Red: 91, Green: 92, Yellow: 93, Blue: 94, Magenta: 95, Cyan: 96, Gray: 90, White: 97
 
 2. **Automatic Terminal Detection**: Intelligently detects ANSI support based on:
    - `$Host.UI.SupportsVirtualTerminal`
@@ -238,7 +238,6 @@ The ANSI escape code support has been successfully implemented with the followin
 3. **Configuration Control**: Added new parameters to `Set-WriteMessageConfig`:
    - `-ForceAnsi`: Forces ANSI escape codes even if not auto-detected
    - `-DisableAnsi`: Disables ANSI and uses PowerShell native colors
-   - Enhanced color validation to include 'Purple'
 
 4. **Graceful Fallback**: Automatically falls back to PowerShell's `Write-Host -ForegroundColor` when ANSI is not supported
 
@@ -263,9 +262,9 @@ Write-Message "Success!" -Type Success
 Set-WriteMessageConfig -DisableAnsi
 Write-Message "Warning!" -Type Warning
 
-# Custom colors including Purple
+# Custom colors including
 Set-WriteMessageConfig -LevelColors @{
-    'Info' = 'Purple'
+    'Info' = 'Cyan'
     'Success' = 'Green'
 }
 ```

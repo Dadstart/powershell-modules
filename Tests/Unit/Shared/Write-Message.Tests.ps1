@@ -1,7 +1,10 @@
 BeforeAll {
+    $sharedModulePath = Join-Path $PSScriptRoot '..\..\..\Modules\Shared\Shared.psm1'
+    Import-Module $sharedModulePath -Force
+
     # Import the module to test
-    $modulePath = Join-Path $PSScriptRoot '..\..\..\Modules\Shared\Public\Write-Message.ps1'
-    . $modulePath
+    $functionPath = Join-Path $PSScriptRoot '..\..\..\Modules\Shared\Public\Write-Message.ps1'
+    . $functionPath
 
     # Create a temporary log file for testing
     $script:TestLogFile = Join-Path $TestDrive 'test-write-message.log'

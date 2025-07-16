@@ -172,6 +172,8 @@ function Write-Message {
     begin {
         # --- Initialize WriteMessageConfig if not exists ---
         if (-not $script:WriteMessageConfig) {
+            $script:WriteMessageConfig = Get-WriteMessageConfig -Default
+            <#
             $script:WriteMessageConfig = [PSCustomObject]@{
                 LogFile        = $null
                 TimeStamp      = $false
@@ -190,19 +192,27 @@ function Write-Message {
                     'Verbose'    = 'Gray'
                     'Default'    = 'White'
                 }
-            }
+            #>
         }
 
         # --- ANSI Color Mapping (Bright Colors) ---
         $script:AnsiColors = @{
-            'Red'    = '91'
-            'Green'  = '92'
-            'Yellow' = '93'
-            'Blue'   = '94'
-            'Purple' = '95'
-            'Cyan'   = '96'
-            'Gray'   = '90'
-            'White'  = '97'
+            'Red'         = '91'
+            'Green'       = '92'
+            'Yellow'      = '93'
+            'Blue'        = '94'
+            'Magenta'     = '95'
+            'Cyan'        = '96'
+            'Gray'        = '90'
+            'White'       = '97'
+            'Black'       = '30'
+            'DarkBlue'    = '34'
+            'DarkGreen'   = '32'
+            'DarkCyan'    = '36'
+            'DarkRed'     = '31'
+            'DarkMagenta' = '35'
+            'DarkYellow'  = '33'
+            'DarkGray'    = '90'
         }
 
         # --- Terminal Detection for ANSI Support ---
@@ -275,24 +285,45 @@ function Write-Message {
             $script:WriteMessageConfig.LevelColors[$Type]
         }
 
+        # --- Validate color and fallback to default if invalid ---
+        $validColors = @(
+            'Black',
+            'DarkBlue',
+            'DarkGreen',
+            'DarkCyan',
+            'DarkRed',
+            'DarkMagenta',
+            'DarkYellow',
+            'Gray',
+            'DarkGray',
+            'Blue',
+            'Green',
+            'Cyan',
+            'Red',
+            'Magenta',
+            'Yellow',
+            'White'
+        )
+
+        if ($effectiveColor -notin $validColors) {
+            Write-Warning "Invalid color '$effectiveColor'. Falling back to default color for type '$Type'."
+            $effectiveColor = $script:WriteMessageConfig.LevelColors[$Type]
+        }
+
         # --- Format each message argument ---
         $blocks = @()
         foreach ($item in $Object) {
             $blocks += Get-String -Object $item -Separator $effectiveSep
         }
         $text = $blocks -join $effectiveSep
-        
-        if ($effectiveTimeStamp) {
-            $text = ('{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $text)
-        }
 
-        # --- Add call-site context if enabled ---
+        # --- Prepare context for JSON output ---
+        $ctx = $null
         if ($effectiveIncludeContext) {
             $inv = $PSCmdlet.MyInvocation
             $scriptName = [IO.Path]::GetFileName($inv.ScriptName)
             $lineNumber = $inv.ScriptLineNumber
             $ctx = '{0}:{1}' -f $scriptName, $lineNumber
-            $text = '[{0}] {1}' -f $ctx, $text
         }
 
         # --- Structured output mode ---
@@ -301,15 +332,20 @@ function Write-Message {
                 TimeStamp = (Get-Date).ToString('o')
                 Type      = $Type
                 Message   = $text
-                Context   = if ($effectiveIncludeContext) {
-                    $ctx 
-                }
-                else {
-                    $null 
-                }
+                Context   = $ctx
             }
             $entry | ConvertTo-Json -Depth 5
             return
+        }
+
+        # --- Prepare text for regular output ---
+        if ($effectiveTimeStamp) {
+            $text = ('{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $text)
+        }
+
+        # --- Add call-site context if enabled ---
+        if ($effectiveIncludeContext) {
+            $text = '[{0}] {1}' -f $ctx, $text
         }
     }
     process {
@@ -431,8 +467,8 @@ function Set-WriteMessageConfig {
 
     .PARAMETER LevelColors
         Hashtable mapping message types to colors. Valid colors: Black, DarkBlue, DarkGreen, 
-        DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, 
-        Red, Magenta, Yellow, White, Purple.
+        DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan,
+        Red, Magenta, Yellow, and White.
 
     .PARAMETER IncludeContext
         When specified, enables automatic call-site context for all messages. This will
@@ -556,12 +592,12 @@ function Set-WriteMessageConfig {
 
     # Initialize config if it doesn't exist
     if (-not $script:WriteMessageConfig) {
-        $script:WriteMessageConfig = Get-WriteMessageConfig
+        $script:WriteMessageConfig = Get-WriteMessageConfig -Default
     }
 
     if ($Reset) {
         # Reset to defaults
-        $script:WriteMessageConfig = Get-WriteMessageConfig
+        $script:WriteMessageConfig = Get-WriteMessageConfig -Default
         Write-Verbose 'Write-Message configuration reset to defaults.'
         return
     }
@@ -606,9 +642,9 @@ function Set-WriteMessageConfig {
 
     if ($PSBoundParameters.ContainsKey('LevelColors')) {
         # Validate and update colors
-        $validColors = @('Black', 'DarkBlue', 'DarkGreen', 'DarkCyan', 'DarkRed', 'DarkMagenta', 
-            'DarkYellow', 'Gray', 'DarkGray', 'Blue', 'Green', 'Cyan', 'Red', 
-            'Magenta', 'Yellow', 'White', 'Purple')
+        $validColors = @('Black', 'DarkBlue', 'DarkGreen', 'DarkCyan', 'DarkRed', 'DarkMagenta',
+            'DarkYellow', 'Gray', 'DarkGray', 'Blue', 'Green', 'Cyan', 'Red',
+            'Magenta', 'Yellow', 'White')
 
         foreach ($type in $LevelColors.Keys) {
             if ($LevelColors[$type] -in $validColors) {
@@ -646,9 +682,12 @@ function Get-WriteMessageConfig {
         Set-WriteMessageConfig
     #>
     [CmdletBinding()]
-    param()
+    param(
+        [Parameter()]
+        [switch]$Default
+    )
 
-    if (-not $script:WriteMessageConfig) {
+    if ($Default -or (-not $script:WriteMessageConfig)) {
         # Return default configuration if none exists
         return [PSCustomObject]@{
             LogFile        = $null
