@@ -39,7 +39,7 @@ class PlexCredential {
         }
 
         $this.Credential = $credential
-        this.ServerUrl = $serverUrl ?? "$($Script:PlexDefaultProtocol)://$($Script:PlexDefaultServer):$($Script:PlexDefaultPort)"
+        $this.ServerUrl = $serverUrl ?? "$($Script:PlexDefaultProtocol)://$($Script:PlexDefaultServer):$($Script:PlexDefaultPort)"
         $this.Token = $token
     }
 
