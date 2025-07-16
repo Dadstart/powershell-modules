@@ -289,7 +289,11 @@ function Invoke-Test {
     param (
         [Parameter()]
         [switch]
-        $CodeCoverage
+        $CodeCoverage,
+        [Parameter()]
+        [ValidateSet('None', 'Normal', 'Detailed', 'Diagnostic', $null)]
+        [string]
+        $Verbosity
     )
 
     Write-Host 'Running tests...' -ForegroundColor Yellow
@@ -312,8 +316,8 @@ function Invoke-Test {
     if ($CodeCoverage) {
         $pesterConfigParams.CodeCoverage = $true
     }
-    if ($PesterOutputVerbosity) {
-        $pesterConfigParams.Verbosity = $PesterOutputVerbosity
+    if ($Verbosity) {
+        $pesterConfigParams.Verbosity = $Verbosity
     }
     $pesterConfig = (. "$PesterConfigScript" @pesterConfigParams)
 
@@ -387,10 +391,10 @@ switch ($Task) {
         Invoke-Analyze
     }
     'Test' {
-        Invoke-Test
+        Invoke-Test -Verbosity $PesterOutputVerbosity
     }
     'TestWithCodeCoverage' {
-        Invoke-Test -CodeCoverage
+        Invoke-Test -CodeCoverage -Verbosity $PesterOutputVerbosity
     }
     'Package' {
         Invoke-Package
