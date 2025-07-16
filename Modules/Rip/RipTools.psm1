@@ -7,16 +7,28 @@
 $ModuleRoot = $PSScriptRoot
 
 # Import shared functions
-$SharedPublicPath = Join-Path $ModuleRoot '..\Shared\Public'
-$sharedFunctions = Get-ChildItem -Path $SharedPublicPath -Filter '*.ps1' | Sort-Object Name
+$sharedPublicPath = Join-Path $ModuleRoot '..\Shared\Public'
+$sharedFunctions = Get-ChildItem -Path $sharedPublicPath -Filter '*.ps1' | Sort-Object Name
 
 foreach ($function in $sharedFunctions) {
     . $function.FullName
 }
 
 # Export all loaded functions
-$functionNames = $sharedFunctions | ForEach-Object { $_.BaseName }
-Export-ModuleMember -Function $functionNames
+$sharedFunctionNames = $sharedFunctions | ForEach-Object { $_.BaseName }
+
+# Get classes from Classes directory
+$sharedClassesPath = Join-Path $ModuleRoot '..\Shared\Classes'
+$sharedClassNames = Get-ChildItem -Path $sharedClassesPath -File -Filter '*.ps1' | Select-Object -ExpandProperty BaseName
+
+# Dot-source the shared classes
+foreach ($class in $sharedClassNames) {
+    Write-Verbose "Dot-sourcing class: $class"
+    $path = Join-Path $sharedClassesPath "$class.ps1"
+    . $path
+}
+
+Export-ModuleMember -Function $sharedFunctionNames -Variable $sharedClassNames
 
 # Load private functions first (these won't be exported)
 $PrivatePath = Join-Path $ModuleRoot 'Private'
