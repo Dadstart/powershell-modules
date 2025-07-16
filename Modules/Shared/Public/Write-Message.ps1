@@ -15,6 +15,7 @@ function Write-Message {
         - Optional no-newline output for progress indicators
         - Global configuration for default settings
         - Automatic call-site context (script name and line number)
+        - ANSI escape code support for cross-platform terminal compatibility
 
         Color Scheme:
         - Success: Green - Completion messages, successful operations
@@ -123,6 +124,10 @@ function Write-Message {
         - White = General Info
         - Gray = Debug/Verbose (when enabled)
 
+        ANSI Support:
+        The function automatically detects terminal capabilities and uses ANSI escape codes
+        for consistent cross-platform color rendering when supported.
+
     .LINK
         Write-Host
         Write-Verbose
@@ -168,12 +173,14 @@ function Write-Message {
         # --- Initialize WriteMessageConfig if not exists ---
         if (-not $script:WriteMessageConfig) {
             $script:WriteMessageConfig = [PSCustomObject]@{
-                LogFile         = $null
-                TimeStamp       = $false
-                Separator       = ' '
-                AsJson          = $false
-                IncludeContext  = $false  # Whether to include call-site context
-                LevelColors = @{
+                LogFile        = $null
+                TimeStamp      = $false
+                Separator      = ' '
+                AsJson         = $false
+                IncludeContext = $false  # Whether to include call-site context
+                ForceAnsi      = $false  # Force ANSI escape codes
+                DisableAnsi    = $false  # Disable ANSI escape codes
+                LevelColors    = @{
                     'Info'       = 'White'
                     'Success'    = 'Green'
                     'Warning'    = 'Yellow'
@@ -181,7 +188,45 @@ function Write-Message {
                     'Processing' = 'Cyan'
                     'Debug'      = 'Gray'
                     'Verbose'    = 'Gray'
-                    'Default'    = 'Gray'
+                    'Default'    = 'White'
+                }
+            }
+        }
+
+        # --- ANSI Color Mapping (Bright Colors) ---
+        $script:AnsiColors = @{
+            'Red'    = '91'
+            'Green'  = '92'
+            'Yellow' = '93'
+            'Blue'   = '94'
+            'Purple' = '95'
+            'Cyan'   = '96'
+            'Gray'   = '90'
+            'White'  = '97'
+        }
+
+        # --- Terminal Detection for ANSI Support ---
+        if (-not (Test-Path Variable:script:AnsiSupportChecked)) {
+            $script:AnsiSupportChecked = $true
+
+            # Check if ANSI is disabled in config
+            if ($script:WriteMessageConfig.DisableAnsi) {
+                $script:SupportsAnsi = $false
+            }
+            # Check if ANSI is forced in config
+            elseif ($script:WriteMessageConfig.ForceAnsi) {
+                $script:SupportsAnsi = $true
+            }
+            else {
+                # Auto-detect terminal support for ANSI escape codes
+                $script:SupportsAnsi = $Host.UI.SupportsVirtualTerminal -or 
+                $env:TERM -or 
+                $env:COLORTERM -or
+                ($env:OS -eq 'Windows_NT' -and $Host.UI.RawUI.WindowSize.Width -gt 0)
+
+                # Additional check for PowerShell 6+ on Windows
+                if ($PSVersionTable.PSVersion.Major -ge 6 -and $IsWindows) {
+                    $script:SupportsAnsi = $true
                 }
             }
         }
@@ -246,8 +291,8 @@ function Write-Message {
             $inv = $PSCmdlet.MyInvocation
             $scriptName = [IO.Path]::GetFileName($inv.ScriptName)
             $lineNumber = $inv.ScriptLineNumber
-            $ctx = "{0}:{1}" -f $scriptName, $lineNumber
-            $text = "[{0}] {1}" -f $ctx, $text
+            $ctx = '{0}:{1}' -f $scriptName, $lineNumber
+            $text = '[{0}] {1}' -f $ctx, $text
         }
 
         # --- Structured output mode ---
@@ -256,7 +301,12 @@ function Write-Message {
                 TimeStamp = (Get-Date).ToString('o')
                 Type      = $Type
                 Message   = $text
-                Context   = if ($effectiveIncludeContext) { $ctx } else { $null }
+                Context   = if ($effectiveIncludeContext) {
+                    $ctx 
+                }
+                else {
+                    $null 
+                }
             }
             $entry | ConvertTo-Json -Depth 5
             return
@@ -320,13 +370,29 @@ function Write-Message {
                 Write-Error $text
             }
             default {
-                # Use Write-Host with color for Info, Success, Processing
-                if ($NoNewline) {
-                    Write-Host -Object $text -ForegroundColor $effectiveColor -NoNewline
+                # Use ANSI codes or Write-Host with color for Info, Success, Processing
+                if ($script:SupportsAnsi -and $effectiveColor -in $script:AnsiColors.Keys) {
+                    # Use ANSI escape codes for cross-platform compatibility
+                    $ansiCode = $script:AnsiColors[$effectiveColor]
+                    $coloredText = "`e[${ansiCode}m$text`e[0m"
+
+                    if ($NoNewline) {
+                        Write-Host -Object $coloredText -NoNewline
+                    }
+                    else {
+                        Write-Host -Object $coloredText
+                    }
                 }
                 else {
-                    Write-Host -Object $text -ForegroundColor $effectiveColor
+                    # Fallback to PowerShell colors
+                    if ($NoNewline) {
+                        Write-Host -Object $text -ForegroundColor $effectiveColor -NoNewline
+                    }
+                    else {
+                        Write-Host -Object $text -ForegroundColor $effectiveColor
+                    }
                 }
+
                 if ($effectiveLogFile) {
                     Add-Content -Path $effectiveLogFile -Value $text
                 }
@@ -366,12 +432,21 @@ function Set-WriteMessageConfig {
     .PARAMETER LevelColors
         Hashtable mapping message types to colors. Valid colors: Black, DarkBlue, DarkGreen, 
         DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, 
-        Red, Magenta, Yellow, White.
+        Red, Magenta, Yellow, White, Purple.
 
     .PARAMETER IncludeContext
         When specified, enables automatic call-site context for all messages. This will
         prefix each message with the script name and line number where Write-Message was called.
         Format: [ScriptName.ps1:LineNumber] Message
+
+    .PARAMETER ForceAnsi
+        When specified, forces the use of ANSI escape codes for colors, even if terminal
+        support is not detected. Useful for CI/CD environments or when you know your
+        terminal supports ANSI but it's not being detected automatically.
+
+    .PARAMETER DisableAnsi
+        When specified, disables ANSI escape codes and forces the use of PowerShell's
+        native color support via Write-Host -ForegroundColor.
 
     .PARAMETER Reset
         When specified, resets all configuration to default values.
@@ -424,6 +499,22 @@ function Set-WriteMessageConfig {
         # File content: [VideoProcessor.ps1:15] Processing video files...
 
     .EXAMPLE
+        # Force ANSI escape codes for cross-platform compatibility
+        Set-WriteMessageConfig -ForceAnsi
+
+        # All messages will now use ANSI escape codes for colors
+        Write-Message "Processing started" -Type Info
+        Write-Message "Success!" -Type Success
+
+    .EXAMPLE
+        # Disable ANSI and use PowerShell native colors
+        Set-WriteMessageConfig -DisableAnsi
+
+        # All messages will use Write-Host -ForegroundColor
+        Write-Message "Processing started" -Type Info
+        Write-Message "Success!" -Type Success
+
+    .EXAMPLE
         # Reset to defaults
         Set-WriteMessageConfig -Reset
 
@@ -452,6 +543,12 @@ function Set-WriteMessageConfig {
 
         [Parameter(ParameterSetName = 'Configure')]
         [switch]$IncludeContext,
+
+        [Parameter(ParameterSetName = 'Configure')]
+        [switch]$ForceAnsi,
+
+        [Parameter(ParameterSetName = 'Configure')]
+        [switch]$DisableAnsi,
 
         [Parameter(ParameterSetName = 'Reset')]
         [switch]$Reset
@@ -495,12 +592,24 @@ function Set-WriteMessageConfig {
         Write-Verbose "IncludeContext set to: $($IncludeContext.IsPresent)"
     }
 
+    if ($PSBoundParameters.ContainsKey('ForceAnsi')) {
+        $script:WriteMessageConfig.ForceAnsi = $ForceAnsi.IsPresent
+        $script:SupportsAnsi = $ForceAnsi.IsPresent
+        Write-Verbose "ForceAnsi set to: $($ForceAnsi.IsPresent)"
+    }
+
+    if ($PSBoundParameters.ContainsKey('DisableAnsi')) {
+        $script:WriteMessageConfig.DisableAnsi = $DisableAnsi.IsPresent
+        $script:SupportsAnsi = -not $DisableAnsi.IsPresent
+        Write-Verbose "DisableAnsi set to: $($DisableAnsi.IsPresent)"
+    }
+
     if ($PSBoundParameters.ContainsKey('LevelColors')) {
         # Validate and update colors
         $validColors = @('Black', 'DarkBlue', 'DarkGreen', 'DarkCyan', 'DarkRed', 'DarkMagenta', 
             'DarkYellow', 'Gray', 'DarkGray', 'Blue', 'Green', 'Cyan', 'Red', 
-            'Magenta', 'Yellow', 'White')
-        
+            'Magenta', 'Yellow', 'White', 'Purple')
+
         foreach ($type in $LevelColors.Keys) {
             if ($LevelColors[$type] -in $validColors) {
                 $script:WriteMessageConfig.LevelColors[$type] = $LevelColors[$type]
@@ -542,12 +651,14 @@ function Get-WriteMessageConfig {
     if (-not $script:WriteMessageConfig) {
         # Return default configuration if none exists
         return [PSCustomObject]@{
-            LogFile     = $null
-            TimeStamp   = $false
-            Separator   = ' '
-            AsJson      = $false
+            LogFile        = $null
+            TimeStamp      = $false
+            Separator      = ' '
+            AsJson         = $false
             IncludeContext = $false
-            LevelColors = @{
+            ForceAnsi      = $false
+            DisableAnsi    = $false
+            LevelColors    = @{
                 'Info'       = 'White'
                 'Success'    = 'Green'
                 'Warning'    = 'Yellow'

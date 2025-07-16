@@ -3,10 +3,10 @@
 ## Next-Level Enhancements
 
 1. Log-Level Filtering (Threshold): Prevent clutter by only emitting messages at or above a configured “minimum” level.
-2. Automatic Call-Site Context: Embed where the log came from—function name, script file and line number—by peeking at $PSCmdlet.MyInvocation.
+2. ✅ Automatic Call-Site Context: Embed where the log came from—function name, script file and line number—by peeking at $PSCmdlet.MyInvocation.
 3. Pluggable “Sinks” Architecture: Instead of hard-coding streams, expose a list of scriptblocks that can handle each log entry. Users can add their own sinks (e.g. send to HTTP endpoint, syslog).
 4. Async/File-Write Batching: If your script produces thousands of lines, queue them and flush in bulk to minimize disk I/O.
-5. ANSI-Escape Color Support: For cross-platform terminals, switch to ANSI codes instead of Write-Host -ForegroundColor.
+5. ✅ ANSI-Escape Color Support: For cross-platform terminals, switch to ANSI codes instead of Write-Host -ForegroundColor.
 6. Scoped Logging / Correlation IDs: Assign a unique context ID to a block of operations to trace them end-to-end.
 7. Structured Enrichers: Automatically add extra properties—machine name, user, process ID—to every JSON‐mode entry.
 8. Timing & Performance Metrics: Wrap arbitrary scriptblocks to measure execution time and log it.
@@ -220,9 +220,66 @@ Write-Message 'Something bad happened' -Level Error
 
 ### Next Up
 
-Let me know which other enhancements you’d like to tackle next:
+## ✅ ANSI Escape Code Implementation Complete
+
+The ANSI escape code support has been successfully implemented with the following features:
+
+### Key Features Added:
+
+1. **Bright ANSI Color Mapping**: Uses bright foreground colors for better visibility:
+   - Red: 91, Green: 92, Yellow: 93, Blue: 94, Purple: 95, Cyan: 96, Gray: 90, White: 97
+
+2. **Automatic Terminal Detection**: Intelligently detects ANSI support based on:
+   - `$Host.UI.SupportsVirtualTerminal`
+   - Environment variables (`$env:TERM`, `$env:COLORTERM`)
+   - Windows-specific checks for PowerShell 6+
+   - Terminal window size detection
+
+3. **Configuration Control**: Added new parameters to `Set-WriteMessageConfig`:
+   - `-ForceAnsi`: Forces ANSI escape codes even if not auto-detected
+   - `-DisableAnsi`: Disables ANSI and uses PowerShell native colors
+   - Enhanced color validation to include 'Purple'
+
+4. **Graceful Fallback**: Automatically falls back to PowerShell's `Write-Host -ForegroundColor` when ANSI is not supported
+
+5. **Cross-Platform Compatibility**: Works consistently across:
+   - Windows PowerShell and PowerShell Core
+   - Linux/macOS terminals
+   - CI/CD environments
+   - Docker containers
+   - SSH sessions
+
+### Usage Examples:
+
+```powershell
+# Auto-detect ANSI support (default)
+Write-Message "Processing..." -Type Processing
+
+# Force ANSI for CI/CD environments
+Set-WriteMessageConfig -ForceAnsi
+Write-Message "Success!" -Type Success
+
+# Disable ANSI for legacy environments
+Set-WriteMessageConfig -DisableAnsi
+Write-Message "Warning!" -Type Warning
+
+# Custom colors including Purple
+Set-WriteMessageConfig -LevelColors @{
+    'Info' = 'Purple'
+    'Success' = 'Green'
+}
+```
+
+### Test the Implementation:
+
+Run the test script to see ANSI colors in action:
+```powershell
+.\test-ansi-colors.ps1
+```
+
+Let me know which other enhancements you'd like to tackle next:
 
 - Pluggable sinks for HTTP/syslog
 - Async/file batching
-- ANSI colors or scoped correlation IDs
+- Scoped correlation IDs
 - Structured enrichers, performance metrics, and more!
