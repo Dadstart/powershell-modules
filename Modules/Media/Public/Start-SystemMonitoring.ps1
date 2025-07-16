@@ -6,17 +6,14 @@ function Start-SystemMonitoring {
         [switch]$SkipNetwork,
         [switch]$Quiet
     )
-    
     # Validate interval
     if ($IntervalSeconds -lt 10) {
         Write-Message 'Interval too short, setting to minimum of 10 seconds' -Type Warning
         $IntervalSeconds = 10
     }
-    
     # Create output directory if it doesn't exist
     Get-Path -Path $OutputPath -PathType Parent -Create Directory | Out-Null
     $OutputPath = Get-Path -Path $OutputPath, 'SystemMonitoring.csv' -PathType Absolute
-
     # Initialize CSV file with headers
     $headers = @(
         'Timestamp',
@@ -40,7 +37,6 @@ function Start-SystemMonitoring {
         'Battery_Level',
         'Battery_Status'
     )
-    
     # Add disk headers for each disk
     $sampleSnapshot = Get-SystemSnapshot -SkipGPU:$SkipGPU -SkipNetwork:$SkipNetwork
     foreach ($disk in $sampleSnapshot.Disks) {
@@ -49,39 +45,31 @@ function Start-SystemMonitoring {
         $headers += "Disk_$($disk.Drive)_TotalGB"
         $headers += "Disk_$($disk.Drive)_FreePct"
     }
-    
     # Create CSV file with headers if it doesn't exist
     if (-not (Test-Path $OutputPath)) {
         $headers -join ',' | Out-File -FilePath $OutputPath -Encoding UTF8
     }
-    
     Write-Message 'System monitoring started...' -Type Verbose
     Write-Message "Interval: $IntervalSeconds seconds" -Type Verbose
     Write-Message "Output file: $OutputPath" -Type Verbose
     Write-Message 'Press Ctrl+C to stop monitoring' -Type Verbose
     Write-Message '' -Type Verbose
-    
     # Display headers
     if (-not $Quiet) {
         $headerDisplay = $headers -join ' | '
         Write-Message $headerDisplay -Type Verbose
         Write-Message ('-' * $headerDisplay.Length) -Type Verbose
     }
-    
     $iteration = 0
-    
     try {
         while ($true) {
             $iteration++
             $startTime = Get-Date
-            
             # Get system snapshot
             $snapshot = Get-SystemSnapshot -SkipGPU:$SkipGPU -SkipNetwork:$SkipNetwork
-            
             # Start progress tracking for disk data processing
             $diskProgress = Start-ProgressActivity -Activity 'Disk Processing' -Status 'Processing disk data...' -TotalItems $snapshot.Disks.Count -Id 2 -ParentId 1
             $currentDisk = 0
-            
             # Prepare CSV row
             $csvRow = @(
                 $snapshot.Timestamp.ToString('yyyy-MM-dd HH:mm:ss'),
@@ -105,23 +93,18 @@ function Start-SystemMonitoring {
                 $snapshot.Battery_Level,
                 $snapshot.Battery_Status
             )
-            
             # Add disk data
             foreach ($disk in $snapshot.Disks) {
                 $currentDisk++
                 $diskProgress.Update(@{ CurrentItem = $currentDisk; Status = "Processing disk: $($disk.Drive)" })
-                
                 $csvRow += $disk.UsedGB
                 $csvRow += $disk.FreeGB
                 $csvRow += $disk.TotalGB
                 $csvRow += $disk.FreePct
             }
-            
             $diskProgress.Stop(@{ Status = 'Disk processing completed' })
-            
             # Write to CSV
             $csvRow -join ',' | Out-File -FilePath $OutputPath -Append -Encoding UTF8
-            
             # Display to screen
             if (-not $Quiet) {
                 $displayRow = @(
@@ -146,14 +129,11 @@ function Start-SystemMonitoring {
                     "$($snapshot.Battery_Level)%",
                     "$($snapshot.Battery_Status)"
                 )
-                
                 # Add disk info (just free space percentage for display)
                 foreach ($disk in $snapshot.Disks) {
                     $displayRow += "$($disk.Drive):$($disk.FreePct)%"
                 }
-                
                 $displayLine = $displayRow -join ' | '
-                
                 # Color code based on usage levels
                 $color = 'White'
                 if ($snapshot.CPU_UsagePct -gt 80 -or $snapshot.Mem_UsagePct -gt 80) {
@@ -162,7 +142,6 @@ function Start-SystemMonitoring {
                 elseif ($snapshot.CPU_UsagePct -gt 60 -or $snapshot.Mem_UsagePct -gt 60) {
                     $color = 'Yellow'
                 }
-                
                 # Additional warnings for new metrics
                 if ($snapshot.CPU_Temp_C -gt 80 -or $snapshot.PageFile_UsagePct -gt 80 -or $snapshot.Recent_Events -gt 5) {
                     $color = 'Red'
@@ -170,14 +149,11 @@ function Start-SystemMonitoring {
                 elseif ($snapshot.CPU_Temp_C -gt 70 -or $snapshot.PageFile_UsagePct -gt 60 -or $snapshot.Recent_Events -gt 2) {
                     $color = 'Yellow'
                 }
-                
                 Write-Message $displayLine -Type Verbose
             }
-            
             # Calculate sleep time to maintain consistent interval
             $elapsed = (Get-Date) - $startTime
             $sleepTime = [math]::Max(0, $IntervalSeconds - $elapsed.TotalSeconds)
-            
             if ($sleepTime -gt 0) {
                 Start-Sleep -Seconds $sleepTime
             }

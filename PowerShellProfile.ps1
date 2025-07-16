@@ -1,9 +1,7 @@
 # PowerShell Profile for PowerShell Modules Workspace
 # This profile loads shared functions and modules for IntelliSense support
-
 # Get the workspace root directory
 $WorkspaceRoot = Split-Path $PROFILE -Parent
-
 # Load shared functions for IntelliSense
 $SharedPath = Join-Path $WorkspaceRoot 'Modules\Shared\Public'
 if (Test-Path $SharedPath) {
@@ -12,7 +10,6 @@ if (Test-Path $SharedPath) {
     }
     Write-Host "Loaded shared functions from: $SharedPath" -ForegroundColor Green
 }
-
 # Load modules for IntelliSense
 $ModulesPath = Join-Path $WorkspaceRoot 'Modules'
 if (Test-Path $ModulesPath) {
@@ -29,14 +26,11 @@ if (Test-Path $ModulesPath) {
         }
     }
 }
-
 # Set up environment variables
 $env:POWERSHELL_MODULES_WORKSPACE = $WorkspaceRoot
-
 # Add workspace to PSModulePath for development
 $CurrentPSModulePath = $env:PSModulePath
 if ($CurrentPSModulePath -notlike "*$ModulesPath*") {
     $env:PSModulePath = "$ModulesPath;$CurrentPSModulePath"
 }
-
 Write-Host "PowerShell Modules Workspace profile loaded successfully!" -ForegroundColor Green 

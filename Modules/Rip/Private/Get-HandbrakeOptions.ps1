@@ -2,20 +2,16 @@ function Get-HandbrakeOptions {
     <#
     .SYNOPSIS
         Generates HandBrake command line options based on audio streams and encoding preferences.
-    
     .DESCRIPTION
         Creates a standardized array of HandBrake options based on the provided audio streams and
         encoding preferences. This centralizes the common HandBrake options configuration used
         across multiple functions. The function processes multiple audio streams and generates
         appropriate encoder, mixdown, and bitrate settings for each stream.
-    
     .PARAMETER AudioStreams
         Array of audio stream objects containing Index and Title properties.
         Each stream object should have an Index (for stream selection) and Title (for determining mixdown and bitrate).
-    
     .PARAMETER Language
         The language code for audio streams. Default is 'eng'.
-    
     .PARAMETER Encoder
         The video encoder to use. Valid values are:
         - svt_av1, svt_av1_10bit
@@ -26,7 +22,6 @@ function Get-HandbrakeOptions {
         - mpeg4, mpeg2
         - VP8, VP9, VP9_10bit
         - theora
-    
     .PARAMETER Quality
         The quality setting for the encoder. Valid ranges vary by encoder:
         - x264/x264_10bit: 0-51 (lower is better quality, 18-28 recommended)
@@ -38,7 +33,6 @@ function Get-HandbrakeOptions {
         - mpeg2: 0-31 (lower is better quality)
         - VP8: 0-63 (lower is better quality)
         - theora: 0-63 (lower is better quality)
-    
     .PARAMETER EncoderPreset
         The encoder preset to use. Valid values vary by encoder:
         - x264/x264_10bit: ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow
@@ -49,7 +43,6 @@ function Get-HandbrakeOptions {
         - mpeg4/mpeg2: ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow
         - VP8: 0-16 (0=fastest, 16=slowest, 8=medium recommended)
         - theora: 0-10 (0=fastest, 10=slowest, 5=medium recommended)
-    
     .PARAMETER EncoderTune
         The encoder tune setting. Valid values vary by encoder:
         - x264/x264_10bit: film, animation, grain, stillimage, fastdecode, zerolatency, psnr, ssim
@@ -61,27 +54,22 @@ function Get-HandbrakeOptions {
         - VP8: (not applicable)
         - theora: (not applicable)
         Default is $null.
-    
     .PARAMETER EncOpts
         Additional encoder options as a string. Default is $null.
-    
     .PARAMETER Chapters
         Chapter range specification in format "1-3" for chapters 1 to 3, or "3" for chapter 3 only.
         If not specified, all chapters will be included.
-    
     .EXAMPLE
         $streams = @(
             @{ Index = 1; Title = "Surround 5.1" },
             @{ Index = 2; Title = "Stereo Commentary" }
         )
         $options = Get-HandbrakeOptions -AudioStreams $streams -Encoder "x264" -Quality "21"
-    
     .EXAMPLE
         $streams = @(
             @{ Index = 1; Title = "Stereo" }
         )
         $options = Get-HandbrakeOptions -AudioStreams $streams -Encoder "x264" -Quality "21" -EncoderPreset "slow" -EncoderTune "film"
-    
     .OUTPUTS
         Array of HandBrake command line options including:
         - Video encoder and quality settings
@@ -90,7 +78,6 @@ function Get-HandbrakeOptions {
         - Mixdown settings based on stream titles
         - Bitrate settings based on stream titles
         - Optional encoder preset, tune, and additional options
-    
     .NOTES
         This function relies on Convert-TypeToMixdown and Convert-TypeToBitrate functions
         to determine appropriate mixdown and bitrate settings based on the audio stream titles.
@@ -115,13 +102,11 @@ function Get-HandbrakeOptions {
         [Parameter()]
         [string]$Chapters
     )
-    
     $options = @(
         '--encoder', $Encoder,
         '--quality', $Quality,
         '--vfr'
     )
-
     # handle audio streams (0 or more)
     $audioStreamsCount = $AudioStreams ? $AudioStreams.Count : 0
     Write-Message "Audio streams provided: $audioStreamsCount" -Type Debug
@@ -136,28 +121,22 @@ function Get-HandbrakeOptions {
             $mixdownOptions += (Convert-TypeToMixdown -Type $stream.Title)
             $abOptions += (Convert-TypeToBitrate -Type $stream.Title)
         }
-    
         $options += @('--audio', ($audioOptions -join ','))
         $options += @('--aencoder', ($aencoderOptions -join ','))
         $options += @('--mixdown', ($mixdownOptions -join ','))
         $options += @('--ab', ($abOptions -join ','))
     }
-    
     if ($EncoderPreset) {
         $options += @('--encoder-preset', $EncoderPreset)
     }
-    
     if ($EncoderTune) {
         $options += @('--encoder-tune', $EncoderTune)
     }
-    
     if ($EncoderOptions) {
         $options += @('--encopts', $EncoderOptions)
     }
-
     if ($Chapters) {
         $options += @('--chapters', $Chapters)
     }
-
     return $options
 } 

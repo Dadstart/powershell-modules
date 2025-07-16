@@ -8,10 +8,8 @@ function Convert-TypeToBitrate {
         [ValidateSet('Surround 5.1', 'Stereo', 'Mono')]
         [string]$Type
     )
-    
     if ($Script:AudioBitrates.ContainsKey($Type)) {
         return $Script:AudioBitrates[$Type]
     }
-    
     throw "Unknown audio type: $Type"
 } 

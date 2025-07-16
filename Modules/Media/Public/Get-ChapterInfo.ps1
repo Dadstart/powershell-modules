@@ -8,10 +8,8 @@ function Get-ChapterInfo {
         [ValidateRange(1, 999)]
         [int]$ChapterNumber = 1
     )
-
     process {
         Write-Message "Parameters: InputFile='$InputFile', ChapterNumber=$ChapterNumber" -Type Verbose
-
         try {
             # Validate input file
             Write-Message "Validating input file exists: $InputFile" -Type Verbose
@@ -21,9 +19,7 @@ function Get-ChapterInfo {
                 throw "Input file does not exist: $InputFile"
             }
             Write-Message 'Input file validation passed' -Type Verbose
-
             Write-Message "Getting chapter information for: $InputFile" -Type Verbose
-
             # Get chapter information using ffprobe
             Write-Message 'Getting chapter information using ffprobe' -Type Verbose
             $ffprobeArgs = @(
@@ -33,7 +29,6 @@ function Get-ChapterInfo {
                 $InputFile
             )
             Write-Message "ffprobe command arguments: $($ffprobeArgs -join ' ')" -Type Verbose
-        
             $ffprobeOutput = Invoke-FFProbe -Arguments $ffprobeArgs
             if ($ffprobeOutput.ExitCode -ne 0) {
                 Write-Message "ffprobe failed with exit code: $($ffprobeOutput.ExitCode)" -Type Verbose
@@ -43,21 +38,17 @@ function Get-ChapterInfo {
             else {
                 Write-Message "ffprobe completed successfully" -Type Verbose
             }
-
             $chapterInfo = $ffprobeOutput.Json
             Write-Message 'Parsed chapter information from ffprobe output' -Type Verbose
-
             if ($chapterInfo.chapters.Count -eq 0) {
                 Write-Message "No chapters found in: $InputFile" -Type Verbose
                 return $null
             }
             Write-Message "Found $($chapterInfo.chapters.Count) chapters in the file" -Type Verbose
-
             if ($ChapterNumber -gt $chapterInfo.chapters.Count) {
                 Write-Message "Only $($chapterInfo.chapters.Count) chapter(s) found in: $InputFile, but chapter $ChapterNumber was requested" -Type Verbose
                 return $null
             }
-
             $requestedChapter = $chapterInfo.chapters[$ChapterNumber - 1]
             Write-Message "Retrieved chapter $ChapterNumber (start: $($requestedChapter.start_time)s, end: $($requestedChapter.end_time)s)" -Type Verbose
             return $requestedChapter

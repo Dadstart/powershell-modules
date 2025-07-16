@@ -3,7 +3,6 @@ Describe 'Git Module' {
         # Import the entire Git module
         Import-Module '.\Modules\Git\GitTools.psm1' -Force
     }
-
     # Import individual function tests
     # TODO: Add Git function tests as they are created
     # . "$PSScriptRoot\Git\Move-GitDirectory.Tests.ps1"

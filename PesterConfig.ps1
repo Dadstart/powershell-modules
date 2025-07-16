@@ -7,25 +7,19 @@ param (
     [string]
     $Verbosity
 )
-
 $config = New-PesterConfiguration
-
 $config.Run.Path = @('Tests')
 $config.Run.ExcludePath = @('Tests\Integration', 'Tests\Performance')
-
 $config.TestResult.Enabled = $true
 $config.TestResult.OutputPath = 'BuildOutput\TestResults.xml'
 $config.TestResult.OutputFormat = 'NUnitXml'
-
 # Set verbosity based on whether code coverage is enabled
 if ($Verbosity) {
     $config.Output.Verbosity = $Verbosity
 } else {
     $config.Output.Verbosity = 'Normal'
 }
-
 $config.Should = @{ ErrorAction = 'Continue' }
-
 if ($CodeCoverage) {
     $config.CodeCoverage = @{
         Enabled      = $true
@@ -36,5 +30,4 @@ if ($CodeCoverage) {
         Show         = $false
     }
 }
-
 return $config

@@ -4,12 +4,10 @@ function Get-TvDbEpisodeIds {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$SeriesUrl,
-        
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, 99)]
         [int]$SeasonNumber
     )
-    
     try {
         $episodeInfo = Get-TvDbEpisodeInfo -SeriesUrl $SeriesUrl -SeasonNumber $SeasonNumber
         return $episodeInfo.Id

@@ -3,35 +3,28 @@ function Get-SystemSnapshot {
         [switch]$SkipGPU,
         [switch]$SkipNetwork
     )
-    
     # Batch counter queries for better performance
     $counters = @(
         '\Processor(_Total)\% Processor Time',
         '\Memory\Available MBytes',
         '\PhysicalDisk(_Total)\% Disk Time'
     )
-    
     # Get all basic counters in one batch
     $counterData = Get-Counter -Counter $counters -ErrorAction SilentlyContinue
-    
     # Extract values with error handling
     $cpu = if ($counterData) { 
         ($counterData.CounterSamples | Where-Object {$_.Path -like '*Processor*'}).CookedValue 
     } else { 0 }
-    
     $memAvailable = if ($counterData) { 
         ($counterData.CounterSamples | Where-Object {$_.Path -like '*Memory*'}).CookedValue 
     } else { 0 }
-    
     $diskIO = if ($counterData) { 
         ($counterData.CounterSamples | Where-Object {$_.Path -like '*PhysicalDisk*'}).CookedValue 
     } else { 0 }
-
     # Memory calculation
     $memTotal = (Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue).TotalPhysicalMemory / 1MB
     $memUsed = $memTotal - $memAvailable
     $memPct  = if ($memTotal -gt 0) { ($memUsed / $memTotal) * 100 } else { 0 }
-
     # Disk Space - use faster WMI query
     $disks = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -ErrorAction SilentlyContinue | ForEach-Object {
         [PSCustomObject]@{
@@ -42,7 +35,6 @@ function Get-SystemSnapshot {
             FreePct = [math]::Round(($_.FreeSpace / $_.Size) * 100, 1)
         }
     }
-
     # GPU - use try/catch for potentially slow counters
     $gpuLoad = 0
     $gpuMem = 0
@@ -53,7 +45,6 @@ function Get-SystemSnapshot {
         } catch {
             # GPU counters not available or too slow
         }
-        
         try {
             $gpuMemCounters = Get-Counter '\GPU Process Memory(*)\Local Usage' -ErrorAction Stop
             $gpuMem = $gpuMemCounters.CounterSamples | Measure-Object CookedValue -Sum | Select-Object -ExpandProperty Sum
@@ -62,7 +53,6 @@ function Get-SystemSnapshot {
         }
     }
     $gpuMemGB = $gpuMem / 1GB
-
     # Network - use try/catch for potentially slow counters
     $netTotal = 0
     if (-not $SkipNetwork) {
@@ -74,28 +64,21 @@ function Get-SystemSnapshot {
         }
     }
     $netMbps = ($netTotal * 8) / 1MB
-
     # Additional system health metrics
-    
     # System uptime
     $uptime = (Get-Date) - (Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue).LastBootUpTime
     $uptimeHours = $uptime.TotalHours
-    
     # Process count
     $processCount = (Get-Process -ErrorAction SilentlyContinue).Count
-    
     # Handle count
     $handleCount = (Get-Process -ErrorAction SilentlyContinue | Measure-Object -Property HandleCount -Sum).Sum
-    
     # Thread count
     $threadCount = (Get-Process -ErrorAction SilentlyContinue | ForEach-Object { $_.Threads.Count } | Measure-Object -Sum).Sum
-    
     # Page file usage
     $pageFile = Get-CimInstance Win32_PageFileUsage -ErrorAction SilentlyContinue | Select-Object -First 1
     $pageFileUsed = if ($pageFile) { $pageFile.AllocatedBaseSize } else { 0 }
     $pageFileTotal = if ($pageFile) { $pageFile.AllocatedBaseSize + $pageFile.CurrentUsage } else { 0 }
     $pageFilePct = if ($pageFileTotal -gt 0) { ($pageFileUsed / $pageFileTotal) * 100 } else { 0 }
-    
     # Temperature monitoring (if available)
     $cpuTemp = 0
     $gpuTemp = 0
@@ -109,7 +92,6 @@ function Get-SystemSnapshot {
     } catch {
         # Temperature monitoring not available
     }
-    
     # System events in last minute (errors and warnings)
     $recentEvents = 0
     try {
@@ -121,7 +103,6 @@ function Get-SystemSnapshot {
     } catch {
         # Event log access not available
     }
-    
     # Battery status (for laptops)
     $batteryLevel = $null
     $batteryStatus = $null
@@ -134,7 +115,6 @@ function Get-SystemSnapshot {
     } catch {
         # Battery info not available
     }
-    
     # Disk health indicators
     $diskHealth = @()
     try {
@@ -151,7 +131,6 @@ function Get-SystemSnapshot {
     } catch {
         # Disk health info not available
     }
-
     return [PSCustomObject]@{
         Timestamp     = Get-Date
         CPU_UsagePct  = [math]::Round($cpu, 2)

@@ -3,11 +3,9 @@ param(
     [switch]$Force,
     [switch]$Quiet
 )
-
 # Function to write messages based on Quiet switch
 function Write-InstallMessage {
     param([string]$Message, [string]$Type = "Info")
-    
     switch ($Type) {
         "Info" { 
             if (-not $Quiet) {
@@ -20,12 +18,10 @@ function Write-InstallMessage {
         "Summary" { Write-Host $Message -ForegroundColor Green }
     }
 }
-
 # Get the script directory
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ModulesPath = Join-Path $ScriptDir "Modules"
 Write-InstallMessage "Modules path: $ModulesPath" "Verbose"
-
 # Define the modules to uninstall (excluding Shared as it's a dependency module)
 $ModulesToUninstall = @(
     "GitTools",
@@ -33,16 +29,12 @@ $ModulesToUninstall = @(
     "PlexTools",
     "RipTools"
 )
-
 Write-InstallMessage "Starting module uninstallation..." "Info"
-
 $UninstalledModules = @()
 $FailedModules = @()
-
 foreach ($ModuleName in $ModulesToUninstall) {
     try {
         Write-InstallMessage "Uninstalling module: $ModuleName" "Verbose"
-        
         # Check if module is loaded (try both folder name and actual module name)
         $LoadedModule = Get-Module -Name $ModuleName -ErrorAction SilentlyContinue
         if (-not $LoadedModule) {
@@ -58,7 +50,6 @@ foreach ($ModuleName in $ModulesToUninstall) {
                 }
             }
         }
-        
         if ($LoadedModule) {
             # Build remove parameters
             $RemoveParams = @{
@@ -66,10 +57,8 @@ foreach ($ModuleName in $ModulesToUninstall) {
                 Force = $Force
                 ErrorAction = "Stop"
             }
-            
             # Remove the module
             Remove-Module @RemoveParams
-            
             $UninstalledModules += $LoadedModule.Name
             Write-InstallMessage "Successfully uninstalled module: $($LoadedModule.Name)" "Info"
         }
@@ -83,19 +72,15 @@ foreach ($ModuleName in $ModulesToUninstall) {
         $FailedModules += $ModuleName
     }
 }
-
 # Summary
 Write-InstallMessage "`nUninstallation Summary:" "Info"
 Write-InstallMessage "Successfully uninstalled: $($UninstalledModules.Count) modules" "Info"
-
 if ($UninstalledModules.Count -gt 0) {
     Write-InstallMessage "Uninstalled modules: $($UninstalledModules -join ', ')" "Summary"
 }
-
 if ($FailedModules.Count -gt 0) {
     Write-InstallMessage "Failed to uninstall: $($FailedModules.Count) modules" "Warning"
     Write-InstallMessage "Failed modules: $($FailedModules -join ', ')" "Warning"
     exit 1
 }
-
 Write-InstallMessage "All modules uninstalled successfully!" "Info" 

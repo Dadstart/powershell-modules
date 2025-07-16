@@ -1,6 +1,5 @@
 function Show-AnsiColorPalette {
     $esc = [char]27
-
     function Write-ColorRow {
         param (
             [string]$label,
@@ -15,7 +14,6 @@ function Show-AnsiColorPalette {
         }
         Write-Host ''
     }
-
     Write-ColorRow 'Standard Foreground Colors (30–37):' @(30..37)
     Write-ColorRow 'Standard Background Colors (40–47):' @(40..47)
     Write-ColorRow 'Bright Foreground Colors (90–97):' @(90..97)
