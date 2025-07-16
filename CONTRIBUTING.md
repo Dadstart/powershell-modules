@@ -72,62 +72,13 @@ You can use PowerShell 7.4+ features including:
 - **ForEach-Object -Parallel** (for performance-critical operations)
 - **Simplified error handling**: `try { ... } catch { ... }`
 
-### Code Style
+### Formatting
 
-1. **Use approved verbs** for cmdlet names
-   ```powershell
-   # Good
-   Get-UserData
-   Set-Configuration
-   
-   # Avoid
-   Retrieve-UserData
-   Update-Configuration
-   ```
-
-2. **Include comprehensive help**
-   ```powershell
-   <#
-   .SYNOPSIS
-       Brief description of what the cmdlet does.
-   
-   .DESCRIPTION
-       Detailed description of the cmdlet functionality.
-   
-   .PARAMETER ParameterName
-       Description of the parameter.
-   
-   .EXAMPLE
-       Get-Something -ParameterName "Value"
-       Description of what this example does.
-   
-   .OUTPUTS
-       Type of object returned.
-   
-   .LINK
-       Related cmdlets or documentation.
-   #>
-   ```
-
-3. **Use parameter validation**
-   ```powershell
-   [Parameter(Mandatory = $true)]
-   [ValidateNotNullOrEmpty()]
-   [string]$ParameterName
-   ```
-
-4. **Handle errors gracefully**
-   ```powershell
-   try {
-       # Your code here
-   }
-   catch {
-       Write-Error "Failed to perform operation: $($_.Exception.Message)"
-       return
-   }
-   ```
+See [FORMATTING.md](FORMATTING.md).
 
 ## Testing
+
+** UNDER REVIEW ** 
 
 ### Writing Tests
 
@@ -207,10 +158,8 @@ Types:
 - `feat`: New feature
 - `bug`: Bug fix
 - `docs`: Documentation changes
-- `style`: Code style changes
 - `refactor`: Code refactoring
 - `test`: Test changes
-- `chore`: Build/tooling changes
 
 Examples:
 ```
