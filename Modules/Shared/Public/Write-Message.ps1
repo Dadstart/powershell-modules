@@ -14,6 +14,7 @@ function Write-Message {
         - Proper PowerShell stream usage (Debug, Verbose, Warning, Error)
         - Optional no-newline output for progress indicators
         - Global configuration for default settings
+        - Automatic call-site context (script name and line number)
 
         Color Scheme:
         - Success: Green - Completion messages, successful operations
@@ -57,6 +58,10 @@ function Write-Message {
     .PARAMETER Color
         Override the default color for the specified Type. If not specified, uses default colors.
 
+    .PARAMETER IncludeContext
+        When specified, includes call-site context (script name and line number) in the message.
+        If not specified, uses global configuration.
+
     .EXAMPLE
         Write-Message "Processing video files..." -Type Processing
 
@@ -89,11 +94,17 @@ function Write-Message {
         Outputs: "Processing... Done!" on the same line with different colors
 
     .EXAMPLE
-        # Configure global defaults
-        Set-WriteMessageConfig -LogFile "C:\logs\app.log" -TimeStamp -AsJson
+        # Enable call-site context globally
+        Set-WriteMessageConfig -IncludeContext
 
-        # Use global configuration
-        Write-Message "This will be logged with timestamp and JSON format"
+        # Messages will now include script name and line number
+        Write-Message "Processing started" -Type Info
+        # Output: [MyScript.ps1:42] Processing started
+
+    .EXAMPLE
+        # Enable call-site context for a specific message
+        Write-Message "Error occurred" -Type Error -IncludeContext
+        # Output: [MyScript.ps1:78] Error occurred
 
     .OUTPUTS
         None. This function outputs to the appropriate PowerShell stream.
@@ -147,17 +158,21 @@ function Write-Message {
         [switch]$AsJson,
 
         [Parameter()]
-        [string]$Color
+        [string]$Color,
+
+        [Parameter()]
+        [switch]$IncludeContext
     )
 
     begin {
         # --- Initialize WriteMessageConfig if not exists ---
         if (-not $script:WriteMessageConfig) {
             $script:WriteMessageConfig = [PSCustomObject]@{
-                LogFile     = $null
-                TimeStamp   = $false
-                Separator   = ' '
-                AsJson      = $false
+                LogFile         = $null
+                TimeStamp       = $false
+                Separator       = ' '
+                AsJson          = $false
+                IncludeContext  = $false  # Whether to include call-site context
                 LevelColors = @{
                     'Info'       = 'White'
                     'Success'    = 'Green'
@@ -200,6 +215,13 @@ function Write-Message {
             $script:WriteMessageConfig.AsJson
         }
 
+        $effectiveIncludeContext = if ($PSBoundParameters.ContainsKey('IncludeContext')) {
+            $IncludeContext.IsPresent
+        }
+        else {
+            $script:WriteMessageConfig.IncludeContext
+        }
+
         # --- Determine effective color ---
         $effectiveColor = if ($PSBoundParameters.ContainsKey('Color')) {
             $Color
@@ -219,12 +241,22 @@ function Write-Message {
             $text = ('{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $text)
         }
 
+        # --- Add call-site context if enabled ---
+        if ($effectiveIncludeContext) {
+            $inv = $PSCmdlet.MyInvocation
+            $scriptName = [IO.Path]::GetFileName($inv.ScriptName)
+            $lineNumber = $inv.ScriptLineNumber
+            $ctx = "{0}:{1}" -f $scriptName, $lineNumber
+            $text = "[{0}] {1}" -f $ctx, $text
+        }
+
         # --- Structured output mode ---
         if ($effectiveAsJson) {
             $entry = [PSCustomObject]@{
                 TimeStamp = (Get-Date).ToString('o')
                 Type      = $Type
                 Message   = $text
+                Context   = if ($effectiveIncludeContext) { $ctx } else { $null }
             }
             $entry | ConvertTo-Json -Depth 5
             return
@@ -336,6 +368,11 @@ function Set-WriteMessageConfig {
         DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, 
         Red, Magenta, Yellow, White.
 
+    .PARAMETER IncludeContext
+        When specified, enables automatic call-site context for all messages. This will
+        prefix each message with the script name and line number where Write-Message was called.
+        Format: [ScriptName.ps1:LineNumber] Message
+
     .PARAMETER Reset
         When specified, resets all configuration to default values.
 
@@ -368,6 +405,25 @@ function Set-WriteMessageConfig {
         # Output: {"TimeStamp":"2024-01-01T12:00:00.0000000","Type":"Info","Message":"Processing started"}
 
     .EXAMPLE
+        # Enable call-site context globally
+        Set-WriteMessageConfig -IncludeContext
+
+        # All messages will now include script name and line number
+        Write-Message "Processing started" -Type Info
+        # Output: [MyScript.ps1:42] Processing started
+
+        Write-Message "Error occurred" -Type Error
+        # Output: [MyScript.ps1:78] Error occurred
+
+    .EXAMPLE
+        # Enable call-site context and file logging
+        Set-WriteMessageConfig -IncludeContext -LogFile "C:\logs\app.log"
+
+        # Messages will be logged to file with context
+        Write-Message "Processing video files..." -Type Processing
+        # File content: [VideoProcessor.ps1:15] Processing video files...
+
+    .EXAMPLE
         # Reset to defaults
         Set-WriteMessageConfig -Reset
 
@@ -393,6 +449,9 @@ function Set-WriteMessageConfig {
 
         [Parameter(ParameterSetName = 'Configure')]
         [hashtable]$LevelColors,
+
+        [Parameter(ParameterSetName = 'Configure')]
+        [switch]$IncludeContext,
 
         [Parameter(ParameterSetName = 'Reset')]
         [switch]$Reset
@@ -429,6 +488,11 @@ function Set-WriteMessageConfig {
     if ($PSBoundParameters.ContainsKey('AsJson')) {
         $script:WriteMessageConfig.AsJson = $AsJson.IsPresent
         Write-Verbose "AsJson set to: $($AsJson.IsPresent)"
+    }
+
+    if ($PSBoundParameters.ContainsKey('IncludeContext')) {
+        $script:WriteMessageConfig.IncludeContext = $IncludeContext.IsPresent
+        Write-Verbose "IncludeContext set to: $($IncludeContext.IsPresent)"
     }
 
     if ($PSBoundParameters.ContainsKey('LevelColors')) {
@@ -482,6 +546,7 @@ function Get-WriteMessageConfig {
             TimeStamp   = $false
             Separator   = ' '
             AsJson      = $false
+            IncludeContext = $false
             LevelColors = @{
                 'Info'       = 'White'
                 'Success'    = 'Green'
