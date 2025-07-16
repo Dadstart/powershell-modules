@@ -169,10 +169,14 @@ Set-PreferenceInheritance -PreferenceName "ErrorActionPreference" -Value "Contin
 A class for managing progress indicators with methods for incrementing, updating, and completing progress tracking.
 
 ```powershell
-$progress = [ProgressActivity]::new("Processing", 100)
-$progress.Increment()
-$progress.Update("Processing item 50 of 100")
-$progress.Complete()
+$files = #...
+$progress = Start-ProgressActivity -Activity "Processing files" -TotalItems $files.Count
+$i = 0
+foreach ($file in $files) {
+    $i++
+    $progress.Update(@{ CurrentItem = $i; Status = "Processing $file" })
+}
+$progress.Stop(@{ Status = "All files processed" })
 ```
 
 ## Configuration
