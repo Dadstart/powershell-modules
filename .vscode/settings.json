@@ -94,11 +94,24 @@
     "powershell.codeFormatting.ignoreRedundantWhitespaceAroundNullConditionalCheck": false,
     "powershell.codeFormatting.ignoreRedundantWhitespaceAroundNullConditionalUncheck": false,
     "powershell.codeFormatting.ignoreRedundantWhitespaceAroundNullConditionalDefault": false,
-    
+
     "powershell.scriptAnalysis.enable": true,
     "powershell.scriptAnalysis.settingsPath": "PSScriptAnalyzerSettings.psd1",
     "powershell.scriptAnalysis.updateBuildProblemMatcher": "automatic",
-    
+
+    "markdownlint.config": {
+        "MD022": false,
+        "MD031": false,
+        "MD032": false,
+        "MD013": {
+            "line_length": 160,
+            "code_blocks": true,
+            "code_block_line_length": 160,
+            "tables": false,
+            "headings": false,
+        }
+    },
+
     "files.associations": {
         "*.ps1": "powershell",
         "*.psd1": "powershell",
