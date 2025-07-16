@@ -1,7 +1,6 @@
 # Shared functions module
-# This file provides IntelliSense support for shared functions
+# This file provides the actual module implementation for shared functions
 
-# Export functions for IntelliSense (these won't be exported by individual modules)
 $publicPath = Join-Path -Path $PSScriptRoot -ChildPath 'Public'
 $functions = Get-ChildItem -Path $publicPath -File -Filter '*.ps1' | Select-Object -ExpandProperty BaseName
 
@@ -12,4 +11,4 @@ foreach ($function in $functions) {
     . $path
 }
 
-Export-ModuleMember -Function $functions
+Export-ModuleMember -Function $functions 
