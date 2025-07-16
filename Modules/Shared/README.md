@@ -26,8 +26,12 @@ This module is part of the larger PowerShell modules collection. Install the ent
 git clone https://github.com/Dadstart/powershell-modules.git
 
 # Import the Shared module
-Import-Module .\Modules\Shared\Shared.psm1
+Import-Module .\Modules\Shared\Shared.psd1
 ```
+
+**Note**: You can also import the Shared module through any of the other modules (Git, Media, Plex, Rip) as they all export the Shared functions.
+
+**Important**: To avoid duplicate function definitions, import only one module at a time, or import the Shared module separately if you need multiple modules.
 
 ## Functions
 

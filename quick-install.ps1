@@ -80,4 +80,5 @@ else {
     exit 1
 }
 
+Set-WriteMessageConfig -IncludeContext
 Write-InstallMessage "Quick install completed successfully!" "Info" 

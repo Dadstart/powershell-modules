@@ -261,6 +261,32 @@ Monitor-PlexLibrary -ServerUrl "http://localhost:32400" -LibraryName "Movies"
 
 ## Configuration
 
+### Message Configuration
+
+You can configure the message formatting behavior globally:
+
+```powershell
+# Enable timestamps and file logging
+Set-WriteMessageConfig -TimeStamp -LogFile "C:\logs\plex-operations.log"
+
+# Enable JSON output
+Set-WriteMessageConfig -AsJson
+
+# Enable call-site context
+Set-WriteMessageConfig -IncludeContext
+
+# Customize colors
+Set-WriteMessageConfig -LevelColors @{
+    'Info' = 'Blue'
+    'Success' = 'Green'
+    'Warning' = 'Yellow'
+    'Error' = 'Red'
+}
+
+# Reset to defaults
+Set-WriteMessageConfig -Reset
+```
+
 ### Plex Server Settings
 
 Configure your Plex server settings:
