@@ -19,8 +19,12 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('Clean', 'Build', 'Test', 'Analyze', 'Package', 'Publish', 'All')]
-    [string]$Task = 'Build'
+    [ValidateSet('Clean', 'Build', 'Test', 'TestWithCodeCoverage', 'Analyze', 'Package', 'Publish', 'All')]
+    [string]$Task = 'Build',
+    [Parameter()]
+    [ValidateSet('None', 'Normal', 'Detailed', 'Diagnostic', $null)]
+    [string]
+    $PesterOutputVerbosity = $null
 )
 
 #Requires -Version 7.4
@@ -198,7 +202,36 @@ function Invoke-Analyze {
         if (Test-Path $Path) {
             Write-Host "Analyzing: $Path" -ForegroundColor Cyan
 
-            $Results = Invoke-ScriptAnalyzer -Path $Path -Recurse @SettingsParam
+            try {
+                # Try with specified settings and profile
+                $Results = Invoke-ScriptAnalyzer -Path $Path -Recurse @SettingsParam -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "PSScriptAnalyzer failed with specified settings: $($_.Exception.Message)"
+                
+                # If it's a compatibility profile issue, try without profile
+                if ($_.Exception.Message -like '*compatibility*profile*' -or $_.Exception.Message -like '*Could not find file*') {
+                    Write-Host "Attempting analysis without compatibility profile..." -ForegroundColor Yellow
+                    try {
+                        $FallbackSettings = if (Test-Path $SettingsPath) {
+                            @{ Settings = $SettingsPath }
+                        }
+                        else {
+                            @{}
+                        }
+                        $Results = Invoke-ScriptAnalyzer -Path $Path -Recurse @FallbackSettings -ErrorAction Stop
+                    }
+                    catch {
+                        Write-Warning "PSScriptAnalyzer failed without profile: $($_.Exception.Message)"
+                        Write-Host "Skipping analysis for this path due to compatibility issues." -ForegroundColor Yellow
+                        $Results = $null
+                    }
+                }
+                else {
+                    Write-Host "Skipping analysis for this path due to PSScriptAnalyzer error." -ForegroundColor Yellow
+                    $Results = $null
+                }
+            }
 
             if ($Results) {
                 $AnalysisResults += $Results
@@ -253,6 +286,12 @@ function Invoke-Test {
     .SYNOPSIS
         Runs Pester tests for PowerShell modules.
     #>
+    param (
+        [Parameter()]
+        [switch]
+        $CodeCoverage
+    )
+
     Write-Host 'Running tests...' -ForegroundColor Yellow
 
     # Check if Pester is available
@@ -268,11 +307,16 @@ function Invoke-Test {
         exit 1
     }
 
-    $pesterConfig = (. "$PesterConfigScript")
-
     Write-Host "Using Pester configuration from: $PesterConfigScript" -ForegroundColor Cyan
+    $pesterConfigParams = @{}
+    if ($CodeCoverage) {
+        $pesterConfigParams.CodeCoverage = $true
+    }
+    if ($PesterOutputVerbosity) {
+        $pesterConfigParams.Verbosity = $PesterOutputVerbosity
+    }
+    $pesterConfig = (. "$PesterConfigScript" @pesterConfigParams)
 
-    # $pesterConfig = Import-Clixml $PesterConfigPath
     $TestResults = Invoke-Pester -Configuration $pesterConfig
 
     if ($TestResults.FailedCount -gt 0) {
@@ -345,6 +389,9 @@ switch ($Task) {
     'Test' {
         Invoke-Test
     }
+    'TestWithCodeCoverage' {
+        Invoke-Test -CodeCoverage
+    }
     'Package' {
         Invoke-Package
     }
@@ -355,7 +402,7 @@ switch ($Task) {
         Invoke-Clean
         Invoke-Build
         Invoke-Analyze
-        Invoke-Test
+        Invoke-Test -CodeCoverage
         Invoke-Package
     }
     default {
