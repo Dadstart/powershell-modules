@@ -191,6 +191,32 @@ New-FeaturePullRequest -FeatureName "dark-mode" -Description "Implements dark mo
 
 The Git module integrates with the Shared module's `Write-Message` system for consistent logging and output formatting.
 
+### Message Configuration
+
+You can configure the message formatting behavior globally:
+
+```powershell
+# Enable timestamps and file logging
+Set-WriteMessageConfig -TimeStamp -LogFile "C:\logs\git-operations.log"
+
+# Enable JSON output
+Set-WriteMessageConfig -AsJson
+
+# Enable call-site context
+Set-WriteMessageConfig -IncludeContext
+
+# Customize colors
+Set-WriteMessageConfig -LevelColors @{
+    'Info' = 'Blue'
+    'Success' = 'Green'
+    'Warning' = 'Yellow'
+    'Error' = 'Red'
+}
+
+# Reset to defaults
+Set-WriteMessageConfig -Reset
+```
+
 ### Git Configuration
 
 Ensure your Git configuration is set up properly:

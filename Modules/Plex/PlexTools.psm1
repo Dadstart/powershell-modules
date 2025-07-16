@@ -6,9 +6,17 @@
 # Get the module root directory
 $ModuleRoot = $PSScriptRoot
 
-# Dot-source shared functions
-$SharedPath = Join-Path $ModuleRoot '..\Shared'
-. (Join-Path -Path $SharedPath -ChildPath 'Shared.ps1')
+# Import shared functions
+$SharedPublicPath = Join-Path $ModuleRoot '..\Shared\Public'
+$sharedFunctions = Get-ChildItem -Path $SharedPublicPath -Filter '*.ps1' | Sort-Object Name
+
+foreach ($function in $sharedFunctions) {
+    . $function.FullName
+}
+
+# Export all loaded functions
+$functionNames = $sharedFunctions | ForEach-Object { $_.BaseName }
+Export-ModuleMember -Function $functionNames
 
 # Load private functions first (these won't be exported)
 $PrivatePath = Join-Path $ModuleRoot 'Private'
@@ -28,7 +36,7 @@ if (Test-Path $PublicPath)
     }
 }
 
-## Load classes
+# Load classes
 $ClassesPath = Join-Path $ModuleRoot 'Classes'
 if (Test-Path $ClassesPath)
 {
@@ -50,6 +58,18 @@ if (Test-Path $PublicPath)
             $FunctionName
         }
     } | Where-Object { $_ -ne $null }
+}
+
+# Add WriteMessageConfig functions to exports for consumer access
+# These functions should be available from the Shared module dot-sourcing
+$SharedFunctions = @('Set-WriteMessageConfig', 'Get-WriteMessageConfig', 'Write-Message')
+foreach ($function in $SharedFunctions) {
+    if (Get-Command -Name $function -ErrorAction SilentlyContinue) {
+        $PublicFunctions += $function
+        Write-Verbose "Added Shared function to exports: $function"
+    } else {
+        Write-Warning "Shared function not found: $function"
+    }
 }
 
 Export-ModuleMember -Function $PublicFunctions 

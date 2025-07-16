@@ -6,9 +6,57 @@
 # Get the module root directory
 $ModuleRoot = $PSScriptRoot
 
-# Dot-source shared functions
-$SharedPath = Join-Path $ModuleRoot '..\Shared'
-. (Join-Path -Path $SharedPath -ChildPath 'Shared.ps1')
+# Import shared functions
+$SharedPublicPath = Join-Path $ModuleRoot '..\Shared\Public'
+$sharedFunctions = Get-ChildItem -Path $SharedPublicPath -Filter '*.ps1' | Sort-Object Name
+
+foreach ($function in $sharedFunctions) {
+    . $function.FullName
+}
+
+# Export all loaded functions
+$functionNames = $sharedFunctions | ForEach-Object { $_.BaseName }
+Export-ModuleMember -Function $functionNames
+<#
+# Dot-source shared functions directly with dependency order
+$SharedPublicPath = Join-Path $ModuleRoot '..\Shared\Public'
+
+# Define load order for functions with dependencies
+$sharedFunctionOrder = @(
+    'Get-WriteMessageConfig',  # Load first - no dependencies
+    'Set-WriteMessageConfig',  # Depends on Get-WriteMessageConfig
+    'Write-Message',           # Depends on Get-WriteMessageConfig
+    'Get-String',              # No dependencies
+    'Get-Path',                # No dependencies
+    'Get-EnvironmentInfo',     # No dependencies
+    'Invoke-WithErrorHandling', # No dependencies
+    'New-ProcessingDirectory', # No dependencies
+    'Set-PreferenceInheritance', # No dependencies
+    'Start-ProgressActivity'   # No dependencies
+)
+
+# Load functions in dependency order
+foreach ($function in $sharedFunctionOrder) {
+    $functionPath = Join-Path $SharedPublicPath "$function.ps1"
+    if (Test-Path $functionPath) {
+        Write-Verbose "Loading shared function: $function"
+        . $functionPath
+    } else {
+        Write-Warning "Shared function file not found: $functionPath"
+    }
+}
+
+# Load any remaining functions that weren't in the ordered list
+$remainingFunctions = Get-ChildItem -Path $SharedPublicPath -Filter '*.ps1' | 
+    Where-Object { $_.BaseName -notin $sharedFunctionOrder } |
+    Select-Object -ExpandProperty BaseName
+
+foreach ($function in $remainingFunctions) {
+    $functionPath = Join-Path $SharedPublicPath "$function.ps1"
+    Write-Verbose "Loading remaining shared function: $function"
+    . $functionPath
+}
+#>
 
 # Load private functions first (these won't be exported)
 $PrivatePath = Join-Path $ModuleRoot 'Private'
@@ -52,4 +100,16 @@ if (Test-Path $PublicPath)
     } | Where-Object { $_ -ne $null }
 }
 
-Export-ModuleMember -Function $PublicFunctions 
+# Add WriteMessageConfig functions to exports for consumer access
+# These functions should be available from the Shared module dot-sourcing
+$SharedFunctions = @('Set-WriteMessageConfig', 'Get-WriteMessageConfig', 'Write-Message')
+foreach ($function in $SharedFunctions) {
+    if (Get-Command -Name $function -ErrorAction SilentlyContinue) {
+        $PublicFunctions += $function
+        Write-Verbose "Added Shared function to exports: $function"
+    } else {
+        Write-Warning "Shared function not found: $function"
+    }
+}
+
+Export-ModuleMember -Function $PublicFunctions

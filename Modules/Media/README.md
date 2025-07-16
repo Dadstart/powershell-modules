@@ -581,6 +581,33 @@ Organize-PlexLibrary -LibraryPath "C:\Plex\Movies" -Pattern "*4K*" -NewCategory 
 
 ## Configuration
 
+### Message Configuration
+
+You can configure the message formatting behavior globally:
+
+```powershell
+# Enable timestamps and file logging
+Set-WriteMessageConfig -TimeStamp -LogFile "C:\logs\media-operations.log"
+
+# Enable JSON output
+Set-WriteMessageConfig -AsJson
+
+# Enable call-site context
+Set-WriteMessageConfig -IncludeContext
+
+# Customize colors
+Set-WriteMessageConfig -LevelColors @{
+    'Info' = 'Blue'
+    'Success' = 'Green'
+    'Warning' = 'Yellow'
+    'Error' = 'Red'
+    'Processing' = 'Cyan'
+}
+
+# Reset to defaults
+Set-WriteMessageConfig -Reset
+```
+
 ### FFmpeg Settings
 
 Configure FFmpeg parameters:

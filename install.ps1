@@ -55,7 +55,7 @@ foreach ($ModuleName in $ModulesToInstall) {
         continue
     }
 
-    $ManifestPath = Join-Path $ModulePath "$ModuleName`Tools.psd1"
+    $ManifestPath = Join-Path $ModulePath "$ModuleName`Tools.psm1"
     Write-InstallMessage "Manifest path: $ManifestPath" "Verbose"
     if (-not (Test-Path $ManifestPath)) {
         Write-InstallMessage "Module manifest not found: $ManifestPath" "Warning"
