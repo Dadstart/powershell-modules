@@ -152,31 +152,130 @@ Invoke-BonusContentProcessing -DriveLetter "D:" -OutputPath "C:\Bonus\Movie" -Ex
 Invoke-BonusContentProcessing -DriveLetter "D:" -OutputPath "C:\Bonus\Movie" -Features @("Behind the Scenes", "Deleted Scenes")
 ```
 
-## Examples
+## Usage
+### All Steps
+- [RIP VIDEO FILES](#rip-video-files)
+- [PROCESS RIPPED VIDEO FILES](#process-ripped-video-files)
+- [VERIFY AND RENAME](#verify-and-rename)
+- [HANDBRAKE](#handbrake)
+- [REMUX](#remux)
+- [TOPAZ](#topaz)
+- [BONUS](#bonus)
+- [PLEX](#plex)
 
-### Basic DVD Ripping
+### Installation Requirements
+- `MediaTools`: PowerShell module
+- `RipTools`: PowerShell module (this one!).
+```Powershell
+$repoRoot = '\repos'
+cd $repoRoot
+git clone https://github.com/Dadstart/powershell-modules
+. $repoRoot\powershell-modules\quick-install.ps1 -Quiet
+```
 
-```powershell
-# Import the module
-Import-Module .\Modules\Rip\RipTools.psm1
+- `MakeMKV`: Utility for creating MKV files from the videos on your disc(s)
+```Powershell
+   # Using Winget
+   winget install GuinpinSoft.MakeMKV
+   
+   # Using Chocolatey (alternative)
+   choco install MakeMKV
 
-# Check available drives
-Get-WmiObject -Class Win32_CDROMDrive | Select-Object Drive, MediaType
+```
 
-# Process DVD
-$dvdDrive = "D:"
-$outputPath = "C:\Rips\MyMovie"
+### RIP VIDEO FILES
 
-if (Test-Path $dvdDrive) {
-    Write-Message "Processing DVD from drive $dvdDrive" -Type Processing
-    
-    Invoke-DvdProcessing -DriveLetter $dvdDrive -OutputPath $outputPath
-    
-    Write-Message "DVD processing completed" -Type Success
-} else {
-    Write-Message "No DVD found in drive $dvdDrive" -Type Error
+Use MakeMKV to get MKV files from your disc(s).
+
+### PROCESS RIPPED VIDEO FILES
+
+For this example:
+
+| Parameter       | Description                                                                                                                                                | Sample Value                                |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `Title`         | The title of the show to process                                                                                                                           | `'Breaking Bad'`                            |
+| `Season`        | The season of the show                                                                                                                                     | `3`                                         |
+| `Path`          | The paths of the directories containing the video files. Wildcards are allowed                                                                             | `'TV-SHOW-3.*'`                             |
+| `FilePatterns`  | Array of file patterns to match the video files. Look through directories of each disc looking for large files. For example, they may start with B4 or B3. | `'B4*.mkv','B3*.mkv'`                       |
+| `TvDbSeriesUrl` | The TVDb series URL for metadata retrieval                                                                                                                 | `'https://thetvdb.com/series/breaking-bad'` |
+
+```Powershell
+Invoke-DvdProcessing -Title 'TV Show Title' -Path 'TV-Show 3.*' -FilePatterns 'B4*.mkv','B3*.mkv' -Season 3 -TvDbSeriesUrl 'https://thetvdb.com/series/tv-show-title'
+
+```
+
+### VERIFY AND RENAME
+
+For each episode, compare chapter 3 on disc with chapter 3 clip in `.\TV-Show\Season 03\Chapters` directory.
+
+Keep track of what is wrong and create a list of renames that need to happen:
+
+```Powershell
+$renameMappings = @{
+"e22"="e21"; # Rename episode 22 to episode 21
+"e21"="e22"  # Rename episode 21 to episode 22
 }
 ```
+
+Now rename all videos and captions that are not correct:
+
+```Powershell
+'.\TV-Show\Season 03', '.\TV-Show\Season 03\captions' | Invoke-SafeFileRename -FileMappings $renameMappings
+```
+
+### HANDBRAKE
+
+This converts all of the original files to a new file with a correctly encoded audio stream.
+
+```Powershell
+Invoke-HandbrakeConversion -Path '.\TV-Show\Season 03\' -Destination '.\TV-Show\Season 03\HandBrake\'
+```
+
+### REMUX
+
+Create new MKV files that have the original video track plus the audio tracks from the Handbrake output file.
+
+```Powershell
+
+Invoke-RemuxProcessing -Path '.\TV-Show\Season 03' -HandbrakeDirectory '.\TV-Show\Season 03\HandBrake' -Destination '.\TV-Show\Season 03\Remux'
+
+```
+
+### TOPAZ
+
+- Open each video file in the 'Remux' folder and upscale them in Topaz using Preset `DVD Number 7`. Output to a `Topaz` directory. The filenames will probably have some extra string like '_prob4'. Just remove it.
+
+```Powershell
+
+ls '.\TV-Show\Season 03\Remix' *_prob4.mp4 | % { ren $_ $_.Name.Replace('_prob4', '') }
+
+```
+
+- Copy MP4 files from Topaz directory in to your Plex folder ex. 'C:\plex\tv shows\TV-Show\Season 03'
+
+### BONUS
+
+Using the DVD, identify each bonus track and rename appropriately. Copy to the `Bonus` folder.
+Use Handbrake to convert these videos.
+
+```Powershell
+
+Invoke-BonusContentProcessing -Path '.\TV-Show\Season 03\Bonus' -Destination '.\TV-Show\Season 03\Bonus\MP4'
+
+```
+
+### PLEX
+
+- Copy MP4 files from Topaz directory in to 'M:\media\tv shows\TV-Show\Season 03'
+- Run Invoke-PlexFileOperation to copy bonus videos to the season directory.
+
+```Powershell
+
+Invoke-PlexFileOperation -Source '.\TV-Show\Season 03\Bonus\MP4' -Destination 'M:\media\tv shows\TV-Show\Season 03'
+
+```
+
+## Examples
 
 ### Batch Video Conversion
 
@@ -379,5 +478,5 @@ This module is part of the PowerShell modules collection. See the main LICENSE f
 ## Support
 
 For issues and questions:
-- GitHub Issues: https://github.com/Dadstart/powershell-modules/issues
+- GitHub Issues: <https://github.com/Dadstart/powershell-modules/issues>
 - Documentation: See individual function help with `Get-Help <FunctionName>`
