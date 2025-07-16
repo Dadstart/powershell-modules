@@ -49,9 +49,6 @@ function Invoke-HandbrakeConversion {
     )
 
     begin {
-        # Set default parameters for called functions
-        Set-DefaultParameters
-        
         Write-Message 'Starting HandBrake conversion process' -Type Verbose
         Write-Message "Invoke-HandbrakeConversion: Input directory: $Path" -Type Verbose
         Write-Message "Invoke-HandbrakeConversion: Output directory: $Destination" -Type Verbose

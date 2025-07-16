@@ -17,7 +17,6 @@ function Invoke-DvdProcessing {
         - Centralized audio stream processing via Get-FilteredAudioStreams
         - Automated temporary directory management via Use-TempDirectory
         - Standardized HandBrake options generation via Get-HandbrakeOptions
-        - Consistent parameter passing via Set-DefaultParameters
         
         The workflow ensures all necessary directories and extracted content are properly
         organized for subsequent processing steps using the optimized module functions.
@@ -170,7 +169,6 @@ function Invoke-DvdProcessing {
         - Centralized audio stream processing (Get-FilteredAudioStreams)
         - Automated temp directory management (Use-TempDirectory)
         - Standardized HandBrake options (Get-HandbrakeOptions)
-        - Consistent parameter passing (Set-DefaultParameters)
         
         All processing is done in a structured manner to ensure consistency and
         reproducibility across different content types and sources.
@@ -226,7 +224,6 @@ function Invoke-DvdProcessing {
     )
     
     begin {
-        Set-DefaultParameters
         Write-Message '🚀 Starting $Title processing' -Type Processing
 
         Write-Message 'Starting DVD processing workflow' -Type Verbose
