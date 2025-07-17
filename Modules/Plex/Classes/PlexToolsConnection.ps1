@@ -1,9 +1,9 @@
-class PlexCredential {
+class PlexToolsConnection {
     <#
     .SYNOPSIS
         Represents Plex authentication credentials and server information.
     .DESCRIPTION
-        The PlexCredential class encapsulates all the information needed to authenticate
+        The PlexToolsConnection class encapsulates all the information needed to authenticate
         with a Plex Media Server, including the server URL, username/password credentials,
         and authentication token.
     .PROPERTY Credential
@@ -13,16 +13,16 @@ class PlexCredential {
     .PROPERTY Token
         The Plex authentication token.
     .EXAMPLE
-        $cred = [PlexCredential]::new($psCredential, "http://localhost:32400", "token")
+        $cred = [PlexToolsConnection]::new($psCredential, "http://localhost:32400", "token")
     .EXAMPLE
-        $cred = Get-PlexCredential
+        $cred = Get-PlexToolsConnection
         $cred.ServerUrl
         $cred.Token
     #>
     [pscredential]$Credential
     [string]$ServerUrl
     [string]$Token
-    PlexCredential([pscredential]$credential, [string]$serverUrl, [string]$token) {
+    PlexToolsConnection([pscredential]$credential, [string]$serverUrl, [string]$token) {
         if (-not $credential) {
             throw [ArgumentNullException]::new('credential')
         }
@@ -38,6 +38,6 @@ class PlexCredential {
         return $this.Token
     }
     [string]ToString() {
-        return "PlexCredential(ServerUrl='$($this.ServerUrl)', Username='$($this.Credential.UserName)'"
+        return "PlexToolsConnection(ServerUrl='$($this.ServerUrl)', Username='$($this.Credential.UserName)'"
     }
 }
