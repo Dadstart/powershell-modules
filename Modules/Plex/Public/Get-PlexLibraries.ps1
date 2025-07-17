@@ -37,7 +37,7 @@ function Get-PlexLibraries {
     try {
         Write-Message "Retrieving libraries from: $($Connection.ServerUrl)" -Type Processing
         # Make the request using relative path
-        $response = Invoke-PlexApiRequest $Connection -Uri $Script:PlexApiEndpoints.Libraries
+        $response = Invoke-PlexApiRequest $Connection [PlexEndpoint]::Libraries -ResponseFormat
         if ($response -and $response.MediaContainer -and $response.MediaContainer.Directory) {
             $libraries = $response.MediaContainer.Directory
             # Filter by library type if specified

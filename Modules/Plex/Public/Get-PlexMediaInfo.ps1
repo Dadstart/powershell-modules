@@ -26,8 +26,7 @@ function Get-PlexMediaInfo {
     )
     try {
         Write-Message "Retrieving media info for ID: $MediaId" -Type Processing
-        $requestUri = $Script:PlexApiEndpoints.MediaInfo -f $MediaId
-        $response = Invoke-PlexApiRequest $Connection -Uri $requestUri
+        $response = Invoke-PlexApiRequest $Connection [PlexEndpoint]::MediaInfo
         if ($response -and $response.MediaContainer -and $response.MediaContainer.Metadata) {
             $mediaInfo = $response.MediaContainer.Metadata[0]
             Write-Message "✅ Successfully retrieved media info for: $($mediaInfo.title)" -Type Success

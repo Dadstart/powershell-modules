@@ -60,7 +60,7 @@ function Get-PlexLibraryItems {
             $requestUri += "?" + ($queryParams -join "&")
         }
         # Make the request
-        $response = Invoke-PlexApiRequest $Connection -Uri $requestUri
+        $response = Invoke-PlexApiRequest $Connection [PlexEndpoint]::LibraryItems
         if ($response -and $response.MediaContainer -and $response.MediaContainer.Metadata) {
             $items = $response.MediaContainer.Metadata
             # Convert to custom objects

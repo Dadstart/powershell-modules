@@ -27,7 +27,7 @@ function Get-PlexServerInfo {
     try {
         Write-Message "Retrieving server information from: $($Connection.ServerUrl)" -Type Processing
         # Make the request using relative path
-        $response = Invoke-PlexApiRequest $Connection -Uri $Script:PlexApiEndpoints.ServerInfo
+        $response = Invoke-PlexApiRequest $Connection [PlexEndpoint]::ServerInfo
         if ($response -and $response.MediaContainer) {
             $serverInfo = $response.MediaContainer
             # Create a custom object with server information

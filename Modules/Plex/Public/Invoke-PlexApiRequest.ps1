@@ -1,3 +1,18 @@
+enum ResponseFormat {
+    Auto    # Let the API decide based on Accept header
+    Json    # Force JSON response
+    Xml     # Force XML response
+}
+
+enum PlexEndpoint {
+    Root
+    ServerInfo
+    Libraries
+    LibraryItems
+    MediaInfo
+    LibraryScan
+}
+
 function Invoke-PlexApiRequest {
     <#
     .SYNOPSIS
@@ -19,6 +34,8 @@ function Invoke-PlexApiRequest {
         Additional headers to include in the request.
     .PARAMETER Body
         The request body for POST/PUT requests.
+    .PARAMETER ResponseFormat
+        The format to return the response in. Defaults to Auto, causes the API to return the raw response as a string
     .EXAMPLE
         $connection = New-PlexConnection
         $response = Invoke-PlexApiRequest $connection -Uri "/library/sections"
@@ -36,78 +53,16 @@ function Invoke-PlexApiRequest {
         [Parameter(Mandatory, Position = 0)]
         [ValidateNotNull()]
         [object]$Connection,
-        [Parameter(Mandatory = $true)]
-        [ValidatePattern('^/[^\s]*$')]
-        [string]$Uri,
+        [Parameter(Mandatory, Position = 1)]
+        [PlexEndpoint]$Endpoint,
         [Parameter()]
-        [ValidateSet('GET', 'POST', 'PUT', 'DELETE')]
-        [string]$Method = 'GET',
+        [WebRequestMethod]$Method = [WebRequestMethod]::Get,
         [Parameter()]
         [hashtable]$Headers = @{},
         [Parameter()]
-        [object]$Body
+        [object]$Body,
+        [Parameter()]
+        [ResponseFormat]$ResponseFormat = [ResponseFormat]::Json
     )
-    try {
-        # Build the full URI by combining server URL with relative path
-        $fullUri = "$($Connection.ServerUrl)$Uri"
-        Write-Message "Making $Method request to: $fullUri" -Type Verbose
-
-        # Merge default headers with provided headers
-        $requestHeaders - $Connection.GetHeaders();
-        foreach ($key in $Headers.Keys) {
-            $requestHeaders[$key] = $Headers[$key]
-        }
-        # Add authentication token if provided
-        $requestHeaders['X-Plex-Token'] = $Connection.Token
-        Write-Message "Using authentication token" -Type Debug
-
-        # Prepare request parameters
-        $requestParams = @{
-            Uri = $fullUri
-            Method = $Method
-            Headers = $requestHeaders
-            TimeoutSec = $Connection.TimeoutSeconds
-            ErrorAction = 'Stop'
-        }
-        # Add body if provided
-        if ($Body) {
-            $requestParams['Body'] = $Body
-            Write-Message "Request body: $Body" -Type Debug
-        }
-        # Make the request
-        $response = Invoke-RestMethod @requestParams
-        Write-Message "Request completed successfully" -Type Verbose
-        return $response
-    }
-    catch [System.Net.WebException] {
-        $statusCode = $_.Exception.Response.StatusCode.value__
-        $statusDescription = $_.Exception.Response.StatusDescription
-        Write-Message "HTTP request failed with status $statusCode : $statusDescription" -Type Error
-        Write-Message "Request URI: $fullUri" -Type Debug
-        Write-Message "Request Method: $Method" -Type Debug
-        # Provide more specific error messages based on status code
-        switch ($statusCode) {
-            401 { 
-                Write-Message "Authentication failed. Please check your Plex token." -Type Error
-            }
-            403 { 
-                Write-Message "Access forbidden. Please check your permissions." -Type Error
-            }
-            404 { 
-                Write-Message "Resource not found. Please check the URI: $Uri" -Type Error
-            }
-            500 { 
-                Write-Message "Plex server error. Please try again later." -Type Error
-            }
-            default {
-                Write-Message "Unexpected HTTP error: $statusCode" -Type Error
-            }
-        }
-        throw
-    }
-    catch {
-        Write-Message "Request failed with error: $($_.Exception.Message)" -Type Error
-        Write-Message "Request URI: $fullUri" -Type Debug
-        throw
-    }
-} 
+    return $Connection.GetApiResponse($Endpoint, $Method, $Headers, $Body, $ResponseFormat)
+}

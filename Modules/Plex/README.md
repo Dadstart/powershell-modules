@@ -142,10 +142,10 @@ Make direct API requests to the Plex Media Server.
 ```powershell
 # Get server capabilities
 $connection = New-PlexConnection
-$capabilities = Invoke-PlexApiRequest -Uri "/" $connection
+$capabilities = Invoke-PlexApiRequest $connection [PlexEndpoint]::ServerInfo
 
 # Get specific library items
-$items = Invoke-PlexApiRequest -Uri "/library/sections/1/all" $connection
+$items = Invoke-PlexApiRequest $connection [PlexEndpoint]::LibraryItems
 ```
 
 ### Connection Management
