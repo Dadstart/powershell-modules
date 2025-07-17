@@ -16,15 +16,13 @@ function Get-PlexLibraryItems {
         Number of items to skip. Useful for pagination.
     .PARAMETER Sort
         Sort order for the results (titleSort, addedAt, updatedAt, etc.).
-    .PARAMETER TimeoutSec
-        The timeout in seconds for the request. Defaults to 30.
     .EXAMPLE
         $connection = New-PlexConnection
-        Get-PlexLibraryItems -Connection $connection -LibraryId 1
+        Get-PlexLibraryItems $connection -LibraryId 1
         Gets all items from library ID 1.
     .EXAMPLE
         $connection = New-PlexConnection
-        Get-PlexLibraryItems -Connection $connection -LibraryId 2 -Limit 50 -Sort "titleSort"
+        Get-PlexLibraryItems $connection -LibraryId 2 -Limit 50 -Sort "titleSort"
         Gets the first 50 items from library ID 2, sorted by title.
     .OUTPUTS
         [PSCustomObject[]] Array of objects containing library item information.
@@ -34,8 +32,8 @@ function Get-PlexLibraryItems {
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
-        [object]$Connection,
+        [Parameter(Mandatory, Position = 0)]
+        [ValidateNotNull()]
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, [int]::MaxValue)]
         [int]$LibraryId,
@@ -47,10 +45,7 @@ function Get-PlexLibraryItems {
         [int]$Offset,
         [Parameter()]
         [ValidateSet('titleSort', 'addedAt', 'updatedAt', 'originallyAvailableAt', 'lastViewedAt', 'viewCount', 'rating', 'year', 'title')]
-        [string]$Sort,
-        [Parameter()]
-        [ValidateRange(1, 300)]
-        [int]$TimeoutSec = $Script:PlexDefaultTimeout
+        [string]$Sort
     )
     try {
         Write-Message "Retrieving items from library ID: $LibraryId" -Type Processing
@@ -65,7 +60,7 @@ function Get-PlexLibraryItems {
             $requestUri += "?" + ($queryParams -join "&")
         }
         # Make the request
-        $response = Invoke-PlexApiRequest -Uri $requestUri -Connection $Connection -TimeoutSec $TimeoutSec
+        $response = Invoke-PlexApiRequest $Connection -Uri $requestUri
         if ($response -and $response.MediaContainer -and $response.MediaContainer.Metadata) {
             $items = $response.MediaContainer.Metadata
             # Convert to custom objects

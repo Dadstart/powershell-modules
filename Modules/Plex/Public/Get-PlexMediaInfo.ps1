@@ -9,30 +9,25 @@ function Get-PlexMediaInfo {
         The Plex connection object containing server URL and authentication token.
     .PARAMETER MediaId
         The ID of the media item to retrieve information for.
-    .PARAMETER TimeoutSec
-        The timeout in seconds for the request. Defaults to 30.
     .EXAMPLE
         $connection = New-PlexConnection
-        Get-PlexMediaInfo -Connection $connection -MediaId 12345
+        Get-PlexMediaInfo $connection -MediaId 12345
     .OUTPUTS
         [PSCustomObject] Object containing detailed media information.
     #>
     [CmdletBinding()]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'PlexCredential is a custom type containing PSCredential, not plain text')]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory, Position = 0)]
+        [ValidateNotNull()]
         [object]$Connection,
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$MediaId,
-        [Parameter()]
-        [ValidateRange(1, 300)]
-        [int]$TimeoutSec = $Script:PlexDefaultTimeout
+        [int]$MediaId
     )
     try {
         Write-Message "Retrieving media info for ID: $MediaId" -Type Processing
         $requestUri = $Script:PlexApiEndpoints.MediaInfo -f $MediaId
-        $response = Invoke-PlexApiRequest -Uri $requestUri -Connection $Connection -TimeoutSec $TimeoutSec
+        $response = Invoke-PlexApiRequest $Connection -Uri $requestUri
         if ($response -and $response.MediaContainer -and $response.MediaContainer.Metadata) {
             $mediaInfo = $response.MediaContainer.Metadata[0]
             Write-Message "✅ Successfully retrieved media info for: $($mediaInfo.title)" -Type Success

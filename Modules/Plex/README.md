@@ -76,10 +76,10 @@ Retrieve a list of all libraries on the Plex server.
 ```powershell
 # Get all libraries
 $connection = New-PlexConnection
-$libraries = Get-PlexLibraries -Connection $connection
+$libraries = Get-PlexLibraries $connection
 
 # Get libraries with details
-$libraries = Get-PlexLibraries -Connection $connection -IncludeDetails
+$libraries = Get-PlexLibraries $connection -IncludeDetails
 $libraries | ForEach-Object { "$($_.Name) - $($_.Type)" }
 ```
 
@@ -89,13 +89,13 @@ Retrieve items from a specific Plex library.
 ```powershell
 # Get all movies from Movies library
 $connection = New-PlexConnection
-$movies = Get-PlexLibraryItems -Connection $connection -LibraryId 1
+$movies = Get-PlexLibraryItems $connection -LibraryId 1
 
 # Get TV shows with filtering
-$shows = Get-PlexLibraryItems -Connection $connection -LibraryId 2 -Limit 50
+$shows = Get-PlexLibraryItems $connection -LibraryId 2 -Limit 50
 
 # Get items with pagination
-$items = Get-PlexLibraryItems -Connection $connection -LibraryId 3 -Limit 50 -Offset 100
+$items = Get-PlexLibraryItems $connection -LibraryId 3 -Limit 50 -Offset 100
 ```
 
 ### Media Information
@@ -106,10 +106,10 @@ Get detailed information about a specific media item.
 ```powershell
 # Get movie information
 $connection = New-PlexConnection
-$movieInfo = Get-PlexMediaInfo -Connection $connection -MediaId 12345
+$movieInfo = Get-PlexMediaInfo $connection -MediaId 12345
 
 # Get TV episode information
-$episodeInfo = Get-PlexMediaInfo -Connection $connection -MediaId 67890
+$episodeInfo = Get-PlexMediaInfo $connection -MediaId 67890
 ```
 
 #### `Get-PlexServerInfo`
@@ -118,7 +118,7 @@ Get information about the Plex Media Server.
 ```powershell
 # Get server information
 $connection = New-PlexConnection
-$serverInfo = Get-PlexServerInfo -Connection $connection
+$serverInfo = Get-PlexServerInfo $connection
 
 # Display server details
 $serverInfo | Format-List
@@ -130,10 +130,10 @@ Trigger a library scan on the Plex Media Server.
 ```powershell
 # Scan all libraries
 $connection = New-PlexConnection
-Invoke-PlexLibraryScan -Connection $connection
+Invoke-PlexLibraryScan $connection
 
 # Scan specific library
-Invoke-PlexLibraryScan -Connection $connection -LibraryId 1
+Invoke-PlexLibraryScan $connection -LibraryId 1
 ```
 
 #### `Invoke-PlexApiRequest`
@@ -142,10 +142,10 @@ Make direct API requests to the Plex Media Server.
 ```powershell
 # Get server capabilities
 $connection = New-PlexConnection
-$capabilities = Invoke-PlexApiRequest -Uri "/" -Connection $connection
+$capabilities = Invoke-PlexApiRequest -Uri "/" $connection
 
 # Get specific library items
-$items = Invoke-PlexApiRequest -Uri "/library/sections/1/all" -Connection $connection
+$items = Invoke-PlexApiRequest -Uri "/library/sections/1/all" $connection
 ```
 
 ### Connection Management
@@ -175,11 +175,11 @@ Import-Module .\Modules\Plex\PlexTools.psm1
 
 # Test connection to Plex server
 $connection = New-PlexConnection
-if (Test-PlexConnection -Connection $connection) {
+if (Test-PlexConnection $connection) {
     Write-Message "Successfully connected to Plex server" -Type Success
     
     # Get available libraries
-    $libraries = Get-PlexLibraries -Connection $connection
+    $libraries = Get-PlexLibraries $connection
     Write-Message "Found $($libraries.Count) libraries" -Type Info
 } else {
     Write-Message "Failed to connect to Plex server" -Type Error
@@ -191,13 +191,13 @@ if (Test-PlexConnection -Connection $connection) {
 ```powershell
 # Get all libraries and their types
 $connection = New-PlexConnection
-$libraries = Get-PlexLibraries -Connection $connection -IncludeDetails
+$libraries = Get-PlexLibraries $connection -IncludeDetails
 
 foreach ($library in $libraries) {
     Write-Message "Library: $($library.Name) ($($library.Type))" -Type Info
     
     # Get some items from each library
-    $items = Get-PlexLibraryItems -Connection $connection -LibraryId $library.Id -Limit 5
+    $items = Get-PlexLibraryItems $connection -LibraryId $library.Id -Limit 5
     
     foreach ($item in $items) {
         Write-Message "  - $($item.Title)" -Type Info
@@ -210,7 +210,7 @@ foreach ($library in $libraries) {
 ```powershell
 # Analyze movies in the Movies library
 $connection = New-PlexConnection
-$movies = Get-PlexLibraryItems -Connection $connection -LibraryId 1
+$movies = Get-PlexLibraryItems $connection -LibraryId 1
 
 $movieStats = @{
     TotalMovies = $movies.Count
@@ -265,7 +265,7 @@ function Monitor-PlexLibrary {
     while ($true) {
         try {
             $connection = New-PlexConnection
-            $items = Get-PlexLibraryItems -Connection $connection -LibraryId 1
+            $items = Get-PlexLibraryItems $connection -LibraryId 1
             $currentCount = $items.Count
             
             if ($currentCount -ne $lastCount) {

@@ -8,11 +8,9 @@ function Test-PlexConnection {
         before making other API calls.
     .PARAMETER Connection
         The Plex connection object containing server URL and authentication token.
-    .PARAMETER TimeoutSec
-        The timeout in seconds for the connection test. Defaults to 30.
     .EXAMPLE
         $connection = New-PlexConnection
-        Test-PlexConnection -Connection $connection
+        Test-PlexConnection $connection
         Tests connectivity to a Plex server using connection.
     .OUTPUTS
         [bool] True if the connection is successful, False otherwise.
@@ -21,19 +19,15 @@ function Test-PlexConnection {
         before attempting more complex operations.
     #>
     [CmdletBinding()]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'PlexCredential is a custom type containing PSCredential, not plain text')]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory, Position = 0)]
         [ValidateNotNull()]
-        [object]$Connection,
-        [Parameter()]
-        [ValidateRange(1, 300)]
-        [int]$TimeoutSec = $Script:PlexDefaultTimeout
+        [object]$Connection
     )
     try {
         Write-Message "Testing connection to Plex server: $($Connection.ServerUrl)" -Type Processing
         # Make the test request using relative path
-        $response = Invoke-PlexApiRequest -Uri '/' -Connection $Connection -TimeoutSec $TimeoutSec
+        $response = Invoke-PlexApiRequest $Connection -Uri '/'
         if ($response) {
             Write-Message "✅ Successfully connected to Plex server" -Type Success
             Write-Message "Server version: $($response.MediaContainer.version)" -Type Verbose

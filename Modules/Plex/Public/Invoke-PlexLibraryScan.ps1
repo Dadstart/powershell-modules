@@ -9,31 +9,26 @@ function Invoke-PlexLibraryScan {
         The Plex connection object containing server URL and authentication token.
     .PARAMETER LibraryId
         The ID of the library to scan.
-    .PARAMETER TimeoutSec
-        The timeout in seconds for the request. Defaults to 30.
     .EXAMPLE
         $connection = New-PlexConnection
-        Invoke-PlexLibraryScan -Connection $connection -LibraryId 1
+        Invoke-PlexLibraryScan $connection -LibraryId 1
     .OUTPUTS
         [bool] True if the scan was initiated successfully, False otherwise.
     #>
     [CmdletBinding()]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'PlexCredential is a custom type containing PSCredential, not plain text')]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory, Position = 0)]
+        [ValidateNotNull()]
         [object]$Connection,
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, [int]::MaxValue)]
-        [int]$LibraryId,
-        [Parameter()]
-        [ValidateRange(1, 300)]
-        [int]$TimeoutSec = $Script:PlexDefaultTimeout
+        [int]$LibraryId
     )
     try {
         Write-Message "Initiating library scan for library ID: $LibraryId" -Type Processing
         $requestUri = $Script:PlexApiEndpoints.LibraryScan -f $LibraryId
-        Invoke-PlexApiRequest -Uri $requestUri -Method POST -Connection $Connection -TimeoutSec $TimeoutSec
-        Write-Message "✅ Library scan initiated successfully" -Type Success
+        Invoke-PlexApiRequest $Connection -Uri $requestUri -Method POST
+        Write-Message '✅ Library scan initiated successfully' -Type Success
         return $true
     }
     catch {

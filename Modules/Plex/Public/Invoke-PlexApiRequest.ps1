@@ -19,14 +19,12 @@ function Invoke-PlexApiRequest {
         Additional headers to include in the request.
     .PARAMETER Body
         The request body for POST/PUT requests.
-    .PARAMETER TimeoutSec
-        The timeout in seconds for the request. Defaults to 30.
     .EXAMPLE
         $connection = New-PlexConnection
-        $response = Invoke-PlexApiRequest -Uri "/library/sections" -Connection $connection
+        $response = Invoke-PlexApiRequest $connection -Uri "/library/sections"
     .EXAMPLE
         $connection = New-PlexConnection
-        $response = Invoke-PlexApiRequest -Uri "/library/sections/1/refresh" -Method POST -Connection $connection
+        $response = Invoke-PlexApiRequest $connection -Uri "/library/sections/1/refresh" -Method POST
     .OUTPUTS
         [PSCustomObject] The parsed JSON response from the Plex API.
     .NOTES
@@ -34,8 +32,10 @@ function Invoke-PlexApiRequest {
         It provides consistent error handling and logging for all API interactions.
     #>
     [CmdletBinding()]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'PlexCredential is a custom type containing PSCredential, not plain text')]
     param(
+        [Parameter(Mandatory, Position = 0)]
+        [ValidateNotNull()]
+        [object]$Connection,
         [Parameter(Mandatory = $true)]
         [ValidatePattern('^/[^\s]*$')]
         [string]$Uri,
@@ -43,38 +43,30 @@ function Invoke-PlexApiRequest {
         [ValidateSet('GET', 'POST', 'PUT', 'DELETE')]
         [string]$Method = 'GET',
         [Parameter()]
-        [object]$Connection,
-        [Parameter()]
         [hashtable]$Headers = @{},
         [Parameter()]
-        [object]$Body,
-        [Parameter()]
-        [ValidateRange(1, 300)]
-        [int]$TimeoutSec = $Script:PlexDefaultTimeout
+        [object]$Body
     )
     try {
         # Build the full URI by combining server URL with relative path
         $fullUri = "$($Connection.ServerUrl)$Uri"
         Write-Message "Making $Method request to: $fullUri" -Type Verbose
+
         # Merge default headers with provided headers
-        $requestHeaders = $Script:PlexDefaultHeaders.Clone()
+        $requestHeaders - $Connection.GetHeaders();
         foreach ($key in $Headers.Keys) {
             $requestHeaders[$key] = $Headers[$key]
         }
         # Add authentication token if provided
-        if ($Connection) {
-            $requestHeaders['X-Plex-Token'] = $Connection.Token
-            Write-Message "Using authentication token" -Type Debug
-        }
-        else {
-            Write-Message "No authentication token provided - some endpoints may fail" -Type Warning
-        }
+        $requestHeaders['X-Plex-Token'] = $Connection.Token
+        Write-Message "Using authentication token" -Type Debug
+
         # Prepare request parameters
         $requestParams = @{
             Uri = $fullUri
             Method = $Method
             Headers = $requestHeaders
-            TimeoutSec = $TimeoutSec
+            TimeoutSec = $Connection.TimeoutSeconds
             ErrorAction = 'Stop'
         }
         # Add body if provided

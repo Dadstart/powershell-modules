@@ -11,15 +11,13 @@ function Get-PlexLibraries {
     .PARAMETER LibraryType
         Filter libraries by type (Movie, Show, Music, Photo, HomeVideo, MusicVideo, Podcast, Audiobook).
         If not specified, returns all libraries.
-    .PARAMETER TimeoutSec
-        The timeout in seconds for the request. Defaults to 30.
     .EXAMPLE
         $connection = New-PlexConnection
-        Get-PlexLibraries -Connection $connection
+        Get-PlexLibraries $connection
         Gets all libraries using connection.
     .EXAMPLE
         $connection = New-PlexConnection
-        Get-PlexLibraries -Connection $connection -LibraryType Movie
+        Get-PlexLibraries $connection -LibraryType Movie
         Gets only movie libraries using connection.
     .OUTPUTS
         [PSCustomObject[]] Array of objects containing library information.
@@ -28,21 +26,18 @@ function Get-PlexLibraries {
         Library types correspond to the Plex API library type IDs.
     #>
     [CmdletBinding()]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'PlexCredential is a custom type containing PSCredential, not plain text')]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory, Position = 0)]
+        [ValidateNotNull()]
         [object]$Connection,
         [Parameter()]
         [ValidateSet('Movie', 'Show', 'Music', 'Photo', 'HomeVideo', 'MusicVideo', 'Podcast', 'Audiobook')]
-        [string]$LibraryType,
-        [Parameter()]
-        [ValidateRange(1, 300)]
-        [int]$TimeoutSec = $Script:PlexDefaultTimeout
+        [string]$LibraryType
     )
     try {
         Write-Message "Retrieving libraries from: $($Connection.ServerUrl)" -Type Processing
         # Make the request using relative path
-        $response = Invoke-PlexApiRequest -Uri $Script:PlexApiEndpoints.Libraries -Connection $Connection -TimeoutSec $TimeoutSec
+        $response = Invoke-PlexApiRequest $Connection -Uri $Script:PlexApiEndpoints.Libraries
         if ($response -and $response.MediaContainer -and $response.MediaContainer.Directory) {
             $libraries = $response.MediaContainer.Directory
             # Filter by library type if specified
