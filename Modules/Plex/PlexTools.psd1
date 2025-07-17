@@ -32,9 +32,6 @@
         'Test-PlexConnection'
     )
 
-    # Types to process when importing this module
-    TypesToProcess = @('Classes\PlexCredential.ps1xml')
-
     # Cmdlets to export from this module
     CmdletsToExport = @()
 

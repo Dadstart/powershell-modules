@@ -1,21 +1,43 @@
-# Shared functions module
-# This file provides the actual module implementation for shared functions
-$publicPath = Join-Path -Path $PSScriptRoot -ChildPath 'Public'
-# Get functions from Public directory
-$functions = Get-ChildItem -Path $publicPath -File -Filter '*.ps1' | Select-Object -ExpandProperty BaseName
-# Dot-source the shared functions
-foreach ($function in $functions) {
-    Write-Verbose "Dot-sourcing function: $function"
-    $path = Join-Path $publicPath "$function.ps1"
-    . $path
+$ModuleRoot = $PSScriptRoot
+
+function Get-ModuleType {
+    param(
+        [Parameter(Mandatory, Position = 1)]
+        [string]$RootPath,
+        [Parameter(Mandatory, Position = 2)]
+        [string]$TypeName
+    )
+
+    $typesPath = Join-Path $RootPath $TypeName
+    if (Test-Path $typesPath) {
+        $types = Get-ChildItem -Path $typesPath -Filter '*.ps1' |
+            Sort-Object BaseName |
+            Select-Object -ExpandProperty BaseName
+        return $types
+    }
+    else {
+        return @()
+    }
 }
-# Get classes from Classes directory
-$classesPath = Join-Path -Path $PSScriptRoot -ChildPath 'Classes'
-$classes = Get-ChildItem -Path $classesPath -File -Filter '*.ps1' | Select-Object -ExpandProperty BaseName
-# Dot-source the shared classes
-foreach ($class in $classes) {
-    Write-Verbose "Dot-sourcing class: $class"
-    $path = Join-Path $classesPath "$class.ps1"
-    . $path
+
+# Shared loading
+$classes = Get-ModuleType $ModuleRoot 'Classes'
+if ($classes) {
+    foreach ($class in $classes) {
+        Write-Verbose "Loading shared class: $class"
+        . (Join-Path $ModuleRoot 'Classes' "$class.ps1")
+        Write-Verbose "Loaded shared class: $class"
+    }
+    Export-ModuleMember -Variable $classes
 }
-Export-ModuleMember -Function $functions -Variable $classes
+
+$publicFunctions = Get-ModuleType $ModuleRoot 'Public'
+if ($publicFunctions) {
+    foreach ($function in $publicFunctions) {
+        Write-Verbose "Loading public shared function: $function"
+        . (Join-Path $ModuleRoot 'Public' "$function.ps1")
+        Write-Verbose "Loaded public shared function: $function"
+    }
+    Export-ModuleMember -Function $publicFunctions
+}
+
