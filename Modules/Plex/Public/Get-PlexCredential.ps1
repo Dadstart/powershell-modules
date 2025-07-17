@@ -32,10 +32,18 @@ function Get-PlexCredential {
         [Parameter()]
         [string]$UserName
     )
-    $cred = Get-Credential -Message 'Enter your Plex credentials' -UserName $UserName
-    $token = Get-PlexServerToken -Credential $cred
-    if (-not $ServerUrl) {
-        $ServerUrl = 'http://localhost:32400'
+    begin {
+        $config = Get-PlexToolsConfig
     }
-    return [PlexCredential]::new($cred, $ServerUrl, $token)
+    process {
+        if ($ServerUrl) {
+            $uri = [UriBuilder]::new($ServerUrl)
+        }
+        else {
+            $uri = [UriBuilder]::new($config.DefaultServerProtocol, $config.DefaultServerHost, $config.DefaultServerPort)
+        }
+        $cred = Get-Credential -Message 'Enter your Plex credentials' -UserName $UserName
+        $token = Get-PlexServerToken -Credential $cred
+        return [PlexCredential]::new($cred, $uri.ToString(), $token)
+    }
 }
