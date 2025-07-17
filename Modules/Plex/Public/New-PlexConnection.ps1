@@ -30,15 +30,10 @@ function New-PlexConnection {
         [Parameter()]
         [string]$UserName
     )
-    begin {
-        $config = Get-PlexToolsConfig
+    if (-not $ServerUrl) {
+        $ServerUrl = 'http://localhost:32400'
     }
-    process {
-        if (-not $ServerUrl) {
-            $ServerUrl = "http://localhost:32400"
-        }
-        $cred = Get-Credential -Message 'Enter your Plex credentials' -UserName $UserName
-        $token = Get-PlexServerToken -Credential $cred
-        return [PlexToolsConnection]::new($cred, $ServerUrl, $token)
-    }
+    $cred = Get-Credential -Message 'Enter your Plex credentials' -UserName $UserName
+    $token = Get-PlexServerToken -Credential $cred
+    return [PlexToolsConnection]::new($cred, $ServerUrl, $token)
 }
