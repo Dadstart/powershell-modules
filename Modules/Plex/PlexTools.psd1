@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    ModuleVersion = '0.1.0'
+    ModuleVersion = '0.1.1'
 
     # ID used to uniquely identify this module
     GUID = '72e629f4-e811-4eb1-8dbe-69e6ba46174e'
@@ -24,16 +24,7 @@
     RootModule = 'PlexTools.psm1'
 
     # Functions to export from this module
-    FunctionsToExport = @(
-        'Get-PlexLibraries',
-        'Get-PlexLibraryItems',
-        'Get-PlexMediaInfo',
-        'Get-PlexServerInfo',
-        'Invoke-PlexApiRequest',
-        'Invoke-PlexLibraryScan',
-        'New-PlexConnection',
-        'Test-PlexConnection'
-    )
+    # FunctionsToExport = @()  # Commented out to allow dynamic exports from .psm1
 
     # Cmdlets to export from this module
     CmdletsToExport = @()

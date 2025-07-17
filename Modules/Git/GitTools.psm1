@@ -26,52 +26,65 @@ function Get-ModuleType {
     }
 }
 
+$allPublicFunctions = @()
+$allPublicClasses = @()
+
 # Shared loading
 $sharedRoot = Join-Path $ModuleRoot '..\Shared'
 $classes = Get-ModuleType $sharedRoot 'Classes'
 if ($classes) {
+    $allPublicClasses += $classes
     foreach ($class in $classes) {
         Write-Verbose "Loading shared class: $class"
-        . (Join-Path $sharedRoot 'Classes' "$class.ps1")
+        . (Join-Path $sharedRoot -ChildPath 'Classes', "$class.ps1")
         Write-Verbose "Loaded shared class: $class"
     }
-    Export-ModuleMember -Variable $classes
 }
 
 $publicFunctions = Get-ModuleType $sharedRoot 'Public'
 if ($publicFunctions) {
+    $allPublicFunctions += $publicFunctions
     foreach ($function in $publicFunctions) {
         Write-Verbose "Loading public shared function: $function"
-        . (Join-Path $sharedRoot 'Public' "$function.ps1")
+        . (Join-Path $sharedRoot -ChildPath 'Public', "$function.ps1")
         Write-Verbose "Loaded public shared function: $function"
     }
-    Export-ModuleMember -Function $publicFunctions
 }
 
 # Module Loading
 $classes = Get-ModuleType $ModuleRoot 'Classes'
 if ($classes) {
+    $allPublicClasses += $classes
     foreach ($class in $classes) {
         Write-Verbose "Loading module class: $class"
-        . (Join-Path $ModuleRoot 'Classes' "$class.ps1")
+        . (Join-Path $ModuleRoot -ChildPath 'Classes', "$class.ps1")
         Write-Verbose "Loaded module class: $class"
     }
-    Export-ModuleMember -Variable $classes
 }
 
 $publicFunctions = Get-ModuleType $ModuleRoot 'Public'
 if ($publicFunctions) {
+    $allPublicFunctions += $publicFunctions
     foreach ($function in $publicFunctions) {
         Write-Verbose "Loading public function: $function"
-        . (Join-Path $ModuleRoot 'Public' "$function.ps1")
+        . (Join-Path $ModuleRoot -ChildPath 'Public', "$function.ps1")
         Write-Verbose "Loaded shared function: $function"
     }
-    Export-ModuleMember -Function $publicFunctions
 }
 
 $privateFunctions = Get-ModuleType $ModuleRoot 'Private'
 foreach ($function in $privateFunctions) {
     Write-Verbose "Loading private function: $function"
-    . (Join-Path $ModuleRoot 'Private' "$function.ps1")
+    . (Join-Path $ModuleRoot -ChildPath 'Private', "$function.ps1")
     Write-Verbose "Loaded private function: $function"
+}
+
+# Export all public functions
+if ($allPublicFunctions) {
+    Export-ModuleMember -Function $allPublicFunctions
+}
+
+# Export all public classes
+if ($allPublicClasses) {
+    Export-ModuleMember -Variable $allPublicClasses
 }
