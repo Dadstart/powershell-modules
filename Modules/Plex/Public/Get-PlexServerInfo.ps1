@@ -6,14 +6,14 @@ function Get-PlexServerInfo {
         Gets comprehensive information about a Plex Media Server including version,
         server name, platform, and other system details. This function provides
         detailed server information that can be useful for diagnostics and monitoring.
-    .PARAMETER Credential
-        The Plex credential object containing server URL and authentication token.
+    .PARAMETER Connection
+        The Plex connection object containing server URL and authentication token.
     .PARAMETER TimeoutSec
         The timeout in seconds for the request. Defaults to 30.
     .EXAMPLE
-        $cred = Get-PlexCredential
-        Get-PlexServerInfo -Credential $cred
-        Gets server information using credentials.
+        $connection = New-PlexConnection
+        Get-PlexServerInfo -Connection $connection
+        Gets server information using connection.
     .OUTPUTS
         [PSCustomObject] Object containing server information including version, name, platform, etc.
     .NOTES
@@ -24,20 +24,20 @@ function Get-PlexServerInfo {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'PlexCredential is a custom type containing PSCredential, not plain text')]
     param(
         [Parameter(Mandatory = $true)]
-        [object]$Credential,
+        [object]$Connection,
         [Parameter()]
         [ValidateRange(1, 300)]
         [int]$TimeoutSec = $Script:PlexDefaultTimeout
     )
     try {
-        Write-Message "Retrieving server information from: $($Credential.ServerUrl)" -Type Processing
+        Write-Message "Retrieving server information from: $($Connection.ServerUrl)" -Type Processing
         # Make the request using relative path
-        $response = Invoke-PlexApiRequest -Uri $Script:PlexApiEndpoints.ServerInfo -Credential $Credential -TimeoutSec $TimeoutSec
+        $response = Invoke-PlexApiRequest -Uri $Script:PlexApiEndpoints.ServerInfo -Connection $Connection -TimeoutSec $TimeoutSec
         if ($response -and $response.MediaContainer) {
             $serverInfo = $response.MediaContainer
             # Create a custom object with server information
             $result = [PSCustomObject]@{
-                ServerUrl = $Credential.ServerUrl
+                ServerUrl = $Connection.ServerUrl
                 FriendlyName = $serverInfo.friendlyName
                 MachineIdentifier = $serverInfo.machineIdentifier
                 Version = $serverInfo.version

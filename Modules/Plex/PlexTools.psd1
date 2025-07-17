@@ -25,10 +25,13 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
-        'Get-PlexCredential',
         'Get-PlexLibraries',
         'Get-PlexLibraryItems',
         'Get-PlexMediaInfo',
+        'Get-PlexServerInfo',
+        'Invoke-PlexApiRequest',
+        'Invoke-PlexLibraryScan',
+        'New-PlexConnection',
         'Test-PlexConnection'
     )
 
@@ -36,7 +39,7 @@
     CmdletsToExport = @()
 
     # Variables to export from this module
-    VariablesToExport = @()
+    VariablesToExport = @('PlexToolsConnection')
 
     # Aliases to export from this module
     AliasesToExport = @()

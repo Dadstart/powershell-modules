@@ -13,8 +13,8 @@ function Invoke-PlexApiRequest {
         The relative path to request from the Plex API (e.g., "/library/sections").
     .PARAMETER Method
         The HTTP method to use (GET, POST, PUT, DELETE). Defaults to GET.
-    .PARAMETER Credential
-        The Plex credential object containing the authentication token. Required for most API endpoints.
+    .PARAMETER Connection
+        The Plex connection object containing the authentication token. Required for most API endpoints.
     .PARAMETER Headers
         Additional headers to include in the request.
     .PARAMETER Body
@@ -22,11 +22,11 @@ function Invoke-PlexApiRequest {
     .PARAMETER TimeoutSec
         The timeout in seconds for the request. Defaults to 30.
     .EXAMPLE
-        $cred = Get-PlexCredential
-        $response = Invoke-PlexApiRequest -Uri "/library/sections" -Credential $cred
+        $connection = New-PlexConnection
+        $response = Invoke-PlexApiRequest -Uri "/library/sections" -Connection $connection
     .EXAMPLE
-        $cred = Get-PlexCredential
-        $response = Invoke-PlexApiRequest -Uri "/library/sections/1/refresh" -Method POST -Credential $cred
+        $connection = New-PlexConnection
+        $response = Invoke-PlexApiRequest -Uri "/library/sections/1/refresh" -Method POST -Connection $connection
     .OUTPUTS
         [PSCustomObject] The parsed JSON response from the Plex API.
     .NOTES
@@ -43,7 +43,7 @@ function Invoke-PlexApiRequest {
         [ValidateSet('GET', 'POST', 'PUT', 'DELETE')]
         [string]$Method = 'GET',
         [Parameter()]
-        [object]$Credential,
+        [object]$Connection,
         [Parameter()]
         [hashtable]$Headers = @{},
         [Parameter()]
@@ -54,7 +54,7 @@ function Invoke-PlexApiRequest {
     )
     try {
         # Build the full URI by combining server URL with relative path
-        $fullUri = "$($Credential.ServerUrl)$Uri"
+        $fullUri = "$($Connection.ServerUrl)$Uri"
         Write-Message "Making $Method request to: $fullUri" -Type Verbose
         # Merge default headers with provided headers
         $requestHeaders = $Script:PlexDefaultHeaders.Clone()
@@ -62,8 +62,8 @@ function Invoke-PlexApiRequest {
             $requestHeaders[$key] = $Headers[$key]
         }
         # Add authentication token if provided
-        if ($Credential) {
-            $requestHeaders['X-Plex-Token'] = $Credential.Token
+        if ($Connection) {
+            $requestHeaders['X-Plex-Token'] = $Connection.Token
             Write-Message "Using authentication token" -Type Debug
         }
         else {

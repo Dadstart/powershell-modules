@@ -6,21 +6,21 @@ function Get-PlexLibraries {
         Gets a list of all libraries (sections) from a Plex Media Server including
         movies, TV shows, music, photos, and other media types. This function provides
         information about each library including its ID, name, type, and content count.
-    .PARAMETER Credential
-        The Plex credential object containing server URL and authentication token.
+    .PARAMETER Connection
+        The Plex connection object containing server URL and authentication token.
     .PARAMETER LibraryType
         Filter libraries by type (Movie, Show, Music, Photo, HomeVideo, MusicVideo, Podcast, Audiobook).
         If not specified, returns all libraries.
     .PARAMETER TimeoutSec
         The timeout in seconds for the request. Defaults to 30.
     .EXAMPLE
-        $cred = Get-PlexCredential
-        Get-PlexLibraries -Credential $cred
-        Gets all libraries using credentials.
+        $connection = New-PlexConnection
+        Get-PlexLibraries -Connection $connection
+        Gets all libraries using connection.
     .EXAMPLE
-        $cred = Get-PlexCredential
-        Get-PlexLibraries -Credential $cred -LibraryType Movie
-        Gets only movie libraries using credentials.
+        $connection = New-PlexConnection
+        Get-PlexLibraries -Connection $connection -LibraryType Movie
+        Gets only movie libraries using connection.
     .OUTPUTS
         [PSCustomObject[]] Array of objects containing library information.
     .NOTES
@@ -31,7 +31,7 @@ function Get-PlexLibraries {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'PlexCredential is a custom type containing PSCredential, not plain text')]
     param(
         [Parameter(Mandatory = $true)]
-        [object]$Credential,
+        [object]$Connection,
         [Parameter()]
         [ValidateSet('Movie', 'Show', 'Music', 'Photo', 'HomeVideo', 'MusicVideo', 'Podcast', 'Audiobook')]
         [string]$LibraryType,
@@ -40,9 +40,9 @@ function Get-PlexLibraries {
         [int]$TimeoutSec = $Script:PlexDefaultTimeout
     )
     try {
-        Write-Message "Retrieving libraries from: $($Credential.ServerUrl)" -Type Processing
+        Write-Message "Retrieving libraries from: $($Connection.ServerUrl)" -Type Processing
         # Make the request using relative path
-        $response = Invoke-PlexApiRequest -Uri $Script:PlexApiEndpoints.Libraries -Credential $Credential -TimeoutSec $TimeoutSec
+        $response = Invoke-PlexApiRequest -Uri $Script:PlexApiEndpoints.Libraries -Connection $Connection -TimeoutSec $TimeoutSec
         if ($response -and $response.MediaContainer -and $response.MediaContainer.Directory) {
             $libraries = $response.MediaContainer.Directory
             # Filter by library type if specified
