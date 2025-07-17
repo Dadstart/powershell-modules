@@ -43,7 +43,7 @@ function Invoke-PlexApiRequest {
         [ValidateSet('GET', 'POST', 'PUT', 'DELETE')]
         [string]$Method = 'GET',
         [Parameter()]
-        [PlexCredential]$Credential,
+        [object]$Credential,
         [Parameter()]
         [hashtable]$Headers = @{},
         [Parameter()]

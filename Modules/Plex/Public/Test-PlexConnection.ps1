@@ -25,7 +25,7 @@ function Test-PlexConnection {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [PlexCredential]$Credential,
+        [object]$Credential,
         [Parameter()]
         [ValidateRange(1, 300)]
         [int]$TimeoutSec = $Script:PlexDefaultTimeout

@@ -21,7 +21,7 @@ function Get-PlexMediaInfo {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'PlexCredential is a custom type containing PSCredential, not plain text')]
     param(
         [Parameter(Mandatory = $true)]
-        [PlexCredential]$Credential,
+        [object]$Credential,
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, [int]::MaxValue)]
         [int]$MediaId,

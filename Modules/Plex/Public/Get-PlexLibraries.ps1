@@ -31,7 +31,7 @@ function Get-PlexLibraries {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'PlexCredential is a custom type containing PSCredential, not plain text')]
     param(
         [Parameter(Mandatory = $true)]
-        [PlexCredential]$Credential,
+        [object]$Credential,
         [Parameter()]
         [ValidateSet('Movie', 'Show', 'Music', 'Photo', 'HomeVideo', 'MusicVideo', 'Podcast', 'Audiobook')]
         [string]$LibraryType,
