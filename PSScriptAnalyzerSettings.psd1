@@ -248,7 +248,7 @@
         }
         
         PSUsePSCredentialType = @{
-            Enable = $true
+            Enable = $false
         }
         
         PSUseProcessBlockForPipelineCommand = @{
