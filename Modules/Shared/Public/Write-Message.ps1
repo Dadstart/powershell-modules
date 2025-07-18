@@ -261,14 +261,20 @@ function Write-Message {
             $blocks += Get-String -Object $item -Separator $effectiveSep
         }
         $text = $blocks -join $effectiveSep
+
         # --- Prepare context for JSON output ---
-        $ctx = $null
         if ($effectiveIncludeContext) {
             $inv = $PSCmdlet.MyInvocation
             $scriptName = [IO.Path]::GetFileName($inv.ScriptName)
-            $lineNumber = $inv.ScriptLineNumber
-            $ctx = '{0}:{1}' -f $scriptName, $lineNumber
+            if ($scriptName) {
+                $lineNumber = $inv.ScriptLineNumber
+                $ctx = '{0}:{1}' -f $scriptName, $lineNumber
+            }
+            else {
+                $ctx = '?'
+            }
         }
+        
         # --- Structured output mode ---
         if ($effectiveAsJson) {
             $entry = [PSCustomObject]@{
