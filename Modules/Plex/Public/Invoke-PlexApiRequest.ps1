@@ -1,18 +1,3 @@
-enum ResponseFormat {
-    Auto    # Let the API decide based on Accept header
-    Json    # Force JSON response
-    Xml     # Force XML response
-}
-
-enum PlexEndpoint {
-    Root
-    ServerInfo
-    Libraries
-    LibraryItems
-    MediaInfo
-    LibraryScan
-}
-
 function Invoke-PlexApiRequest {
     <#
     .SYNOPSIS
@@ -34,7 +19,7 @@ function Invoke-PlexApiRequest {
         Additional headers to include in the request.
     .PARAMETER Body
         The request body for POST/PUT requests.
-    .PARAMETER ResponseFormat
+    .PARAMETER PlexBodyFormat
         The format to return the response in. Defaults to Auto, causes the API to return the raw response as a string
     .EXAMPLE
         $connection = New-PlexConnection
@@ -56,13 +41,13 @@ function Invoke-PlexApiRequest {
         [Parameter(Mandatory, Position = 1)]
         [PlexEndpoint]$Endpoint,
         [Parameter()]
-        [WebRequestMethod]$Method = [WebRequestMethod]::Get,
+        [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = [Microsoft.PowerShell.Commands.WebRequestMethod]::Get,
         [Parameter()]
         [hashtable]$Headers = @{},
         [Parameter()]
         [object]$Body,
         [Parameter()]
-        [ResponseFormat]$ResponseFormat = [ResponseFormat]::Json
+        [PlexBodyFormat]$PlexBodyFormat = [PlexBodyFormat]::Json
     )
-    return $Connection.GetApiResponse($Endpoint, $Method, $Headers, $Body, $ResponseFormat)
+    return $Connection.GetApiResponse($Endpoint, $Method, $Headers, $Body, $PlexBodyFormat)
 }

@@ -27,7 +27,7 @@ function Test-PlexConnection {
     try {
         Write-Message "Testing connection to Plex server: $($Connection.ServerUrl)" -Type Processing
         # Make the test request using relative path
-        $response = Invoke-PlexApiRequest $Connection [PlexEndpoint]::Root -ResponseFormat [ResponseFormat]::Xml
+        $response = Invoke-PlexApiRequest $Connection Root -PlexBodyFormat Xml
         if ($response) {
             Write-Message "✅ Successfully connected to Plex server" -Type Success
             Write-Message "Server version: $($response.MediaContainer.version)" -Type Verbose
@@ -40,7 +40,7 @@ function Test-PlexConnection {
         }
     }
     catch {
-        Write-Message "❌ Failed to connect to Plex server: $($_.Exception.Message)" -Type Error
+        Write-Message "❌ Failed to connect to Plex server: $($_)" -Type Error
         return $false
     }
 } 

@@ -1,5 +1,5 @@
-enum ResponseFormat {
-    Auto    # Let the API decide based on Accept header
+enum PlexBodyFormat {
+    Raw     # Return the raw response as a string
     Json    # Force JSON response
     Xml     # Force XML response
 }
@@ -40,9 +40,14 @@ class PlexToolsConnection {
     hidden [string]$ServerUrl
     hidden [string]$Token
     hidden [hashtable]$Headers
+    hidden [System.Net.Http.HttpClient]$Client
     [int]$TimeoutSeconds
 
-    PlexToolsConnection([pscredential]$credential, [string]$serverUrl, [string]$token) {
+    PlexToolsConnection(
+        [pscredential]$credential,
+        [string]$serverUrl,
+        [string]$token) {
+
         if (-not $credential) {
             throw [ArgumentNullException]::new('credential')
         }
@@ -50,8 +55,11 @@ class PlexToolsConnection {
             throw [ArgumentNullException]::new('token')
         }
         $this.Credential = $credential
-        $this.ServerUrl = $serverUrl
+        $this.ServerUrl = $serverUrl.TrimEnd('/')
         $this.Token = $token
+
+        # Initialize HTTP client
+        $this.Client = [System.Net.Http.HttpClient]::new()
 
         # Defaults
         $this.SetDefaultConfig()
@@ -71,12 +79,230 @@ class PlexToolsConnection {
         return $this.Headers.Clone()
     }
 
+    hidden [string]GetBodyContentType([PlexBodyFormat]$plexBodyFormat) {
+        switch ($plexBodyFormat) {
+            [PlexBodyFormat]::Json {
+                return 'application/json'
+            }
+            [PlexBodyFormat]::Xml {
+                return 'application/xml, text/xml'
+            }
+            [PlexBodyFormat]::Raw {
+                return 'text/plain'
+            }
+        }
+        throw [ArgumentException]::new("Invalid body format: $plexBodyFormat")
+    }
+
+    hidden [PlexBodyFormat]GetBodyFormat([string]$contentType) {
+        switch ($contentType) {
+            'application/json' {
+                return [PlexBodyFormat]::Json
+            }
+            'application/xml' {
+                return [PlexBodyFormat]::Xml
+            }
+            'text/xml' {
+                return [PlexBodyFormat]::Xml
+            }
+        }
+        return [PlexBodyFormat]::Raw
+    }
+
+    [System.Threading.Tasks.Task[pscustomobject]] SendRequestAsync(
+        [string]   $endpoint,
+        [string]   $method,
+        [hashtable]$queryParameters,
+        [hashtable]$additionalHeaders,
+        [object]   $body,
+        [PlexBodyFormat]$requestFormat,
+        [PlexBodyFormat]$responseFormat
+    ) {
+        # override $null parameters with defaults
+        $method = $method ?? 'GET'
+        $requestFormat = $requestFormat ?? [PlexBodyFormat]::Json
+        $responseFormat = $responseFormat ?? [PlexBodyFormat]::Raw
+        $queryParameters = $queryParameters ?? @{}
+        $additionalHeaders = $additionalHeaders ?? @{}
+
+        # Build the full URI with encoded query parameters
+        $base = "$($this.ServerUrl)/$endpoint".TrimEnd('/')
+        if ($queryParameters.Count) {
+            $queryParamsArgs = $queryParameters.GetEnumerator() |
+                ForEach-Object {
+                    $k = [Uri]::EscapeDataString($_.Key)
+                    $v = [Uri]::EscapeDataString($_.Value.ToString())
+                    $queryParam = "$k"
+                    if ($v) {
+                        $queryParam += "=$v"
+                    }
+                    $queryParam
+                } -Join '&'
+            $url = "$base`?$queryParamsArgs"
+        }
+        else {
+            $url = $base
+        }
+
+        Write-Host "=> $method $url" -ForegroundColor Cyan
+
+        # Create and populate the request
+        $request = [System.Net.Http.HttpRequestMessage]::new(
+            [System.Net.Http.HttpMethod]::$method, $url
+        )
+
+        # Add headers, starting with defaults
+        $defaultHeaders = $this.GetHeaders()
+        foreach ($key in $defaultHeaders.Keys) {
+            $request.Headers.Add($key, $defaultHeaders[$key])
+        }
+        $request.Headers.Accept.Add(
+            [System.Net.Http.Headers.MediaTypeWithQualityHeaderValue]::new($this.GetBodyContentType($requestFormat))
+        )
+        if ($this.Token) {
+            $request.Headers.Add('X-Plex-Token', $this.Token)
+        }
+        foreach ($key in $additionalHeaders.Keys) {
+            $request.Headers.Add($key, $additionalHeaders[$key])
+        }
+
+        if ($method -eq 'POST' -and $body) {
+            $encodedBody = switch ($requestFormat) {
+                [PlexBodyFormat]::Json {
+                    $body | ConvertTo-Json -Depth 10
+                }
+                [PlexBodyFormat]::Xml {
+                    $body | ConvertTo-Xml -Depth 10
+                }
+                default {
+                    $body
+                }
+            }
+
+            $request.Content = [System.Net.Http.StringContent]::new(
+                $encodedBody,
+                [System.Text.Encoding]::UTF8,
+                $this.GetBodyContentType($requestFormat)
+            )
+        }
+
+        return $this.Client.SendAsync($request).ContinueWith({
+                param($task)
+
+                $convertDepth = 10
+                try {
+                    $response = $task.Result
+                    $rawBody = $response.Content.ReadAsStringAsync().Result
+                    $success = $response.IsSuccessStatusCode
+
+                    Write-Host ($(
+                            $success ?
+                            "<= $($response.StatusCode) $url" :
+                            "<! $($response.StatusCode) $url")
+                    ) -ForegroundColor (if ($success) { 'Green' } else { 'Red' })
+
+                    $decodedBody = switch ($responseFormat) {
+                        [PlexBodyFormat]::Json {
+                            $rawBody | ConvertFrom-Json -Depth $convertDepth -ErrorAction SilentlyContinue
+                        }
+                        [PlexBodyFormat]::Xml {
+                            $rawBody | ConvertFrom-Xml -Depth $convertDepth -ErrorAction SilentlyContinue
+                        }
+                        default {
+                            $rawBody
+                        }
+                    }
+
+                    return [pscustomobject]@{
+                        StatusCode = $response.StatusCode
+                        Reason     = $response.ReasonPhrase
+                        Headers    = $response.Headers
+                        Content    = $decodedBody
+                    }
+                }
+                catch {
+                    Write-Host "<X Request failed: $_" -ForegroundColor Red
+                    throw
+                }
+            })
+    }
+
+    hidden [System.Threading.Tasks.Task[pscustomobject]] SendRequest(
+        [string]   $endpoint,
+        [string]   $method,
+        [hashtable]$queryParameters,
+        [hashtable]$headers,
+        [object]   $body,
+        [PlexBodyFormat]$requestFormat,
+        [PlexBodyFormat]$responseFormat
+    ) {
+        return $this.SendRequestAsync($endpoint, $method, $queryParameters, $headers, $body, $requestFormat, $responseFormat).Result
+    }
+
+    [System.Threading.Tasks.Task[pscustomobject[]]] InvokePaginatedRequestAsync(
+        [string]   $endpoint,
+        [hashtable]$queryParameters,
+        [hashtable]$additionalHeaders,
+        [int]      $pageSize,
+        [PlexBodyFormat]$requestFormat,
+        [PlexBodyFormat]$responseFormat
+    ) {
+        # initialize parameters to their defaults
+        $queryParameters = $queryParameters ?? @{}
+        $pageSize = $pageSize ?? 100
+
+        $itemsList = [System.Collections.Generic.List[object]]::new()
+        $offset = 0
+
+        $task = [System.Threading.Tasks.Task]::Run({
+                do {
+                    $queryParameters['X-Plex-Container-Start'] = $offset
+                    $queryParameters['X-Plex-Container-Size'] = $pageSize
+
+
+                    $responseTask = $this.SendRequestAsync($endpoint, 'GET', $queryParameters, $additionalHeaders, $null, $requestFormat, $responseFormat)
+                    $response = $responseTask.Result
+
+                    if (-not $response.Content -or -not $response.Content.MediaContainer) {
+                        break
+                    }
+
+                    if ($response.Content.MediaContainer.Directory) {
+                        $chunk = $response.Content.MediaContainer.Directory
+                    }
+                    elseif ($response.Content.MediaContainer.Metadata) {
+                        $chunk = $response.Content.MediaContainer.Metadata
+                    }
+                    else {
+                        break
+                    }
+
+                    $itemsList.AddRange($chunk)
+                    $offset += $pageSize
+                    $count = $chunk.Count
+                } while ($count -eq $pageSize)
+
+                return , $itemsList.ToArray()
+            })
+
+        return $task
+    }
+
+    [psobject[]] InvokePaginatedRequest(
+        [string]   $endpoint,
+        [hashtable]$queryParameters,
+        [hashtable]$headers,
+        [int]      $pageSize
+    ) {
+        return $this.InvokePaginatedRequestAsync($endpoint, $queryParameters, $headers, $pageSize).Result
+    }
+
     [object]GetApiResponse(
         [PlexEndpoint]$Endpoint,
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method,
-        [hashtable]$Headers,
+        [hashtable]$AdditionalHeaders,
         [object]$Body,
-        [ResponseFormat]$ResponseFormat
+        [PlexBodyFormat]$PlexBodyFormat
     ) {
         $url = $this.GetApiEndpointUrl($Endpoint)
         try {
@@ -85,18 +311,18 @@ class PlexToolsConnection {
 
             # Merge default headers with provided headers
             $requestHeaders = $this.GetHeaders()
-            if ($Headers) {
-                foreach ($key in $Headers.Keys) {
-                    $requestHeaders[$key] = $Headers[$key]
+            if ($AdditionalHeaders) {
+                foreach ($key in $AdditionalHeaders.Keys) {
+                    $requestHeaders[$key] = $AdditionalHeaders[$key]
                 }
             }
 
             # Add response format
-            $acceptType = switch ($ResponseFormat) {
-                [ResponseFormat]::Json {
+            $acceptType = switch ($PlexBodyFormat) {
+                [PlexBodyFormat]::Json {
                     'application/json'
                 }
-                [ResponseFormat]::Xml {
+                [PlexBodyFormat]::Xml {
                     'application/xml, text/xml'
                 }
                 default: {
@@ -124,11 +350,11 @@ class PlexToolsConnection {
             # Make the request
             $response = Invoke-RestMethod @requestParams
             Write-Message 'Request completed successfully' -Type Verbose
-            switch ($ResponseFormat) {
-                [ResponseFormat]::Json {
+            switch ($PlexBodyFormat) {
+                [PlexBodyFormat]::Json {
                     $response = $response | ConvertFrom-Json
                 }
-                [ResponseFormat]::Xml {
+                [PlexBodyFormat]::Xml {
                     $response = $response | ConvertFrom-Xml
                 }
                 default {

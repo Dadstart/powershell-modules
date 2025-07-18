@@ -26,7 +26,7 @@ function Invoke-PlexLibraryScan {
     )
     try {
         Write-Message "Initiating library scan for library ID: $LibraryId" -Type Processing
-        Invoke-PlexApiRequest $Connection [PlexEndpoint]::LibraryScan -Method [WebRequestMethod]::Post
+        Invoke-PlexApiRequest $Connection [PlexEndpoint]::LibraryScan -Method [WebRequestMethod]::Get.
         Write-Message '✅ Library scan initiated successfully' -Type Success
         return $true
     }
