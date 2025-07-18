@@ -30,7 +30,7 @@
     CmdletsToExport = @()
 
     # Variables to export from this module
-    VariablesToExport = @('PlexToolsConnection')
+    VariablesToExport = @()
 
     # Aliases to export from this module
     AliasesToExport = @()

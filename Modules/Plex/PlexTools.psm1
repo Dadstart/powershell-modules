@@ -3,6 +3,22 @@
 # Rip Module Root Script
 # This file serves as the entry point for the Rip module
 
+# Define enums at module level
+enum PlexBodyFormat {
+    Raw     # Return the raw response as a string
+    Json    # Force JSON response
+    Xml     # Force XML response
+}
+
+enum PlexEndpoint {
+    Root
+    ServerInfo
+    Libraries
+    LibraryItems
+    MediaInfo
+    LibraryScan
+}
+
 # Get the module root directory
 $ModuleRoot = $PSScriptRoot
 
@@ -11,14 +27,16 @@ function Get-ModuleType {
         [Parameter(Mandatory, Position = 1)]
         [string]$RootPath,
         [Parameter(Mandatory, Position = 2)]
-        [string]$TypeName
+        [string]$TypeName,
+        [Parameter()]
+        [string]$Property = 'BaseName'
     )
 
     $typesPath = Join-Path $RootPath $TypeName
     if (Test-Path $typesPath) {
         $types = Get-ChildItem -Path $typesPath -Filter '*.ps1' |
-            Sort-Object BaseName |
-            Select-Object -ExpandProperty BaseName
+            Sort-Object $Property # |
+        #   Select-Object -ExpandProperty $Property
         return $types
     }
     else {
@@ -26,65 +44,41 @@ function Get-ModuleType {
     }
 }
 
-$allPublicFunctions = @()
-$allPublicClasses = @()
+
+
+$publicFunctions = @()
+$publicClasses = @()
 
 # Shared loading
 $sharedRoot = Join-Path $ModuleRoot '..\Shared'
-$classes = Get-ModuleType $sharedRoot 'Classes'
-if ($classes) {
-    $allPublicClasses += $classes
-    foreach ($class in $classes) {
-        Write-Verbose "Loading shared class: $class"
-        . (Join-Path $sharedRoot -ChildPath 'Classes', "$class.ps1")
-        Write-Verbose "Loaded shared class: $class"
-    }
-}
-
-$publicFunctions = Get-ModuleType $sharedRoot 'Public'
-if ($publicFunctions) {
-    $allPublicFunctions += $publicFunctions
-    foreach ($function in $publicFunctions) {
-        Write-Verbose "Loading public shared function: $function"
-        . (Join-Path $sharedRoot -ChildPath 'Public', "$function.ps1")
-        Write-Verbose "Loaded public shared function: $function"
-    }
-}
+$publicClasses += Get-ModuleType $sharedRoot 'Classes'
+$publicFunctions += Get-ModuleType $sharedRoot 'Public'
 
 # Module Loading
-$classes = Get-ModuleType $ModuleRoot 'Classes'
-if ($classes) {
-    $allPublicClasses += $classes
-    foreach ($class in $classes) {
-        Write-Verbose "Loading module class: $class"
-        . (Join-Path $ModuleRoot -ChildPath 'Classes', "$class.ps1")
-        Write-Verbose "Loaded module class: $class"
-    }
-}
-
-$publicFunctions = Get-ModuleType $ModuleRoot 'Public'
-if ($publicFunctions) {
-    $allPublicFunctions += $publicFunctions
-    foreach ($function in $publicFunctions) {
-        Write-Verbose "Loading public function: $function"
-        . (Join-Path $ModuleRoot -ChildPath 'Public', "$function.ps1")
-        Write-Verbose "Loaded shared function: $function"
-    }
-}
-
+$publicClasses += Get-ModuleType $ModuleRoot 'Classes'
+$publicFunctions += Get-ModuleType $ModuleRoot 'Public'
 $privateFunctions = Get-ModuleType $ModuleRoot 'Private'
+
+Write-Host 'Loading private functions' -ForegroundColor Cyan
 foreach ($function in $privateFunctions) {
-    Write-Verbose "Loading private function: $function"
-    . (Join-Path $ModuleRoot -ChildPath 'Private', "$function.ps1")
-    Write-Verbose "Loaded private function: $function"
+    . $($function.FullName)
 }
 
-# Export all public functions
-if ($allPublicFunctions) {
-    Export-ModuleMember -Function $allPublicFunctions
+Write-Host 'Loading public functions' -ForegroundColor Cyan
+foreach ($function in $publicFunctions) {
+    . $($function.FullName)
 }
 
-# Export all public classes
-if ($allPublicClasses) {
-    Export-ModuleMember -Variable $allPublicClasses
+# 2) Dot-source every .ps1 under Classes
+Write-Host 'Loading public classes' -ForegroundColor Cyan
+foreach ($class in $publicClasses) {
+    try {
+        . $($class.FullName)
+    }
+    catch {
+        Write-Host "✗ Failed to dot-source $($class.Name): $_" -ForegroundColor Red
+    }
 }
+
+Write-Host 'Exporting functions' -ForegroundColor Cyan
+Export-ModuleMember -Function ($publicFunctions | ForEach-Object { $_.BaseName })
