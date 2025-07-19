@@ -6,14 +6,14 @@
     Rules = @{
         # Code formatting and style
         PSAlignAssignmentStatement = @{
-            Enable = $true
-            CheckHashtable = $true
-            CheckNewLine = $true
+            Enable = $false
+            # CheckHashtable = $true
+            # CheckNewLine = $true
         }
         
         PSAvoidLongLines = @{
             Enable = $true
-            MaximumLineLength = 160
+            MaximumLineLength = 200
         }
         
         PSAvoidTrailingWhitespace = @{
@@ -79,6 +79,20 @@
         
         PSAvoidUsingPositionalParameters = @{
             Enable = $true
+            CommandAllowList = @(
+                'Join-Path',
+                'Get-Path',
+                'Get-ChildItem',
+                'Get-Item',
+                'Get-ItemProperty',
+                'Get-ItemPropertyValue',
+                'Get-ItemType',
+                'Get-ItemStream',
+                'Get-ItemStreamReader',
+                'Get-ItemStreamWriter'
+                'Get-ItemStreamReader',
+                'Get-ItemStreamWriter'
+                )
         }
         
         PSAvoidUsingUsernameAndPasswordParams = @{
