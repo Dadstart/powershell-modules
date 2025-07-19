@@ -54,15 +54,18 @@ Test-PlexConnection -ServerUrl "http://localhost:32400"
 Test-PlexConnection -ServerUrl "http://plex.example.com:32400" -Token "your-token"
 ```
 
-#### `Get-PlexCredential`
-Retrieve stored Plex credentials or prompt for new ones.
+#### `New-PlexConnection`
+Create a new Plex connection by prompting for authentication credentials.
 
 ```powershell
-# Get stored credentials
-$credential = Get-PlexCredential -ServerUrl "http://localhost:32400"
+# Create connection with default localhost server
+$connection = New-PlexConnection
 
-# Get credentials with prompt for new ones if not found
-$credential = Get-PlexCredential -ServerUrl "http://localhost:32400" -PromptIfMissing
+# Create connection with specific server URL
+$connection = New-PlexConnection -ServerUrl "http://192.168.1.100:32400"
+
+# Create connection with pre-filled username
+$connection = New-PlexConnection -ServerUrl "http://plex.example.com:32400" -UserName "admin"
 ```
 
 ### Library Operations
@@ -72,10 +75,11 @@ Retrieve a list of all libraries on the Plex server.
 
 ```powershell
 # Get all libraries
-$libraries = Get-PlexLibraries -ServerUrl "http://localhost:32400"
+$connection = New-PlexConnection
+$libraries = Get-PlexLibraries $connection
 
 # Get libraries with details
-$libraries = Get-PlexLibraries -ServerUrl "http://localhost:32400" -IncludeDetails
+$libraries = Get-PlexLibraries $connection -IncludeDetails
 $libraries | ForEach-Object { "$($_.Name) - $($_.Type)" }
 ```
 
@@ -84,13 +88,14 @@ Retrieve items from a specific Plex library.
 
 ```powershell
 # Get all movies from Movies library
-$movies = Get-PlexLibraryItems -ServerUrl "http://localhost:32400" -LibraryName "Movies"
+$connection = New-PlexConnection
+$movies = Get-PlexLibraryItems $connection -LibraryId 1
 
 # Get TV shows with filtering
-$shows = Get-PlexLibraryItems -ServerUrl "http://localhost:32400" -LibraryName "TV Shows" -Filter "year=2023"
+$shows = Get-PlexLibraryItems $connection -LibraryId 2 -Limit 50
 
 # Get items with pagination
-$items = Get-PlexLibraryItems -ServerUrl "http://localhost:32400" -LibraryName "Music" -Limit 50 -Offset 100
+$items = Get-PlexLibraryItems $connection -LibraryId 3 -Limit 50 -Offset 100
 ```
 
 ### Media Information
@@ -100,26 +105,64 @@ Get detailed information about a specific media item.
 
 ```powershell
 # Get movie information
-$movieInfo = Get-PlexMediaInfo -ServerUrl "http://localhost:32400" -ItemId "12345"
+$connection = New-PlexConnection
+$movieInfo = Get-PlexMediaInfo $connection -MediaId 12345
 
 # Get TV episode information
-$episodeInfo = Get-PlexMediaInfo -ServerUrl "http://localhost:32400" -ItemId "67890" -IncludeMetadata
+$episodeInfo = Get-PlexMediaInfo $connection -MediaId 67890
 ```
 
-### Credential Management
-
-#### `PlexCredential`
-A class for managing Plex authentication credentials.
+#### `Get-PlexServerInfo`
+Get information about the Plex Media Server.
 
 ```powershell
-# Create a new credential object
-$credential = [PlexCredential]::new("http://localhost:32400", "your-token")
+# Get server information
+$connection = New-PlexConnection
+$serverInfo = Get-PlexServerInfo $connection
 
-# Store credentials securely
-$credential.Save()
+# Display server details
+$serverInfo | Format-List
+```
 
-# Load stored credentials
-$loadedCredential = [PlexCredential]::Load("http://localhost:32400")
+#### `Invoke-PlexLibraryScan`
+Trigger a library scan on the Plex Media Server.
+
+```powershell
+# Scan all libraries
+$connection = New-PlexConnection
+Invoke-PlexLibraryScan $connection
+
+# Scan specific library
+Invoke-PlexLibraryScan $connection -LibraryId 1
+```
+
+#### `Invoke-PlexApiRequest`
+Make direct API requests to the Plex Media Server.
+
+```powershell
+# Get server capabilities
+$connection = New-PlexConnection
+$capabilities = Invoke-PlexApiRequest $connection [PlexEndpoint]::ServerInfo
+
+# Get specific library items
+$items = Invoke-PlexApiRequest $connection [PlexEndpoint]::LibraryItems
+```
+
+### Connection Management
+
+#### `PlexToolsConnection`
+A class for managing Plex server connections and authentication.
+
+```powershell
+# Create a new connection object
+$connection = [PlexToolsConnection]::new($credential, "http://localhost:32400", "your-token")
+
+# Get connection headers for API requests
+$headers = $connection.GetHeaders()
+
+# Access connection properties
+$connection.ServerUrl
+$connection.TimeoutSeconds
 ```
 
 ## Examples
@@ -131,12 +174,12 @@ $loadedCredential = [PlexCredential]::Load("http://localhost:32400")
 Import-Module .\Modules\Plex\PlexTools.psm1
 
 # Test connection to Plex server
-$serverUrl = "http://localhost:32400"
-if (Test-PlexConnection -ServerUrl $serverUrl) {
+$connection = New-PlexConnection
+if (Test-PlexConnection $connection) {
     Write-Message "Successfully connected to Plex server" -Type Success
     
     # Get available libraries
-    $libraries = Get-PlexLibraries -ServerUrl $serverUrl
+    $libraries = Get-PlexLibraries $connection
     Write-Message "Found $($libraries.Count) libraries" -Type Info
 } else {
     Write-Message "Failed to connect to Plex server" -Type Error
@@ -147,13 +190,14 @@ if (Test-PlexConnection -ServerUrl $serverUrl) {
 
 ```powershell
 # Get all libraries and their types
-$libraries = Get-PlexLibraries -ServerUrl "http://localhost:32400" -IncludeDetails
+$connection = New-PlexConnection
+$libraries = Get-PlexLibraries $connection -IncludeDetails
 
 foreach ($library in $libraries) {
     Write-Message "Library: $($library.Name) ($($library.Type))" -Type Info
     
     # Get some items from each library
-    $items = Get-PlexLibraryItems -ServerUrl "http://localhost:32400" -LibraryName $library.Name -Limit 5
+    $items = Get-PlexLibraryItems $connection -LibraryId $library.Id -Limit 5
     
     foreach ($item in $items) {
         Write-Message "  - $($item.Title)" -Type Info
@@ -165,7 +209,8 @@ foreach ($library in $libraries) {
 
 ```powershell
 # Analyze movies in the Movies library
-$movies = Get-PlexLibraryItems -ServerUrl "http://localhost:32400" -LibraryName "Movies"
+$connection = New-PlexConnection
+$movies = Get-PlexLibraryItems $connection -LibraryId 1
 
 $movieStats = @{
     TotalMovies = $movies.Count
@@ -178,44 +223,31 @@ Write-Message "Average Rating: $([math]::Round($movieStats.AverageRating, 2))" -
 Write-Message "Genres: $($movieStats.Genres -join ', ')" -Type Info
 ```
 
-### Credential Management
+### Connection Management
 
 ```powershell
-# Function to get or create Plex credentials
-function Get-PlexCredentials {
+# Function to create Plex connection with defaults
+function New-PlexConnectionWithDefaults {
     param(
-        [string]$ServerUrl
+        [string]$ServerUrl = "http://localhost:32400",
+        [string]$UserName
     )
     
     try {
-        # Try to load existing credentials
-        $credential = Get-PlexCredential -ServerUrl $ServerUrl
+        # Create new connection with credential prompt
+        $connection = New-PlexConnection -ServerUrl $ServerUrl -UserName $UserName
         
-        if (-not $credential) {
-            Write-Message "No stored credentials found. Please enter your Plex token:" -Type Warning
-            $token = Read-Host -Prompt "Plex Token" -AsSecureString
-            
-            # Convert secure string to plain text
-            $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($token)
-            $plainToken = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-            
-            # Create and save new credential
-            $credential = [PlexCredential]::new($ServerUrl, $plainToken)
-            $credential.Save()
-            
-            Write-Message "Credentials saved successfully" -Type Success
-        }
-        
-        return $credential
+        Write-Message "Connection created successfully" -Type Success
+        return $connection
     }
     catch {
-        Write-Message "Error managing credentials: $($_.Exception.Message)" -Type Error
+        Write-Message "Error creating connection: $($_.Exception.Message)" -Type Error
         return $null
     }
 }
 
 # Use the function
-$credential = Get-PlexCredentials -ServerUrl "http://localhost:32400"
+$connection = New-PlexConnectionWithDefaults -ServerUrl "http://localhost:32400"
 ```
 
 ### Automated Library Monitoring
@@ -224,7 +256,6 @@ $credential = Get-PlexCredentials -ServerUrl "http://localhost:32400"
 # Function to monitor library changes
 function Monitor-PlexLibrary {
     param(
-        [string]$ServerUrl,
         [string]$LibraryName,
         [int]$CheckInterval = 300  # 5 minutes
     )
@@ -233,7 +264,8 @@ function Monitor-PlexLibrary {
     
     while ($true) {
         try {
-            $items = Get-PlexLibraryItems -ServerUrl $ServerUrl -LibraryName $LibraryName
+            $connection = New-PlexConnection
+            $items = Get-PlexLibraryItems $connection -LibraryId 1
             $currentCount = $items.Count
             
             if ($currentCount -ne $lastCount) {
@@ -256,7 +288,7 @@ function Monitor-PlexLibrary {
 }
 
 # Start monitoring
-Monitor-PlexLibrary -ServerUrl "http://localhost:32400" -LibraryName "Movies"
+Monitor-PlexLibrary -LibraryName "Movies"
 ```
 
 ## Configuration

@@ -1,6 +1,6 @@
 @{
     # Version number of this module.
-    ModuleVersion = '0.1.0'
+    ModuleVersion = '0.1.1'
     # ID used to uniquely identify this module
     GUID = '9576456d-df0a-4111-add7-cd1514abd233'
     # Author of this module
@@ -16,58 +16,9 @@
     # Root module that applies when this module is imported
     RootModule = 'MediaTools.psm1'
     # Functions to export from this module
-    FunctionsToExport = @(
-        'Add-MediaStream',
-        'Add-PlexFolder',
-        'Convert-ToConstantFrameRate',
-        'ConvertTo-MediaStreamCollection',
-        'Export-AudioStream',
-        'Export-Chapter',
-        'Export-MediaStream',
-        'Export-MediaStreamCollection',
-        'Export-MediaStreams',
-        'Export-SubtitleStream',
-        'FFProbeResult',
-        'Find-StringInFiles',
-        'Get-AudioData',
-        'Get-AudioMetadataMap',
-        'Get-AudioStream',
-        'Get-Bitrate',
-        'Get-Bitrates',
-        'Get-ChapterInfo',
-        'Get-EnhancedTitle',
-        'Get-EpisodeInfoFromFilename',
-        'Get-FFMpegVersion',
-        'Get-MediaExtension',
-        'Get-MediaStats',
-        'Get-MediaStream',
-        'Get-MediaStreamCollection',
-        'Get-MediaStreams',
-        'Get-MkvTrack',
-        'Get-MkvTrackAll',
-        'Get-MkvTracks',
-        'Get-MultipleAudioStreams',
-        'Get-SubtitleStream',
-        'Get-SystemSnapshot',
-        'Get-TvDbEpisodeIds',
-        'Get-TvDbEpisodeInfo',
-        'Invoke-CaptionExtraction',
-        'Invoke-ChapterExtraction',
-        'Invoke-CheckedCommand',
-        'Invoke-FFMpeg',
-        'Invoke-FFProbe',
-        'Invoke-PlexFileOperation',
-        'Invoke-Process',
-        'Invoke-SafeFileRename',
-        'Invoke-VideoCopy',
-        'MediaStreamInfo',
-        'MediaStreamInfoCollection',
-        'Move-PlexFile',
-        'ProcessResult',
-        'Remove-PlexEmptyFolder',
-        'Show-SystemSnapshot',
-        'Start-SystemMonitoring'
-    )
+    # FunctionsToExport = @()  # Commented out to allow dynamic exports from .psm1
+
+>> main
     # Cmdlets to export from this module
     CmdletsToExport = @()
     # Variables to export from this module

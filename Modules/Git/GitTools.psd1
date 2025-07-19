@@ -1,6 +1,7 @@
 @{
     # Version number of this module.
-    ModuleVersion = '0.1.0'
+    ModuleVersion = '0.1.1'
+
     # ID used to uniquely identify this module
     GUID = 'd7602771-c3f2-43c2-8547-ef896d564c6c'
     # Author of this module
@@ -16,11 +17,8 @@
     # Root module that applies when this module is imported
     RootModule = 'GitTools.psm1'
     # Functions to export from this module
-    FunctionsToExport = @(
-        'Move-GitDirectory',
-        'New-GitCommit',
-        'New-GitPullRequest'
-    )
+    # FunctionsToExport = @()  # Commented out to allow dynamic exports from .psm1
+
     # Cmdlets to export from this module
     CmdletsToExport = @()
     # Variables to export from this module

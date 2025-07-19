@@ -1,73 +1,68 @@
 #Requires -Version 7.4
-# Media Module Root Script
-# This file serves as the entry point for the Media module
+
+# MediaTools Module Root Script
+# This file serves as the entry point for the MediaTools module
+
 # Get the module root directory
 $ModuleRoot = $PSScriptRoot
-# Import shared functions
-$sharedPublicPath = Join-Path $ModuleRoot '..\Shared\Public'
-$sharedFunctions = Get-ChildItem -Path $sharedPublicPath -Filter '*.ps1' | Sort-Object Name
-foreach ($function in $sharedFunctions) {
-    . $function.FullName
-}
-# Export all loaded functions
-$sharedFunctionNames = $sharedFunctions | ForEach-Object { $_.BaseName }
-# Get classes from Classes directory
-$sharedClassesPath = Join-Path $ModuleRoot '..\Shared\Classes'
-$sharedClassNames = Get-ChildItem -Path $sharedClassesPath -File -Filter '*.ps1' | Select-Object -ExpandProperty BaseName
-# Dot-source the shared classes
-foreach ($class in $sharedClassNames) {
-    Write-Verbose "Dot-sourcing class: $class"
-    $path = Join-Path $sharedClassesPath "$class.ps1"
-    . $path
-}
-Export-ModuleMember -Function $sharedFunctionNames -Variable $sharedClassNames
-# Load private functions first (these won't be exported)
-$PrivatePath = Join-Path $ModuleRoot 'Private'
-if (Test-Path $PrivatePath)
-{
-    Get-ChildItem -Path $PrivatePath -Filter '*.ps1' -Recurse | ForEach-Object {
-        . $_.FullName
+
+function Get-ModuleType {
+    param(
+        [Parameter(Mandatory, Position = 1)]
+        [string]$RootPath,
+        [Parameter(Mandatory, Position = 2)]
+        [string]$TypeName,
+        [Parameter()]
+        [string]$Property = 'BaseName'
+    )
+
+    $typesPath = Join-Path $RootPath $TypeName
+    if (Test-Path $typesPath) {
+        $types = Get-ChildItem -Path $typesPath -Filter '*.ps1' |
+            Sort-Object $Property # |
+        #   Select-Object -ExpandProperty $Property
+        return $types
+    }
+    else {
+        return @()
     }
 }
-# Load public functions (these will be exported)
-$PublicPath = Join-Path $ModuleRoot 'Public'
-if (Test-Path $PublicPath)
-{
-    Get-ChildItem -Path $PublicPath -Filter '*.ps1' -Recurse | ForEach-Object {
-        . $_.FullName
+
+
+
+$publicFunctions = @()
+$publicClasses = @()
+
+# Shared loading
+$sharedRoot = Join-Path $ModuleRoot '..\Shared'
+$publicClasses += Get-ModuleType $sharedRoot 'Classes'
+$publicFunctions += Get-ModuleType $sharedRoot 'Public'
+
+# Module Loading
+$publicClasses += Get-ModuleType $ModuleRoot 'Classes'
+$publicFunctions += Get-ModuleType $ModuleRoot 'Public'
+$privateFunctions = Get-ModuleType $ModuleRoot 'Private'
+
+Write-Host 'Loading private functions' -ForegroundColor Cyan
+foreach ($function in $privateFunctions) {
+    . $($function.FullName)
+}
+
+Write-Host 'Loading public functions' -ForegroundColor Cyan
+foreach ($function in $publicFunctions) {
+    . $($function.FullName)
+}
+
+# 2) Dot-source every .ps1 under Classes
+Write-Host 'Loading public classes' -ForegroundColor Cyan
+foreach ($class in $publicClasses) {
+    try {
+        . $($class.FullName)
+    }
+    catch {
+        Write-Host "✗ Failed to dot-source $($class.Name): $_" -ForegroundColor Red
     }
 }
-# Load classes
-$ClassesPath = Join-Path $ModuleRoot 'Classes'
-if (Test-Path $ClassesPath)
-{
-    Get-ChildItem -Path $ClassesPath -Filter '*.ps1' -Recurse | ForEach-Object {
-        . $_.FullName
-    }
-}
-# Export public functions
-# Get all functions that were loaded from the Public directory
-$PublicFunctions = @()
-if (Test-Path $PublicPath)
-{
-    $PublicFunctions = Get-ChildItem -Path $PublicPath -Filter '*.ps1' -Recurse | ForEach-Object {
-        $FunctionName = $_.BaseName
-        # Check if the function actually exists after being loaded
-        if (Get-Command -Name $FunctionName -ErrorAction SilentlyContinue)
-        {
-            $FunctionName
-        }
-    } | Where-Object { $_ -ne $null }
-}
-# Add WriteMessageConfig functions to exports for consumer access
-# These functions should be available from the Shared module dot-sourcing
-$SharedFunctions = @('Set-WriteMessageConfig', 'Get-WriteMessageConfig', 'Write-Message')
-foreach ($function in $SharedFunctions) {
-    if (Get-Command -Name $function -ErrorAction SilentlyContinue) {
-        $PublicFunctions += $function
-        Write-Verbose "Added Shared function to exports: $function"
-    } else {
-        Write-Warning "Shared function not found: $function"
-    }
-}
-Export-ModuleMember -Function $PublicFunctions 
+
+Write-Host 'Exporting functions' -ForegroundColor Cyan
+Export-ModuleMember -Function ($publicFunctions | ForEach-Object { $_.BaseName })

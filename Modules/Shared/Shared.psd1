@@ -1,8 +1,8 @@
 @{
     # Version number of this module.
-    ModuleVersion = '0.1.0'
+    ModuleVersion = '0.1.1'
     # ID used to uniquely identify this module
-    GUID = '12345678-1234-1234-1234-123456789012'
+    GUID = '9ee9561a-a12c-43a3-bbca-25669c555b63'
     # Author of this module
     Author = 'Dadstart'
     # Company or vendor of this module
