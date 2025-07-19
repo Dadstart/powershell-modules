@@ -84,4 +84,4 @@ foreach ($function in $SharedFunctions) {
     }
 }
 
-Export-ModuleMember -Function $PublicFunctions 
+Export-ModuleMember -Function $PublicFunctions

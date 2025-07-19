@@ -70,7 +70,7 @@ function Convert-VideoFiles {
                     $extraArgs += "--preset-import-file `"$PresetFile`""
                 }
                 $fullArgs = @($HandbrakeOptions + $extraArgs)
-                $handbrakeExe = $Script:HandBrakeCLIPath
+                $handbrakeExe = 'C:\Program Files\HandBrake\HandBrakeCLI.exe'
                 Write-Message "Convert-VideoFiles: $filePrefix`: HandBrake command: $handbrakeExe $($fullArgs -join ' ')" -Type Verbose
                 # Use Invoke-Process to call HandBrakeCLI
                 Write-Message '** Using Invoke-Process to call HandBrakeCLI with argument array' -Type Debug

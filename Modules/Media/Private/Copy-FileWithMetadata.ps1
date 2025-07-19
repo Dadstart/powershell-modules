@@ -51,6 +51,9 @@ function Copy-FileWithMetadata {
         [Parameter(Mandatory)]
         [ValidateNotNull()]
         [object[]]$Episodes,
+        [Parameter()]
+        [ValidateRange(1, 1000)]
+        [int]$EpisodeStart = 1,
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]$Destination,
@@ -63,7 +66,7 @@ function Copy-FileWithMetadata {
     )
     begin {
         $allFiles = @()
-        Write-Message "Initializing file copying with metadata and pipeline support" -Type Verbose
+        Write-Message 'Initializing file copying with metadata and pipeline support' -Type Verbose
         Write-Message "Destination: $Destination" -Type Verbose
         Write-Message "Title: $Title" -Type Verbose
         Write-Message "Season: $Season" -Type Verbose
@@ -75,33 +78,39 @@ function Copy-FileWithMetadata {
         }
     }
     end {
-        return Invoke-WithErrorHandling -OperationName "File copying with metadata" -DefaultReturnValue @() -ErrorEmoji "🎬" -ScriptBlock {
+        return Invoke-WithErrorHandling -OperationName 'File copying with metadata' -DefaultReturnValue @() -ErrorEmoji "🎬" -ScriptBlock {
             # Check if we have enough files for all episodes
             if ($allFiles.Count -eq 0) {
                 Write-Message '🚫 No files provided for copying.' -Type Error
                 return @()
             }
-            if ($allFiles.Count -lt $Episodes.Count) {
-                Write-Message "⚠️ Found $($allFiles.Count) files but need $($Episodes.Count) episodes. Some episodes may be missing." -Type Warning
-            }
+
             # Copy files with TVDb metadata
-            Write-Message "🎬 Copying $($allFiles.Count) files to destination"
+            Write-Message "🎬 Copying $($allFiles.Count) files to destination" -Type Processing
             $copiedFiles = @()
-            for ($i = 0; $i -lt [Math]::Min($Episodes.Count, $allFiles.Count); $i++) {
-                $episode = $Episodes[$i]
+            $episodeIndex = $episodeStart - 1
+            $maxCount = [Math]::Min($Episodes.Count - $EpisodeStart, $allFiles.Count)
+            for ($i = 0; $i -lt $maxCount; $i++) {
+                $episode = $Episodes[$episodeIndex++]
                 $file = $allFiles[$i]
+                Write-Message "Episode: '$($episode.Title)' ($($file.Name))" -Type Processing
+
                 # Create episode-based filename with TVDb metadata
-                $episodeNumber = $episode.Number
-                $episodeTitle = $episode.Name
+                $episodeNumber = $episode.EpisodeNumber
+                $episodeTitle = $episode.Title
                 $tvdbId = $episode.Id
+
                 # Clean episode title for filename
                 $cleanTitle = $episodeTitle -replace '[<>:"/\\|?*]', ''
                 $cleanTitle = $cleanTitle -replace '\s+', ' '
                 $cleanTitle = $cleanTitle.Trim()
+
                 # Create new filename with metadata
-                $newFileName = "$Title {tvdb $tvdbId} - s{0:D2}e{1:D2} - $cleanTitle.mkv" -f $Season, $episodeNumber
+                $seasonEpisodeString = 's{0:D2}e{1:D2}' -f $Season, $episodeNumber
+                $newFileName = "$Title {tvdb $tvdbId} - $seasonEpisodeString.mkv"
                 $destinationPath = Get-Path -Path $Destination, $newFileName -PathType Absolute
                 Write-Message "📁 Copying: $($file.Name) -> $newFileName" -Type Verbose
+
                 # Check if destination file already exists with same size
                 if (Test-Path $destinationPath) {
                     $existingFile = Get-Item $destinationPath
@@ -114,14 +123,10 @@ function Copy-FileWithMetadata {
                         Write-Message "⚠️ File exists but different size, will overwrite: $newFileName" -Type Warning
                     }
                 }
+
                 # Copy file with WhatIf/Confirm support
-                $copyParams = @{
-                    Path = $file.FullName
-                    Destination = $destinationPath
-                    Force = $true
-                }
-                if ($PSCmdlet.ShouldProcess($destinationPath, "Copy file")) {
-                    Copy-Item @copyParams
+                if ($PSCmdlet.ShouldProcess($destinationPath, 'Copy file')) {
+                    Copy-Item -Path $file.FullName -Destination $destinationPath -Force
                     if (Test-Path $destinationPath) {
                         Write-Message "✅ Copied: $newFileName" -Type Success
                         $copiedFiles += $destinationPath
@@ -135,7 +140,7 @@ function Copy-FileWithMetadata {
                     $copiedFiles += $destinationPath
                 }
             }
-            Write-Message "🎯 Total files copied: $($copiedFiles.Count)" -Type Verbose
+            Write-Message "🎯 Total files copied: $($copiedFiles.Count)" -Type Success
             return $copiedFiles
         }
     }

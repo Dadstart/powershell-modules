@@ -170,7 +170,7 @@ class MediaStreamInfo {
             }
         }
         # Build ffmpeg arguments using the extracted method
-        $ffmpegArgs = $this.GetFFMpegArgs($OutputPath)
+        $ffmpegArgs = $this.GetFFMpegFullArgs($OutputPath)
         Write-Verbose "FFmpeg command: ffmpeg $($ffmpegArgs -join ' ')"
         $progressActivity = "Exporting $($this.CodecType) Stream $($this.TypeIndex) from $($this.SourceFile)"
         try {
