@@ -31,8 +31,6 @@ function Get-MultipleAudioStreams {
         [ValidateNotNullOrEmpty()]
         [string]$File,
         [Parameter()]
-        [string]$Language = 'eng',
-        [Parameter()]
         [switch]$WriteHost
     )
     begin {
@@ -57,7 +55,7 @@ function Get-MultipleAudioStreams {
         Write-Message "Processing $($allFiles.Count) files for multiple audio streams" -Type Verbose
         try {
             # Use Get-MediaStreamCollection for efficient processing
-            $streamCollection = Get-MediaStreamCollection -Paths $allFiles -Type Audio -Language $Language
+            $streamCollection = $allFiles | Get-MediaStreamCollection -Type Audio
             if (-not $streamCollection -or $streamCollection.Count -eq 0) {
                 Write-Message "No audio streams found in any files" -Type Verbose
                 return @{}

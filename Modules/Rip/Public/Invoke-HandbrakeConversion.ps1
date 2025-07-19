@@ -47,7 +47,7 @@ function Invoke-HandbrakeConversion {
         $Destination = New-ProcessingDirectory -Path $Destination -Description 'HandBrake output' -SuppressOutput
         Write-Message "Invoke-HandbrakeConversion: Processing $Path for $Language audio streams" -Type Verbose
         # Get filtered audio streams using the centralized function
-        $allStreams = Get-FilteredAudioStreams -Path $Path -Language $Language -Count 10
+        $allStreams = Get-FilteredAudioStreams -Path $Path
         Write-Message "Invoke-HandbrakeConversion: Files ($($allStreams.Count)): $($allStreams.Keys -join ', ')" -Type Verbose
         # Use centralized temp directory management
         Use-TempDirectory -ScriptBlock {

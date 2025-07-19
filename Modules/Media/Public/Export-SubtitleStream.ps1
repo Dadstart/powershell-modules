@@ -93,7 +93,7 @@ function Export-SubtitleStream {
             # Convert to MediaStreamInfoCollection
             $streamCollection = ConvertTo-MediaStreamCollection -Streams $subtitleStreams
             # Export using the collection function
-            $exportResults = Export-MediaStreamCollection -StreamCollection $streamCollection -Type Subtitle -Language $Language -OutputDirectory $OutputDirectory -OutputFormat $OutputFormat -Force:$Force
+            $exportResults = Export-MediaStreamCollection -StreamCollection $streamCollection -Type Subtitle -OutputDirectory $OutputDirectory -OutputFormat $OutputFormat -Force:$Force
             # Process results
             foreach ($result in $exportResults) {
                 if ($result.Success) {

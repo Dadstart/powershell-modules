@@ -38,13 +38,7 @@ function Get-FilteredAudioStreams {
     param(
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]$Path,
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [string]$Language = 'eng',
-        [Parameter()]
-        [ValidateRange(1, 10)]
-        [int]$Count = 1
+        [string]$Path
     )
     $skippedFiles = @()
     $result = @{}
@@ -57,9 +51,9 @@ function Get-FilteredAudioStreams {
     Write-Message "Processing $($mkvFiles.Count) MKV files using Get-MediaStreamCollection" -Type Verbose
     # Use Get-MediaStreamCollection for efficient processing
     $filePaths = $mkvFiles | Select-Object -ExpandProperty FullName
-    $streamCollection = Get-MediaStreamCollection -Paths $filePaths -Type Audio -Language $Language
+    $streamCollection = $filePaths | Get-MediaStreamCollection -Type Audio
     if (-not $streamCollection -or $streamCollection.Count -eq 0) {
-        Write-Message "No audio streams found in any files" -Type Verbose
+        Write-Message 'No audio streams found in any files' -Type Verbose
         return $result
     }
     foreach ($fileEntry in $streamCollection.GetEnumerator()) {
