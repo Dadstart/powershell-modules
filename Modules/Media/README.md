@@ -641,56 +641,6 @@ $qualityPresets = @{
 }
 ```
 
-## Error Handling
-
-All functions include comprehensive error handling and will provide detailed error messages when operations fail.
-
-## Performance
-
-- **Multi-threading** support for faster processing
-- **Hardware acceleration** when available
-- **Progress tracking** for long operations
-- **Memory management** for large files
-
-## Integration
-
-The Media module integrates with:
-- **Shared module** - For consistent logging and error handling
-- **Plex module** - For library management
-- **Rip module** - For media processing workflows
-
-## Best Practices
-
-### File Management
-
-- Always use safe file operations
-- Verify file integrity after operations
-- Keep backups of important files
-- Use appropriate file naming conventions
-
-### Performance
-
-- Monitor system resources during long operations
-- Use hardware acceleration when available
-- Process files in batches for efficiency
-- Clean up temporary files after processing
-
-### Quality Settings
-
-- Choose appropriate quality settings for your needs
-- Test with small samples before batch processing
-- Consider storage space vs. quality trade-offs
-
-## Contributing
-
-When adding new functions to the Media module:
-
-1. Follow the existing naming conventions
-2. Include comprehensive help documentation
-3. Add appropriate error handling using `Invoke-WithErrorHandling`
-4. Write unit tests for new functions
-5. Update this README with new function documentation
-
 ## License
 
 This module is part of the PowerShell modules collection. See the main LICENSE file for details.

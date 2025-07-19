@@ -57,7 +57,6 @@ function Get-MediaStream {
         [StreamType]$Type = [StreamType]::All
     )
     Write-Message "Get-MediaStream: Name: $Name; Index: $Index; Type: $Type" -Type Verbose
-
     if ($Type -eq [StreamType]::All) {
         $codecFilter = $null
     }

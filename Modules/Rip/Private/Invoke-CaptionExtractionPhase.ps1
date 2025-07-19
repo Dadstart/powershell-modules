@@ -50,9 +50,7 @@ function Invoke-CaptionExtractionPhase {
         Write-Message "Files to process: $($CopiedFiles.Count)" -Type Verbose
         # Create caption directory
         $captionDir = New-ProcessingDirectory -Path (Get-Path -Path $SeasonDir, $CaptionDirectory -PathType Absolute) -Description 'caption'
-
         $cmd = { return $CopiedFiles | Invoke-CaptionExtraction -Destination $captionDir }
-
         # Execute caption extraction using the centralized export function
         $captionStats = Export-VideoItem -Path $SeasonDir -Destination $captionDir -CopiedFiles $CopiedFiles -Command $cmd -ItemType Caption
         if ($captionStats.Processed -gt 0) {

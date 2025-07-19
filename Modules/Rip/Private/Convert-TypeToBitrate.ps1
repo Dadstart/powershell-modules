@@ -4,7 +4,6 @@ $Script:AudioBitrates = @{
     'Stereo'       = 160
     'Mono'         = 80
 }
-
 function Convert-TypeToBitrate {
     <#
     .SYNOPSIS

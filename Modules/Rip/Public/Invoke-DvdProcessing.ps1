@@ -199,7 +199,6 @@ function Invoke-DvdProcessing {
                 -Episodes $episodes `
                 -FilePatterns $FilePatterns `
                 -EpisodeStart $EpisodeStart
-
             if ($copiedFiles.Count -eq 0) {
                 Write-Message '🚫 Video copying failed. Cannot proceed without copied files.' -Type Error
                 return

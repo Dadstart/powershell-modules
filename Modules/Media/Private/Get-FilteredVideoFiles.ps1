@@ -74,13 +74,11 @@ function Get-FilteredVideoFiles {
                 }
             }
             Write-Message "Found $($directories.Count) total directories to process" -Type Success
-
             # Check if we have any valid directories
             if ($directories.Count -eq 0) {
                 Write-Message '🚫 No valid directories found. Exiting.' -Type Error
                 return @()
             }
-
             $allAcceptedFiles = @()
             # Start progress tracking for directory processing
             $directoryProgress = Start-ProgressActivity -Activity 'Directory Processing' -Status 'Processing directories...' -TotalItems $directories.Count
