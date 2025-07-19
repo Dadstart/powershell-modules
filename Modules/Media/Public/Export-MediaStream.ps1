@@ -58,7 +58,7 @@ function Export-MediaStream {
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
     [OutputType([void])]
     param (
-        [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory, Position = 0, ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
         [string]$InputPath,
         [Parameter(Mandatory, Position = 1)]
@@ -74,16 +74,15 @@ function Export-MediaStream {
         [switch]$Force
     )
     process {
-        foreach ($function in @('Get-MediaStreams', 'Invoke-FFMpeg')) {
-            $PSDefaultParameterValues["$function`:Verbose"] = $VerbosePreference
-            $PSDefaultParameterValues["$function`:Debug"] = $DebugPreference
-        }
+        Write-Message 'Export-MediaStream' -Type Verbose
+        Write-Message "InputPath: $InputPath; Index: $Index; Type: $Type" -Type Verbose
         $stream = Get-MediaStream -Name $InputPath -Index $Index -Type $Type
         if ($stream) {
+            Write-Message "Stream found: $($stream.Name)" -Type Verbose
             $stream.Export($OutputPath, $Force)
         }
         else {
-            Write-Error "Stream not found at index $Index for type $Type in file $InputPath"
+            Write-Message "Stream not found at index $Index for type $Type in file $InputPath" -Type Error
         }
         return
     }

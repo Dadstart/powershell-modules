@@ -69,7 +69,7 @@ function Get-AudioStream {
         try {
             Write-Message "Processing $($allFiles.Count) files using Get-MediaStreamCollection" -Type Verbose
             # Use Get-MediaStreamCollection for efficient processing
-            $streamCollection = Get-MediaStreamCollection -Paths $allFiles -Type Audio -Language $Language
+            $streamCollection = $allFiles | Get-MediaStreamCollection -Type Audio
             if (-not $streamCollection -or $streamCollection.Count -eq 0) {
                 Write-Message "No audio streams found in any files" -Type Verbose
                 return @()

@@ -1,7 +1,7 @@
 #Requires -Version 7.4
 
-# Rip Module Root Script
-# This file serves as the entry point for the Rip module
+# PlexTools Module Root Script
+# This file serves as the entry point for the PlexTools module
 
 # Define enums at module level
 enum PlexBodyFormat {

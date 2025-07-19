@@ -44,7 +44,7 @@ function Get-AudioData {
         # Use Get-MediaStreamCollection for efficient processing
         $videoPaths = $videos | Select-Object -ExpandProperty FullName
         Write-Message "Processing $($videoPaths.Count) files using Get-MediaStreamCollection" -Type Verbose
-        $streamCollection = Get-MediaStreamCollection -Paths $videoPaths -Type Audio
+        $streamCollection = $videoPaths | Get-MediaStreamCollection -Type Audio
         if (-not $streamCollection -or $streamCollection.Count -eq 0) {
             Write-Message "No audio streams found in any files" -Type Verbose
             return @()

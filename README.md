@@ -19,7 +19,7 @@ This repository contains multiple PowerShell modules that follow best practices 
 
 ## Project Structure
 
-```
+```Powershell
 powershell-modules/
 ├── Modules/
 │   ├── Shared/
@@ -216,24 +216,6 @@ The project includes VS Code configuration for:
 - IntelliSense support for modules
 - PSScriptAnalyzer integration with real-time analysis
 - File associations for PowerShell files
-
-## Module Details
-
-### Media Module
-
-**Functions**:
-- `Get-MediaInfo`: Retrieve detailed information about media files
-- `Convert-Media`: Convert media files between formats
-- `Optimize-Media`: Optimize media files for size/quality
-- `Get-MediaMetadata`: Extract metadata from media files
-
-**Classes**:
-- `MediaFile`: Represents a media file with properties and methods
-
-### Shared Functions
-
-**Get-Path**: Validates and normalizes file paths with type checking
-**Write-Message**: Provides consistent logging and message formatting
 
 ## Contributing
 

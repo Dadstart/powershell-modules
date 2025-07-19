@@ -68,22 +68,24 @@ function Invoke-VideoCopy {
         [Parameter(Mandatory)]
         [ValidateNotNull()]
         [object[]]$Episodes,
+        [ValidateRange(1, 1000)]
+        [int]$EpisodeStart = 1,
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [ValidateCount(1, [int]::MaxValue)]
-        [ValidateFilePatternAttribute()]
         [string[]]$FilePatterns,
         [Parameter()]
-        [ValidatePositiveNumberAttribute()]
-        [long]$MinimumFileSize = $Script:DefaultMinimumFileSize
+        [ValidateRange(1, [int]::MaxValue)]
+        [long]$MinimumFileSize = 1GB
     )
     begin {
+        Write-Message '🎬 Video Copy phase' -Type Processing
         $allPaths = @()
-        Write-Message "Initializing video copy with pipeline support" -Type Verbose
+        Write-Message 'Initializing video copy' -Type Verbose
         Write-Message "Destination: $Destination" -Type Verbose
         Write-Message "Title: $Title" -Type Verbose
         Write-Message "Season: $Season" -Type Verbose
         Write-Message "Episode count: $($Episodes.Count)" -Type Verbose
+        Write-Message "Episode start: $EpisodeStart" -Type Verbose
         Write-Message "File patterns: $($FilePatterns -join ', ')" -Type Verbose
         Write-Message "Minimum file size: $MinimumFileSize" -Type Verbose
     }
@@ -93,8 +95,7 @@ function Invoke-VideoCopy {
         }
     }
     end {
-        return Invoke-WithErrorHandling -OperationName "Video copying" -DefaultReturnValue @() -ErrorEmoji "🎬"  -ScriptBlock {
-            Write-Message '🎬 Video copying phase' -Type Processing
+        return Invoke-WithErrorHandling -OperationName 'Video Copy' -DefaultReturnValue @() -ErrorEmoji '🎬' -ScriptBlock {
             Write-Message "Processing directories: $($allPaths -join ', ')" -Type Verbose
             # Step 1: Get filtered video files using the extracted helper function
             $allAcceptedFiles = Get-FilteredVideoFiles -Path $allPaths -FilePatterns $FilePatterns -MinimumFileSize $MinimumFileSize
@@ -104,8 +105,15 @@ function Invoke-VideoCopy {
                 return @()
             }
             # Step 2: Copy files with metadata using the extracted helper function
-            $copiedFiles = Copy-FileWithMetadata -Files $allAcceptedFiles -Episodes $Episodes -Destination $Destination -Title $Title -Season $Season
+            $copiedFiles = Copy-FileWithMetadata `
+                -Files $allAcceptedFiles `
+                -Episodes $Episodes `
+                -Destination $Destination `
+                -Title $Title `
+                -Season $Season `
+                -EpisodeStart $EpisodeStart
             return $copiedFiles
         }
+        Write-Message 'Invoke-VideoCopy: begin (start)' -Type Processing
     }
-} 
+}

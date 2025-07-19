@@ -61,10 +61,10 @@ function Export-Chapter {
         Write-Message "ffmpeg command arguments: $($ffmpegArgs -join ' ')" -Type Verbose
         if ($PSCmdlet.ShouldProcess("$InputFile ➡️ $OutputFile", 'Extract chapter')) {
             Write-Message 'Executing ffmpeg chapter extraction' -Type Verbose
-            $ffmpegOutput = Invoke-FFmpeg -Arguments $ffmpegArgs            
-            Write-Message "ffmpeg completed with exit code: $($ffmpegOutput.ExitCode)" -Type Success
-            Write-Message "ffmpeg output $($ffmpegOutput.Output?.Length)" -Type Processing
-            Write-Message "ffmpeg output $($ffmpegOutput.Error?.Length)" -Type Processing
+            $ffmpegOutput = Invoke-FFmpeg -Arguments $ffmpegArgs
+            Write-Message "ffmpeg completed with exit code: $($ffmpegOutput.ExitCode)" -Type Verbose
+            Write-Message "ffmpeg output $($ffmpegOutput.Output?.Length)" -Type Verbose
+            Write-Message "ffmpeg error $($ffmpegOutput.Error?.Length)" -Type Verbose
             if ($ffmpegOutput.ExitCode -ne 0) {
                 Write-Message 'ffmpeg chapter extraction failed' -Type Verbose
                 Write-Message "ffmpeg failed with exit code: $($ffmpegOutput.ExitCode)" -Type Error

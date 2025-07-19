@@ -1,3 +1,9 @@
+# Audio bitrates
+$Script:AudioBitrates = @{
+    'Surround 5.1' = 384
+    'Stereo'       = 160
+    'Mono'         = 80
+}
 function Convert-TypeToBitrate {
     <#
     .SYNOPSIS

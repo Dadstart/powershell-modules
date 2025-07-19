@@ -158,18 +158,20 @@ function Invoke-DvdProcessing {
         [ValidateNotNullOrEmpty()]
         [string[]]$FilePatterns,
         [Parameter(Mandatory)]
-        [ValidateSeasonNumberAttribute()]
+        [ValidateRange(1, 1000)]
         [int]$Season,
+        [Parameter()]
+        [int]$EpisodeStart = 1,
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]$TvDbSeriesUrl,
         [Parameter()]
-        [switch[]]$SkipChapterExtraction,
+        [switch]$SkipChapterExtraction,
         [Parameter()]
-        [switch[]]$SkipCaptionExtraction
+        [switch]$SkipCaptionExtraction
     )
     begin {
-        Write-Message '🚀 Starting $Title processing' -Type Processing
+        Write-Message "🚀 Starting $Title processing" -Type Processing
         Write-Message 'Starting DVD processing workflow' -Type Verbose
         Write-Message "Title: $Title" -Type Verbose
         Write-Message "Directories: $Path" -Type Verbose
@@ -178,18 +180,25 @@ function Invoke-DvdProcessing {
         Write-Message "TVDb URL: $TvDbSeriesUrl" -Type Verbose
     }
     process {
-        Invoke-WithErrorHandling -OperationName "DVD processing" -DefaultReturnValue @() -ErrorEmoji "🎬" -ScriptBlock {
+        Invoke-WithErrorHandling -OperationName 'DVD processing' -DefaultReturnValue @() -ErrorEmoji '🎬' -ScriptBlock {
             # Step 1: Create directory structure using the extracted helper function
             $dirStructure = New-ProcessingDirectoryStructure -Title $Title -Season $Season
             $seasonDir = $dirStructure.SeasonDir
             # Step 2: Retrieve TVDb episode information using the season scan function
-            $episodeInfo = Invoke-SeasonScan -Season $Season -TvDbSeriesUrl $TvDbSeriesUrl            
-            if ($episodeInfo.Count -eq 0) {
+            $episodes = Invoke-SeasonScan -Season $Season -TvDbSeriesUrl $TvDbSeriesUrl
+            if ($episodes.Count -eq 0) {
                 Write-Message '🚫 Season scanning failed. Cannot proceed without episode information.' -Type Error
                 return
             }
             # Step 3: Copy video files using the centralized video copy function
-            $copiedFiles = Invoke-VideoCopy -Path $Path -Destination $seasonDir -Title $Title -Season $Season -EpisodeInfo $episodeInfo -FilePatterns $FilePatterns
+            $copiedFiles = Invoke-VideoCopy `
+                -Path $Path `
+                -Destination $seasonDir `
+                -Title $Title `
+                -Season $Season `
+                -Episodes $episodes `
+                -FilePatterns $FilePatterns `
+                -EpisodeStart $EpisodeStart
             if ($copiedFiles.Count -eq 0) {
                 Write-Message '🚫 Video copying failed. Cannot proceed without copied files.' -Type Error
                 return

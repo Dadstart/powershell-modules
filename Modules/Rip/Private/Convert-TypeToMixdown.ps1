@@ -1,3 +1,9 @@
+# Audio mixdowns
+$Script:AudioMixdowns = @{
+    'Surround 5.1' = '5point1'
+    'Stereo'       = 'stereo'
+    'Mono'         = 'mono'
+}
 function Convert-TypeToMixdown {
     <#
     .SYNOPSIS
@@ -12,4 +18,4 @@ function Convert-TypeToMixdown {
         return $Script:AudioMixdowns[$Type]
     }
     throw "Unknown audio type: $Type"
-} 
+}

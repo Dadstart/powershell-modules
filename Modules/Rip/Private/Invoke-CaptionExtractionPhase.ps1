@@ -15,13 +15,11 @@ function Invoke-CaptionExtractionPhase {
         Array of copied video file paths to process for caption extraction.
     .PARAMETER CaptionDirectory
         Optional custom directory name for captions. Default is 'Captions'.
-    .PARAMETER Formats
-        Array of caption formats to extract. Default is @('srt', 'vtt').
     .EXAMPLE
         $stats = Invoke-CaptionExtractionPhase -SeasonDir "C:\Shows\Breaking Bad\Season 01" -CopiedFiles $videoFiles
         Extracts captions in SRT and VTT formats from all copied video files.
     .EXAMPLE
-        $stats = Invoke-CaptionExtractionPhase -SeasonDir "C:\Shows\The Office\Season 03" -CopiedFiles $videoFiles -CaptionDirectory "Subtitles" -Formats @('srt')
+        $stats = Invoke-CaptionExtractionPhase -SeasonDir "C:\Shows\The Office\Season 03" -CopiedFiles $videoFiles -CaptionDirectory "Subtitles"
         Extracts only SRT captions into a custom "Subtitles" directory.
     .OUTPUTS
         [PSCustomObject] Object containing processing statistics:
@@ -44,31 +42,21 @@ function Invoke-CaptionExtractionPhase {
         [string[]]$CopiedFiles,
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [string]$CaptionDirectory = 'Captions',
-        [Parameter()]
-        [ValidateNotNull()]
-        [string[]]$Formats = @('srt', 'vtt')
+        [string]$CaptionDirectory = 'Captions'
     )
-    return Invoke-WithErrorHandling -OperationName "Caption extraction phase" -DefaultReturnValue @{ Processed = 0; Failed = 0; Total = 0 } -ErrorEmoji "🎬" -ScriptBlock {
-        Write-Message "🎬 Starting caption extraction phase" -Type Processing
+    return Invoke-WithErrorHandling -OperationName 'Caption extraction phase' -DefaultReturnValue @{ Processed = 0; Failed = 0; Total = 0 } -ErrorEmoji "🎬" -ScriptBlock {
+        Write-Message '🎬 Starting caption extraction phase' -Type Verbose
         Write-Message "Caption formats: $($Formats -join ', ')" -Type Verbose
         Write-Message "Files to process: $($CopiedFiles.Count)" -Type Verbose
         # Create caption directory
-        $captionDir = New-ProcessingDirectory -Path (Get-Path -Path $SeasonDir, $CaptionDirectory -PathType Absolute) -Description "caption"
-        # Define the caption extraction command for multiple formats
-        $cmd = {
-            $results = @()
-            foreach ($format in $Formats) {
-                $results += ($CopiedFiles | Invoke-CaptionExtraction -Destination $captionDir -Format $format)
-            }
-            return $results
-        }
+        $captionDir = New-ProcessingDirectory -Path (Get-Path -Path $SeasonDir, $CaptionDirectory -PathType Absolute) -Description 'caption'
+        $cmd = { return $CopiedFiles | Invoke-CaptionExtraction -Destination $captionDir }
         # Execute caption extraction using the centralized export function
         $captionStats = Export-VideoItem -Path $SeasonDir -Destination $captionDir -CopiedFiles $CopiedFiles -Command $cmd -ItemType Caption
         if ($captionStats.Processed -gt 0) {
-            Write-Message "🎬 Captions extracted: $($captionStats.Processed)" -Type Processing
+            Write-Message "🎬 Captions extracted: $($captionStats.Processed)" -Type Success
         } else {
-            Write-Message "⚠️ No captions were extracted" -Type Warning
+            Write-Message '⚠️ No captions were extracted' -Type Warning
         }
         return $captionStats
     }

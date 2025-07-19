@@ -1,16 +1,29 @@
+<#
+    Subtitle Codec → File Extension Mapping
+    | Codec Name | Description | Typical Extension | Extractable with FFmpeg | 
+    subrip: Text-based subtitles; .srt, .vtt
+    webvtt: Web Video Text Tracks; .vtt
+    ass / ssa: Advanced SubStation Alpha; .ass, .ssa
+    hdmv_pgs_subtitle: Blu-ray bitmap subtitles; .sup
+    dvd_subtitle: VOBSUB (DVD bitmap subtitles); .sub + .idx
+    mov_text: MP4 embedded text subtitles; .mp4 container
+    microdvd: Frame-based text subtitles; .sub
+    jacosub: Legacy text format; .jss
+    realtext: RealMedia subtitles; .rt
+#>
+$SubtitleCodecExtensions = @{
+    'subrip'            = '.srt'
+    'webvtt'            = '.vtt'
+    'ass'               = '.ass'
+    'ssa'               = '.ssa'
+    'hdmv_pgs_subtitle' = '.sup'
+    'dvd_subtitle'      = '.sub'
+    'mov_text'          = '.mp4'
+    'microdvd'          = '.sub'
+    'jacosub'           = '.jss'
+    'realtext'          = '.rt'
+}
 function Invoke-CaptionExtraction {
-    [CmdletBinding(SupportsShouldProcess)]
-    param(
-        [Parameter(Mandatory, ValueFromPipeline)]
-        [ValidateNotNull()]
-        [string]$File,
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Destination,
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Format
-    )
     <#
     .SYNOPSIS
         Extracts captions from a collection of video files.
@@ -26,75 +39,89 @@ function Invoke-CaptionExtraction {
     .EXAMPLE
         Invoke-CaptionExtraction -File $file -Destination "C:\Output" -WhatIf
     .OUTPUTS
-        Returns a hashtable with processing statistics.
+        Returns an object with the following properties:
+        - Processed: The number of files that were processed.
+        - Skipped: The number of files that were skipped.
+        - Destination: The directory where extracted caption files were saved.
     #>
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [ValidateNotNull()]
+        [string]$File,
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Destination,
+        [Parameter()]
+        [string]$Language = 'eng'
+    )
     begin {
         $processedCount = 0
         $skippedCount = 0
-        Write-Message "Invoke-CaptionExtraction: Invoking caption extraction" -Type Verbose
-        Write-Message "Invoke-CaptionExtraction: Destination: $Destination" -Type Verbose
+        # TODO: Consider streaming all files at once to Get-MediaStreamCollection
     }
     process {
-        Write-Message "Invoke-CaptionExtraction: File: $File" -Type Verbose
         try {
-            Write-Message "Invoke-CaptionExtraction: 📝 Processing caption extraction for: $File" -Type Verbose
+            Write-Message "📝 Processing caption extraction for: $File" -Type Processing
             # Use Get-MediaStreamCollection for efficient processing
-            $streamCollection = Get-MediaStreamCollection -Paths @($File) -Type Subtitle
+            $streamCollection = Get-MediaStreamCollection -Path $File -Type Subtitle
             if (-not $streamCollection -or $streamCollection.Count -eq 0) {
-                Write-Message "Invoke-CaptionExtraction: ⏭️ Skipping: $($File) - no subtitle streams found" -Type Verbose
+                Write-Message "⏭️ No subtitle streams found in $File. File will be skipped." -Type Warning
                 $skippedCount++
                 return
             }
             # Get streams for this file
-            $subtitleStreams = $streamCollection[$File]
+            $subtitleStreams = $streamCollection.get_Values()[0] | Where-Object { $_.Language -eq $Language }
             if (-not $subtitleStreams) {
-                Write-Message "Invoke-CaptionExtraction: ⏭️ Skipping: $($File) - no subtitle streams found" -Type Verbose
+                Write-Message "No subtitle streams found for language: $Language in file: $File" -Type Warning
                 $skippedCount++
-                return
             }
-            Write-Message "Invoke-CaptionExtraction: $($subtitleStreams.Count) subtitle streams found" -Type Debug
-            # Filter for subrip (SRT) captions
-            $srtStreams = $subtitleStreams | Where-Object { $_.CodecName -eq 'subrip' }                
-            Write-Message "$($srtStreams.Count) SRT streams found" -Type Debug
-            if ($srtStreams.Count -eq 0) {
-                Write-Message "Invoke-CaptionExtraction: ⏭️ Skipping: $($File) - no SRT captions found" -Type Verbose
-                $skippedCount++
-                return
+            Write-Message "$($subtitleStreams.Count) subtitle streams found" -Type Debug
+            $outputStreamsByCodec = @{}
+            foreach ($codec in $SubtitleCodecExtensions.Keys) {
+                $matchingStreams = $subtitleStreams | Where-Object { $_.CodecName -eq $codec }
+                if ($matchingStreams -and ($matchingStreams.Count -gt 0)) {
+                    if ($outputStreamsByCodec.ContainsKey($codec)) {
+                        $outputStreamsByCodec[$codec] += $matchingStreams
+                    }
+                    else {
+                        $outputStreamsByCodec[$codec] = @($matchingStreams)
+                    }
+                }
             }
-            elseif ($srtStreams.Count -gt 1) {
-                Write-Message "Invoke-CaptionExtraction: ⏭️ Skipping: $($File) - multiple SRT captions found. Needs manual processing." -Type Warning
-                $skippedCount++
-                return
+            $global:outputStreamsByCodec = $outputStreamsByCodec
+            foreach ($codec in $outputStreamsByCodec.Keys) {
+                $streams = $outputStreamsByCodec[$codec]
+                if (-not $streams) {
+                    Write-Message "No $codec streams found" -Type Warning
+                    continue
+                }
+                elseif ($streams.Count -gt 1) {
+                    Write-Message "⏭️ $File`: multiple $codec subtitles found. Only the first will be processed. You can manually process the rest of the streams." -Type Warning
+                    $warningCount++
+                }
+                $stream = $streams[0]
+                $baseName = [System.IO.Path]::GetFileNameWithoutExtension($File)
+                $outputPath = Get-Path -Path $Destination, "$baseName$($SubtitleCodecExtensions[$codec])" -PathType Absolute
+                if (Test-Path $outputPath) {
+                    Write-Message "⚠️  Overwriting existing caption file: $outputPath" -Type Info
+                    Remove-Item $outputPath -Force
+                }
+                Write-Message "Extracting caption $($stream.TypeIndex) from $File to $outputPath" -Type Verbose
+                Export-MediaStream -InputPath $File -Type Subtitle -Index $stream.TypeIndex -OutputPath $outputPath
+                Write-Message "✅ Successfully extracted caption to: $outputPath" -Type Verbose
+                $processedCount++
             }
-            # Process SRT stream
-            $stream = $srtStreams[0]
-            $baseName = [System.IO.Path]::GetFileNameWithoutExtension($File)
-            $outputPath = Get-Path -Path $Destination, "$baseName.en.$Format" -PathType Absolute
-            # Check if output file exists and inform user about overwriting
-            if (Test-Path $outputPath) {
-                Write-Message "Invoke-CaptionExtraction: ⚠️  Overwriting existing caption file: $outputPath" -Type Verbose
-            }
-            Write-Message "Invoke-CaptionExtraction: Extracting caption $($stream.TypeIndex) from $File" -Type Verbose
-            # Remove existing file first to ensure clean overwrite
-            if (Test-Path $outputPath) {
-                Remove-Item $outputPath -Force
-            }
-            Export-MediaStream -InputPath $File -Type Subtitle -Index $stream.TypeIndex -OutputPath $outputPath
-            Write-Message "Invoke-CaptionExtraction: ✅ Successfully extracted caption to: $outputPath" -Type Verbose
-            $processedCount++
         }
         catch {
-            throw "Invoke-CaptionExtraction: ❌ Error processing captions for: $File. Error: $($_.Exception.Message)"
+            throw "❌ Error processing captions for: $File. Error: $($_.Exception.Message)"
         }
     }
     end {
-        # Caption extraction summary
-        Write-Message "Invoke-CaptionExtraction: `n📊 === Caption Extraction Summary ===" -Type Verbose
-        Write-Message "Invoke-CaptionExtraction: ✅ Processed: $processedCount" -Type Verbose
-        Write-Message "Invoke-CaptionExtraction: ⏭️ Skipped: $skippedCount" -Type Verbose
-        Write-Message "Invoke-CaptionExtraction :📁 Output directory: $Destination" -Type Verbose
+        Write-Message "📊 Caption extraction complete: ✅ Processed: $processedCount; ❌ Skipped: $skippedCount" -Type Success
         return @{
             Processed   = $processedCount
+            Warning     = $warningCount
             Skipped     = $skippedCount
             Destination = $Destination
         }

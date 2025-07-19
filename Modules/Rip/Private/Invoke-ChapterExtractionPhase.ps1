@@ -45,21 +45,25 @@ function Invoke-ChapterExtractionPhase {
         [string[]]$CopiedFiles,
         [Parameter()]
         [ValidateRange(1, 99)]
-        [int]$ChapterNumber = $Script:DefaultChapterNumber,
+        [int]$ChapterNumber = 3,
         [Parameter()]
         [ValidateRange(1, 300)]
-        [int]$ChapterDuration = $Script:DefaultChapterDuration,
+        [int]$ChapterDuration = 15,
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [string]$ChapterDirectory = 'Chapters'
     )
-    return Invoke-WithErrorHandling -OperationName "Chapter extraction phase" -DefaultReturnValue @{ Processed = 0; Failed = 0; Total = 0 } -ErrorEmoji "🎬" -ScriptBlock {
-        Write-Message "🎬 Starting chapter extraction phase" -Type Processing
+    return Invoke-WithErrorHandling `
+        -OperationName 'Chapter extraction phase' `
+        -DefaultReturnValue @{ Processed = 0; Failed = 0; Total = 0 } `
+        -ErrorEmoji '🎬' `
+        -ScriptBlock {
+        Write-Message '🎬 Starting chapter extraction phase' -Type Verbose
         Write-Message "Chapter number: $ChapterNumber" -Type Verbose
         Write-Message "Chapter duration: $ChapterDuration seconds" -Type Verbose
         Write-Message "Files to process: $($CopiedFiles.Count)" -Type Verbose
         # Create chapter directory
-        $chapterDir = New-ProcessingDirectory -Path (Get-Path -Path $SeasonDir, $ChapterDirectory -PathType Absolute) -Description "chapter"
+        $chapterDir = New-ProcessingDirectory -Path (Get-Path -Path $SeasonDir, $ChapterDirectory -PathType Absolute) -Description 'chapter'
         # Define the chapter extraction command
         $cmd = {
             return $CopiedFiles | Invoke-ChapterExtraction -ChapterNumber $ChapterNumber -ChapterDuration $ChapterDuration -ChapterDirectory $chapterDir
@@ -68,9 +72,10 @@ function Invoke-ChapterExtractionPhase {
         $chapterStats = Export-VideoItem -Path $SeasonDir -Destination $chapterDir -CopiedFiles $CopiedFiles -Command $cmd -ItemType Chapter
         if ($chapterStats.Processed -gt 0) {
             Write-Message "🎬 Chapters extracted: $($chapterStats.Processed)" -Type Processing
-        } else {
-            Write-Message "⚠️ No chapters were extracted" -Type Warning
+        }
+        else {
+            Write-Message '⚠️ No chapters were extracted' -Type Warning
         }
         return $chapterStats
     }
-} 
+}

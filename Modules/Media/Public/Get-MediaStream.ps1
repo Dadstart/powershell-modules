@@ -56,6 +56,7 @@ function Get-MediaStream {
         [Parameter(Mandatory = $false)]
         [StreamType]$Type = [StreamType]::All
     )
+    Write-Message "Get-MediaStream: Name: $Name; Index: $Index; Type: $Type" -Type Verbose
     if ($Type -eq [StreamType]::All) {
         $codecFilter = $null
     }
@@ -66,16 +67,16 @@ function Get-MediaStream {
     $quotedName = '"' + $Name + '"'
     $processResult = Invoke-FFProbe '-select_streams', "$codecFilter$Index", '-show_streams', $quotedName
     if ($processResult.ExitCode) {
-        Write-Error "Get-MediaStream: Failed to get media stream. Exit code: $($processResult.ExitCode)"
+        Write-Message "Get-MediaStream: Failed to get media stream. Exit code: $($processResult.ExitCode)" -Type Error
         return $null
     }
     $stream = $processResult.Json.streams[0]
     if (-not $stream) {
-        Write-Verbose "No stream found at index $Index for type $Type in file $Name"
+        Write-Message "No stream found at index $Index for type $Type in file $Name" -Type Verbose
         return $null
     }
     # Create MediaStreamInfo object
     $mediaStream = [MediaStreamInfo]::new($Name, $stream, $Index)
-    Write-Verbose "Retrieved $Type stream at index $Index from $Name (type: $($stream.codec_type))."
+    Write-Message "Retrieved $Type stream at index $Index from $Name (type: $($stream.codec_type))." -Type Verbose
     return $mediaStream
 }

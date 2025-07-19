@@ -254,5 +254,5 @@ This module is part of the PowerShell modules collection. See the main LICENSE f
 
 For issues and questions:
 
-- GitHub Issues: https://github.com/Dadstart/powershell-modules/issues
+- GitHub Issues: <https://github.com/Dadstart/powershell-modules/issues>
 - Documentation: See individual function help with `Get-Help <FunctionName>`

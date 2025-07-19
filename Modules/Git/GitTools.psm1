@@ -1,7 +1,7 @@
 #Requires -Version 7.4
-
-# Rip Module Root Script
-# This file serves as the entry point for the Rip module
+<<<<<<< HEAD
+# GitTools Module Root Script
+# This file serves as the entry point for the GitTools module
 
 # Get the module root directory
 $ModuleRoot = $PSScriptRoot

@@ -45,7 +45,7 @@ function New-ProcessingDirectoryStructure {
         [int]$Season,
         [Parameter()]
         [ValidateNotNull()]
-        [string[]]$SubDirectories = $Script:ProcessingSubDirectories,
+        [string[]]$SubDirectories = @('HandBrake', 'Remux', 'Topaz', 'Bonus'),
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [string]$BasePath = '.'

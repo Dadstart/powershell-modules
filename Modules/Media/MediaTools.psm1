@@ -1,7 +1,7 @@
 #Requires -Version 7.4
 
-# Rip Module Root Script
-# This file serves as the entry point for the Rip module
+# MediaTools Module Root Script
+# This file serves as the entry point for the MediaTools module
 
 # Get the module root directory
 $ModuleRoot = $PSScriptRoot

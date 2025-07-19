@@ -43,7 +43,6 @@ function Invoke-SafeFileRename {
         [hashtable]$FileMappings
     )
     begin {
-        Set-DefaultParameters
         Write-Message 'Initializing SafeFileRename for multiple directories' -Type Verbose
         Write-Message "File mappings: $($FileMappings | ConvertTo-Json -Compress)" -Type Verbose
         $processedDirectories = 0
