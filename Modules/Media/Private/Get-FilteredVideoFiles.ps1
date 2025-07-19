@@ -47,16 +47,14 @@ function Get-FilteredVideoFiles {
         [string[]]$Path,
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [ValidateCount(1, [int]::MaxValue)]
-        [ValidateFilePatternAttribute()]
         [string[]]$FilePatterns,
         [Parameter()]
-        [ValidatePositiveNumberAttribute()]
+        [ValidateRange(1, [int]::MaxValue)]
         [long]$MinimumFileSize = $Script:DefaultMinimumFileSize
     )
     begin {
         $allDirectories = @()
-        Write-Message 'Initializing file filtering with pipeline support' -Type Verbose
+        Write-Message 'Initializing file filtering' -Type Verbose
         Write-Message "File patterns: $($FilePatterns -join ', ')" -Type Verbose
         Write-Message "Minimum file size: $MinimumFileSize" -Type Verbose
     }
@@ -66,20 +64,23 @@ function Get-FilteredVideoFiles {
         }
     }
     end {
-        return Invoke-WithErrorHandling -OperationName 'File filtering' -DefaultReturnValue @() -ErrorEmoji '🎬' -ScriptBlock {
-            Write-Message "Processing directories: $($allDirectories -join ', ')" -Type Verbose
+        return Invoke-WithErrorHandling -OperationName 'File Filtering' -DefaultReturnValue @() -ErrorEmoji '🎬' -ScriptBlock {
+            Write-Message "Get-FilteredVideoFilesProcessing directories: $($allDirectories -join ', ')" -Type Info
             # Resolve all directories to absolute paths
             $directories = @()
-            Get-ChildItem -Path $allDirectories -Directory | ForEach-Object {
-                Write-Message "📂 Found directory: $($_)" -Type Verbose
-                $directories += $_.FullName
+            Get-Item -Path $allDirectories | ForEach-Object {
+                if ($_.PSIsContainer) {
+                    $directories += $_.FullName
+                }
             }
+            Write-Message "Found $($directories.Count) total directories to process" -Type Success
+
             # Check if we have any valid directories
             if ($directories.Count -eq 0) {
                 Write-Message '🚫 No valid directories found. Exiting.' -Type Error
                 return @()
             }
-            Write-Message "Found $($directories.Count) directories to process" -Type Verbose
+
             $allAcceptedFiles = @()
             # Start progress tracking for directory processing
             $directoryProgress = Start-ProgressActivity -Activity 'Directory Processing' -Status 'Processing directories...' -TotalItems $directories.Count

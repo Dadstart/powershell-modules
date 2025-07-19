@@ -35,7 +35,7 @@ function Invoke-SeasonScan {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [ValidateSeasonNumberAttribute()]
+        [ValidateRange(1, 1000)]
         [int]$Season,
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]

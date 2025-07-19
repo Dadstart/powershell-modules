@@ -8,11 +8,11 @@ function Invoke-ChapterExtraction {
         [ValidateNotNullOrEmpty()]
         [string]$ChapterDirectory,
         [Parameter()]
-        [ValidateEpisodeNumberAttribute()]
+        [ValidateRange(1, 1000)]
         [int]$ChapterNumber = 2,
         [Parameter()]
-        [ValidatePositiveNumberAttribute()]
-        [int]$ChapterDuration = 30
+        [ValidateRange(1, 300)]
+        [int]$ChapterDuration = 15
     )
     <#
     .SYNOPSIS
@@ -36,7 +36,7 @@ function Invoke-ChapterExtraction {
         Returns a hashtable with processing statistics.
     #>
     begin {
-        Write-Message "`n🎬 === Chapter Extraction Phase ===" -Type Verbose
+        Write-Message '🎬 Chapter Extraction Phase' -Type Verbose
         $processedCount = 0
         $skippedCount = 0
         # Create clips subdirectory
