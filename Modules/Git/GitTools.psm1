@@ -1,5 +1,4 @@
 #Requires -Version 7.4
-<<<<<<< HEAD
 # GitTools Module Root Script
 # This file serves as the entry point for the GitTools module
 

@@ -17,8 +17,6 @@
     RootModule = 'MediaTools.psm1'
     # Functions to export from this module
     # FunctionsToExport = @()  # Commented out to allow dynamic exports from .psm1
-
->> main
     # Cmdlets to export from this module
     CmdletsToExport = @()
     # Variables to export from this module
@@ -44,4 +42,4 @@
     }
     # HelpInfo URI of this module
     HelpInfoURI = 'https://github.com/Dadstart/powershell-modules/issues'
-} 
+}
