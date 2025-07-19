@@ -157,9 +157,9 @@ Invoke-BonusContentProcessing -DriveLetter "D:" -OutputPath "C:\Bonus\Movie" -Fe
 - [RIP VIDEO FILES](#rip-video-files)
 - [PROCESS RIPPED VIDEO FILES](#process-ripped-video-files)
 - [VERIFY AND RENAME](#verify-and-rename)
-- [HANDBRAKE](#handbrake)
-- [REMUX](#remux)
-- [TOPAZ](#topaz)
+- [HANDBRAKE](#handbrake) - only for files being upscaled
+- [REMUX](#remux) - only for files being upscaled
+- [TOPAZ](#topaz) - only for files being upscaled
 - [BONUS](#bonus)
 - [PLEX](#plex)
 

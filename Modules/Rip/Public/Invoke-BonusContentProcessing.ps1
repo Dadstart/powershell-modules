@@ -34,9 +34,6 @@ function Invoke-BonusContentProcessing {
         [ValidateNotNullOrEmpty()]
         [string]$Destination,
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [string]$Language = 'eng',
-        [Parameter()]
         [switch]$Force
     )
     begin {
@@ -57,7 +54,7 @@ function Invoke-BonusContentProcessing {
         $outputDirFull = Get-Path -Path $Destination -PathType Absolute -Create Directory
         Write-Message "Processing $originalDirFull for $Language audio streams" -Type Verbose
         # Get filtered audio streams using the centralized function
-        $streamResult = Get-FilteredAudioStreams -Path $originalDirFull -Language $Language -Count 1
+        $streamResult = Get-FilteredAudioStreams -Path $originalDirFull
         if ($streamResult.Count -eq 0) {
             Write-Message 'No streams found' -Type Warning
             return

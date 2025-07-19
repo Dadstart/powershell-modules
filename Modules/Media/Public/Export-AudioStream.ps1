@@ -93,7 +93,7 @@ function Export-AudioStream {
             # Convert to MediaStreamInfoCollection
             $streamCollection = ConvertTo-MediaStreamCollection -Streams $audioStreams
             # Export using the collection function
-            $exportResults = Export-MediaStreamCollection -StreamCollection $streamCollection -Type Audio -Language $Language -OutputDirectory $OutputDirectory -OutputFormat $OutputFormat -Force:$Force
+            $exportResults = Export-MediaStreamCollection -StreamCollection $streamCollection -Type Audio -OutputDirectory $OutputDirectory -OutputFormat $OutputFormat -Force:$Force
             # Process results
             foreach ($result in $exportResults) {
                 if ($result.Success) {

@@ -32,8 +32,6 @@ function Get-SubtitleStream {
         [ValidateNotNullOrEmpty()]
         [string[]]$Source,
         [Parameter()]
-        [string]$Language = 'eng',
-        [Parameter()]
         [string]$CodecName
     )
     begin {
@@ -69,7 +67,7 @@ function Get-SubtitleStream {
         try {
             Write-Message "Processing $($allFiles.Count) files using Get-MediaStreamCollection" -Type Verbose
             # Use Get-MediaStreamCollection for efficient processing
-            $streamCollection = Get-MediaStreamCollection -Paths $allFiles -Type Subtitle -Language $Language
+            $streamCollection = $allFiles | Get-MediaStreamCollection -Type Subtitle
             if (-not $streamCollection -or $streamCollection.Count -eq 0) {
                 Write-Message "No subtitle streams found in any files" -Type Verbose
                 return @()
