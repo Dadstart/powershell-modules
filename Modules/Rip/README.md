@@ -75,11 +75,10 @@ Process DVDs with automated ripping and conversion workflows.
 
 ```powershell
 # Process a DVD with default settings
-Invoke-DvdProcessing -DriveLetter "D:" -OutputPath "C:\Rips\Movie"
+Invoke-DvdProcessing -Title 'My TV Show' -Path '.\my-tv-show\Disc 6.*' -FilePatterns "B4*.mkv","B3*.mkv" -Season 3 -TvDbSeriesUrl 'https://thetvdb.com/series/my-tv-show'
 
-# Process with custom settings
-Invoke-DvdProcessing -DriveLetter "D:" -OutputPath "C:\Rips\Movie" -Quality "High" -AudioTracks @(0,1)
-```
+# Process a single disc directory starting with episode 7
+Invoke-DvdProcessing -Title 'My TV Show' -Path '.\my-tv-show\Season 6 Disc 2' -FilePatterns (@('t00','t02','t03','t08','t09','t10') | % { "*$_.mkv" }) -TvDbSeriesUrl 'https://thetvdb.com/series/my-tv-show' -Season 6 -EpisodeStart 7```
 
 ### Video Conversion
 
