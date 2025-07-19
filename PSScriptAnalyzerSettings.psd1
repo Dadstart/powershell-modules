@@ -78,10 +78,7 @@
                 'Get-ItemStreamWriter'
                 'Get-ItemStreamReader',
                 'Get-ItemStreamWriter'
-                )
-        }
-        PSAvoidUsingUsernameAndPasswordParams = @{
-            Enable = $true
+            )
         }
         PSAvoidUsingWriteHost = @{
             Enable = $true
@@ -247,4 +244,4 @@
         'Warning',
         'Information'
     )
-} 
+}
