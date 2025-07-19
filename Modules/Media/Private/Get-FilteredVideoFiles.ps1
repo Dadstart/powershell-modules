@@ -65,7 +65,7 @@ function Get-FilteredVideoFiles {
     }
     end {
         return Invoke-WithErrorHandling -OperationName 'File Filtering' -DefaultReturnValue @() -ErrorEmoji '🎬' -ScriptBlock {
-            Write-Message "Get-FilteredVideoFilesProcessing directories: $($allDirectories -join ', ')" -Type Info
+            Write-Message "Processing directories: $($allDirectories -join ', ')" -Type Info
             # Resolve all directories to absolute paths
             $directories = @()
             Get-Item -Path $allDirectories | ForEach-Object {
