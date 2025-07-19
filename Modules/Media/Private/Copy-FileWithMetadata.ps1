@@ -88,7 +88,7 @@ function Copy-FileWithMetadata {
             Write-Message "🎬 Copying $($allFiles.Count) files to destination" -Type Processing
             $copiedFiles = @()
             $episodeIndex = $episodeStart - 1
-            $maxCount = [Math]::Min($Episodes.Count - $EpisodeStart, $allFiles.Count)
+            $maxCount = [Math]::Min($Episodes.Count - $episodeIndex, $allFiles.Count)
             for ($i = 0; $i -lt $maxCount; $i++) {
                 $episode = $Episodes[$episodeIndex++]
                 $file = $allFiles[$i]
