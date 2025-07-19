@@ -84,7 +84,6 @@ function Copy-FileWithMetadata {
                 Write-Message '🚫 No files provided for copying.' -Type Error
                 return @()
             }
-
             # Copy files with TVDb metadata
             Write-Message "🎬 Copying $($allFiles.Count) files to destination" -Type Processing
             $copiedFiles = @()
@@ -94,23 +93,19 @@ function Copy-FileWithMetadata {
                 $episode = $Episodes[$episodeIndex++]
                 $file = $allFiles[$i]
                 Write-Message "Episode: '$($episode.Title)' ($($file.Name))" -Type Processing
-
                 # Create episode-based filename with TVDb metadata
                 $episodeNumber = $episode.EpisodeNumber
                 $episodeTitle = $episode.Title
                 $tvdbId = $episode.Id
-
                 # Clean episode title for filename
                 $cleanTitle = $episodeTitle -replace '[<>:"/\\|?*]', ''
                 $cleanTitle = $cleanTitle -replace '\s+', ' '
                 $cleanTitle = $cleanTitle.Trim()
-
                 # Create new filename with metadata
                 $seasonEpisodeString = 's{0:D2}e{1:D2}' -f $Season, $episodeNumber
                 $newFileName = "$Title {tvdb $tvdbId} - $seasonEpisodeString.mkv"
                 $destinationPath = Get-Path -Path $Destination, $newFileName -PathType Absolute
                 Write-Message "📁 Copying: $($file.Name) -> $newFileName" -Type Verbose
-
                 # Check if destination file already exists with same size
                 if (Test-Path $destinationPath) {
                     $existingFile = Get-Item $destinationPath
@@ -123,7 +118,6 @@ function Copy-FileWithMetadata {
                         Write-Message "⚠️ File exists but different size, will overwrite: $newFileName" -Type Warning
                     }
                 }
-
                 # Copy file with WhatIf/Confirm support
                 if ($PSCmdlet.ShouldProcess($destinationPath, 'Copy file')) {
                     Copy-Item -Path $file.FullName -Destination $destinationPath -Force

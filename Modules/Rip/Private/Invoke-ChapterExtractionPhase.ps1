@@ -58,7 +58,6 @@ function Invoke-ChapterExtractionPhase {
         -DefaultReturnValue @{ Processed = 0; Failed = 0; Total = 0 } `
         -ErrorEmoji '🎬' `
         -ScriptBlock {
-
         Write-Message '🎬 Starting chapter extraction phase' -Type Verbose
         Write-Message "Chapter number: $ChapterNumber" -Type Verbose
         Write-Message "Chapter duration: $ChapterDuration seconds" -Type Verbose

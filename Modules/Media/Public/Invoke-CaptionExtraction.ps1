@@ -23,7 +23,6 @@ $SubtitleCodecExtensions = @{
     'jacosub'           = '.jss'
     'realtext'          = '.rt'
 }
-
 function Invoke-CaptionExtraction {
     <#
     .SYNOPSIS
@@ -59,13 +58,11 @@ function Invoke-CaptionExtraction {
     begin {
         $processedCount = 0
         $skippedCount = 0
-
         # TODO: Consider streaming all files at once to Get-MediaStreamCollection
     }
     process {
         try {
             Write-Message "📝 Processing caption extraction for: $File" -Type Processing
-
             # Use Get-MediaStreamCollection for efficient processing
             $streamCollection = Get-MediaStreamCollection -Path $File -Type Subtitle
             if (-not $streamCollection -or $streamCollection.Count -eq 0) {
@@ -73,16 +70,13 @@ function Invoke-CaptionExtraction {
                 $skippedCount++
                 return
             }
-
             # Get streams for this file
             $subtitleStreams = $streamCollection.get_Values()[0] | Where-Object { $_.Language -eq $Language }
             if (-not $subtitleStreams) {
                 Write-Message "No subtitle streams found for language: $Language in file: $File" -Type Warning
                 $skippedCount++
             }
-
             Write-Message "$($subtitleStreams.Count) subtitle streams found" -Type Debug
-
             $outputStreamsByCodec = @{}
             foreach ($codec in $SubtitleCodecExtensions.Keys) {
                 $matchingStreams = $subtitleStreams | Where-Object { $_.CodecName -eq $codec }
@@ -95,9 +89,7 @@ function Invoke-CaptionExtraction {
                     }
                 }
             }
-
             $global:outputStreamsByCodec = $outputStreamsByCodec
-
             foreach ($codec in $outputStreamsByCodec.Keys) {
                 $streams = $outputStreamsByCodec[$codec]
                 if (-not $streams) {
@@ -108,7 +100,6 @@ function Invoke-CaptionExtraction {
                     Write-Message "⏭️ $File`: multiple $codec subtitles found. Only the first will be processed. You can manually process the rest of the streams." -Type Warning
                     $warningCount++
                 }
-
                 $stream = $streams[0]
                 $baseName = [System.IO.Path]::GetFileNameWithoutExtension($File)
                 $outputPath = Get-Path -Path $Destination, "$baseName$($SubtitleCodecExtensions[$codec])" -PathType Absolute
@@ -128,7 +119,6 @@ function Invoke-CaptionExtraction {
     }
     end {
         Write-Message "📊 Caption extraction complete: ✅ Processed: $processedCount; ❌ Skipped: $skippedCount" -Type Success
-
         return @{
             Processed   = $processedCount
             Warning     = $warningCount

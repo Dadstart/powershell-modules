@@ -79,7 +79,6 @@ function Invoke-VideoCopy {
     )
     begin {
         Write-Message '🎬 Video Copy phase' -Type Processing
-
         $allPaths = @()
         Write-Message 'Initializing video copy' -Type Verbose
         Write-Message "Destination: $Destination" -Type Verbose
