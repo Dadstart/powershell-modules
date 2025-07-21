@@ -26,22 +26,62 @@ class ProcessResult {
     [string]$Output
     [string]$Error
     [int]$ExitCode
+
     # Constructor
-    ProcessResult([string]$Output, [string]$Error, [int]$ExitCode) {
-        $this.Output = $Output
-        $this.Error = $Error
-        $this.ExitCode = $ExitCode
+    ProcessResult([string]$ProcessOutput, [string]$ProcessError, [int]$ProcessExitCode) {
+        $this.Output = $ProcessOutput
+        $this.Error = $ProcessError
+        $this.ExitCode = $ProcessExitCode
     }
+
     # Method to check if the process succeeded
-    [bool]IsSuccess() {
+    [bool]get_Success() {
         return $this.ExitCode -eq 0
     }
+
     # Method to check if the process failed
-    [bool]IsFailure() {
+    [bool]get_Failure() {
         return $this.ExitCode -ne 0
     }
+
+    [PSObject]ToJson(
+        [int]$Depth = 10
+    ) {
+        return $this.Output | ConvertFrom-Json -Depth $Depth
+    }
+
+    [PSObject]ToXml() {
+        # Create XML document
+        $doc = New-Object System.Xml.XmlDocument
+
+        # Create root element
+        $root = $doc.CreateElement('ProcessResult')
+        $doc.AppendChild($root)
+
+        # Dynamically add child elements for each key property
+        foreach ($prop in @('Output', 'Error', 'ExitCode')) {
+            $node = $doc.CreateElement($prop)
+            $node.InnerText = $this.$prop
+            $root.AppendChild($node)
+        }
+
+        # Include derived properties
+        $successNode = $doc.CreateElement('Success')
+        $successNode.InnerText = $this.Succeeded
+        $root.AppendChild($successNode)
+        $failureNode = $doc.CreateElement('Failure')
+        $failureNode.InnerText = $this.Failure
+        $root.AppendChild($failureNode)
+
+        # Return structured object containing XML as string and DOM
+        return [PSCustomObject]@{
+            Xml       = $doc.OuterXml      # Raw XML string
+            XmlObject = $doc               # DOM for XPath or advanced use
+        }
+    }
+
     # Override ToString method for better debugging
     [string]ToString() {
-        return "ProcessResult{ExitCode=$($this.ExitCode), OutputLength=$($this.Output.Length), ErrorLength=$($this.Error.Length)}"
+        return "ProcessResult [Success=$($this.Success)]; Output: $(this.Output?.Length) bytes; Error: ($(this.Error?.Length)) bytes"
     }
-} 
+}
