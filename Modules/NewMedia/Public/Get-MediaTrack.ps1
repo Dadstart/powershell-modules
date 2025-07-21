@@ -1,5 +1,3 @@
-. $PSScriptRoot\..\Classes\MediaTrack.ps1
-
 function Get-MediaTrack {
     [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
@@ -7,34 +5,28 @@ function Get-MediaTrack {
         [string]$Path,
         [Parameter()]
         [ValidateSet('Video', 'Audio', 'Subtitle', 'Data', 'All')]
-        [string]$TrackType = 'All',
-        [Parameter()]
-        [switch]$InludeRaw
+        [string]$TrackType = 'All'
     )
 
     process {
         $inputPath = Get-Path -Path $Path -ValidatePath File -PathType Absolute
-        Test-FFMpegInstalled -Throw
 
         $result = Invoke-FFProbe -Arguments @('-show_streams', '-i', $inputPath)
-        if ($result.Failure) {
+        if ($result.ExitCode -ne 0) {
             Write-Message "Failed to get media track for $($inputPath.FullName):`nFFProbe failed with exit code $($result.ExitCode): $($result.ErrorOutput)" -Type Error
-            return $null
+            return @()
         }
 
-        $streams = $result.Json.streams | Where-Object {
-            $TrackType -eq 'All' -or $_.codec_type -eq $TrackType.ToLowerInvariant()
-        }
-        $tracks = @()
-        foreach ($stream in $streams) {
-            $track = [MediaTrack]::new($stream)
-            $tracks += $track
-            if (-not $InludeRaw) {
-                $track.PSObject.Properties.Remove('Raw')
+        Write-Message "FFProbe returned $($result.Json.streams.Count) total streams" -Type Debug
+
+        $tracks = New-Object System.Collections.Generic.List[MediaTrack]
+        foreach ($stream in $result.Json.streams) {
+            if ($TrackType -eq 'All' -or $stream.codec_type -eq $TrackType.ToLowerInvariant()) {
+                $tracks.Add([MediaTrack]::new($stream))
             }
-            Write-Message $track -Type Verbose
         }
 
-        return $tracks
+        Write-Message "Function returning $($tracks.Count) tracks" -Type Verbose
+        return $tracks.ToArray()
     }
 }
