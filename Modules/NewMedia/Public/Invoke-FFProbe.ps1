@@ -1,39 +1,37 @@
 function Invoke-FFProbe {
     <#
     .SYNOPSIS
-        Retrieves an FFProbeResult object from the JSON output of ffprobe.
+        Retrieves a ProcessResult object from the JSON output of ffprobe.
     .DESCRIPTION
-        This function runs ffprobe on the specified media file and returns an FFProbeResult object
-        that contains both the raw process result and the parsed JSON data.
+        This function runs ffprobe on the specified media file and returns a ProcessResult object
+        that contains the raw process result. The output can be parsed as JSON using the FromJson() method.
     .PARAMETER Arguments
         Arguments to pass to ffprobe.
     .RETURNVALUE
-        [FFProbeResult]@{
-            Json     = [PSCustomObject] (JSON Output)
+        [ProcessResult]@{
             Output   = [string] (Standard Output)
-            Error    = [string] (Standard Error)
+            ErrorOutput = [string] (Standard Error)
             ExitCode = [int] (Exit Code)
         }
     .EXAMPLE
         $result = Invoke-FFProbe @('-show_program_version')
-        if ($result.IsSuccess()) {
-            Write-Host "FFProbe version: $($result.Json.program_version.version)"
-        } else {
-            Write-Error "FFProbe failed: $($result.Error)"
+        Write-Host "FFProbe version: $($result.Json.program_version.version)"
+        if ($result.ExitCode -ne 0) {
+            Write-Error "FFProbe failed: $($result.ErrorOutput)"
         }
     .EXAMPLE
         $result = Invoke-FFProbe @('-show_streams', '-i', 'video.mp4')
-        if ($result.IsSuccess()) {
-            $streams = $result.Json.streams
-            Write-Host "Found $($streams.Count) streams in video.mp4"
+        Write-Host "Found $($result.Json.streams.Count) streams in video.mp4"
         }
     .OUTPUTS
-        [FFProbeResult]
-        Returns an FFProbeResult object containing the parsed JSON data and process result.
+        [PSCustomObject]@ {}
+            Output = [string] (Standard Output)
+            Error = [string] (Standard Error)
+            ExitCode = [int] (Exit Code)
+            Json = [PSCustomObject] (JSON Output)
+        }
     .NOTES
         This function requires ffmpeg to be installed and available in the system PATH.
-        The returned FFProbeResult object extends ProcessResult and includes methods like IsSuccess() and IsFailure().
-        If the process fails, the Json property will be null.
     #>
     [CmdletBinding()]
     param (
@@ -45,15 +43,19 @@ function Invoke-FFProbe {
         Test-FFMpegInstalled -Throw | Out-Null
         $finalArguments = @('-v', 'error', '-of', 'json') + $Arguments
         Write-Message "Invoke-FFProbe: Arguments: $($finalArguments -join ' ')" -Type Verbose
-        $processResult = Invoke-Process ffprobe $finalArguments
-        Write-Message "Invoke-FFProbe: Process exit code: $($processResult.ExitCode)" -Type Debug
-        Write-Message "Invoke-FFProbe: Output length: $($processResult.Output.Length)" -Type Debug
-        Write-Message "Invoke-FFProbe: Error length: $($processResult.Error.Length)" -Type Debug
-
-        if ($processResult.ExitCode -ne 0) {
-            Write-Message "Invoke-FFProbe: Failed to execute ffprobe. Exit code: $($processResult.ExitCode)" -Type Error
+        $result = Invoke-Process ffprobe $finalArguments
+        Write-Message "Invoke-FFProbe: Process exit code: $($result?.ExitCode)" -Type Debug
+        Write-Message "Invoke-FFProbe: Output length: $($result.Output?.Length)" -Type Debug
+        if ($result.ExitCode -ne 0) {
+            Write-Message "Invoke-FFProbe: Failed to execute ffprobe. Exit code: $($result.ExitCode)" -Type Error
+            Write-Message "Invoke-FFProbe: Error: $($result.ErrorOutput)" -Type Debug
         }
 
-        return $processResult
+        return [PSCustomObject]@{
+            Output = $result.Output
+            ErrorOutput = $result.ErrorOutput
+            ExitCode = $result.ExitCode
+            Json = $result.Output | ConvertFrom-Json -Depth 10
+        }
     }
 }
