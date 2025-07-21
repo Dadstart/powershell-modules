@@ -22,26 +22,9 @@ function Get-MediaTrack {
             return $null
         }
 
-        $streams = $result.Json.streams | switch ($TrackType) {
-            switch ($TrackType) {
-                'Video' {
-                    Where-Object { $_.codec_type -eq 'video' }
-                }
-                'Audio' {
-                    Where-Object { $_.codec_type -eq 'audio' }
-                }
-                'Subtitle' {
-                    Where-Object { $_.codec_type -eq 'subtitle' }
-                }
-                'Data' {
-                    Where-Object { $_.codec_type -eq 'data' }
-                }
-                'All' {
-                    $_
-                }
-            }
+        $streams = $result.Json.streams | Where-Object {
+            $TrackType -eq 'All' -or $_.codec_type -eq $TrackType.ToLowerInvariant()
         }
-
         $tracks = @()
         foreach ($stream in $streams) {
             $track = [MediaTrack]::new($stream)
