@@ -36,41 +36,24 @@ function Invoke-FFProbe {
         If the process fails, the Json property will be null.
     #>
     [CmdletBinding()]
-    [OutputType([FFProbeResult])]
     param (
         [Parameter(Mandatory = $true, Position = 0)]
         [string[]]$Arguments
     )
-    begin {
-        foreach ($function in @('Invoke-Process')) {
-            $PSDefaultParameterValues["$function`:Verbose"] = $VerbosePreference
-            $PSDefaultParameterValues["$function`:Debug"] = $DebugPreference
-        }
-    }
     process {
         # Check if ffprobe is installed
         Test-FFMpegInstalled -Throw | Out-Null
         $finalArguments = @('-v', 'error', '-of', 'json') + $Arguments
-        Write-Verbose "Invoke-FFProbe: Arguments: $($finalArguments -join ' ')"
+        Write-Message "Invoke-FFProbe: Arguments: $($finalArguments -join ' ')" -Type Verbose
         $processResult = Invoke-Process ffprobe $finalArguments
-        Write-Debug "Invoke-FFProbe: Process exit code: $($processResult.ExitCode)"
-        Write-Debug "Invoke-FFProbe: Output length: $($processResult.Output.Length)"
-        Write-Debug "Invoke-FFProbe: Error length: $($processResult.Error.Length)"
+        Write-Message "Invoke-FFProbe: Process exit code: $($processResult.ExitCode)" -Type Debug
+        Write-Message "Invoke-FFProbe: Output length: $($processResult.Output.Length)" -Type Debug
+        Write-Message "Invoke-FFProbe: Error length: $($processResult.Error.Length)" -Type Debug
+
         if ($processResult.ExitCode -ne 0) {
-            Write-Error "Invoke-FFProbe: Failed to execute ffprobe. Exit code: $($processResult.ExitCode)"
-            # Return FFProbeResult with null Json when process fails
-            return [FFProbeResult]::new($processResult.Output, $processResult.Error, $processResult.ExitCode, $null)
+            Write-Message "Invoke-FFProbe: Failed to execute ffprobe. Exit code: $($processResult.ExitCode)" -Type Error
         }
-        # Parse JSON output
-        try {
-            $json = $processResult.Output | ConvertFrom-Json
-            return [FFProbeResult]::new($processResult.Output, $processResult.Error, $processResult.ExitCode, $json)
-        }
-        catch {
-            Write-Error "Invoke-FFProbe: Failed to parse JSON output: $($_.Exception.Message)"
-            # Return FFProbeResult with null Json when JSON parsing fails
-            return [FFProbeResult]::new($processResult.Output, $processResult.Error, $processResult.ExitCode, $null)
-        }
-        return $result
+
+        return $processResult
     }
 }
