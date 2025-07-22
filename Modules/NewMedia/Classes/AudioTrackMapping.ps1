@@ -7,31 +7,28 @@ AudioTrackMapping is a class that represents an audio track mapping.
 #>
 class AudioTrackMapping {
     [int]     $SourceIndex
-    [string]  $SourceLanguage
-    [string]  $SourceCodec
     [int]     $DestinationIndex
     [string]  $DestinationCodec
-    [int]     $Bitrate
+    [int]     $DestinationBitrate
+    [int]     $DestinationChannels
     [bool]    $CopyOriginal
     AudioTrackMapping(
         [int]    $sourceIndex,
-        [string] $sourceLanguage,
-        [string] $sourceCodec,
         [int]    $destinationIndex,
         [string] $destinationCodec,
-        [int]    $bitrate,
+        [int]    $destinationBitrate,
+        [int]    $destinationChannels,
         [bool]   $copyOriginal
     ) {
         $this.SourceIndex = $sourceIndex
-        $this.SourceLanguage = $sourceLanguage
-        $this.SourceCodec = $sourceCodec
         $this.DestinationIndex = $destinationIndex
         $this.DestinationCodec = $destinationCodec
-        $this.Bitrate = $bitrate
+        $this.DestinationBitrate = $destinationBitrate
+        $this.DestinationChannels = $destinationChannels
         $this.CopyOriginal = $copyOriginal
     }
     [string] ToString() {
-        return "Audio stream $($this.SourceIndex) [$($this.SourceLanguage)] → $($this.DestinationCodec)@$($this.Bitrate)k (→ index $($this.DestinationIndex))" + $(if ($this.CopyOriginal) {
+        return "Audio stream $($this.SourceIndex) → $($this.DestinationCodec)@$($this.DestinationBitrate)k (→ index $($this.DestinationIndex))" + $(if ($this.CopyOriginal) {
                 ' [Copy]'
             }
             else {
@@ -40,12 +37,41 @@ class AudioTrackMapping {
     }
     [string[]] ToFfmpegArgs() {
         $ffmpegArgs = @('-map', "0:a:$($this.SourceIndex)")
+        $ffmpegArgs += "-c:a:$($this.DestinationIndex)"
         if ($this.CopyOriginal) {
-            $ffmpegArgs += "-c:a:$($this.DestinationIndex)", 'copy'
+            $ffmpegArgs += 'copy'
         }
         else {
-            $ffmpegArgs += "-c:a:$($this.DestinationIndex)", $this.DestinationCodec
-            $ffmpegArgs += "-b:a:$($this.DestinationIndex)", "$($this.Bitrate)k"
+            $ffmpegArgs += $this.DestinationCodec
+            $ffmpegArgs += "-b:a:$($this.DestinationIndex)"
+            if (-not $this.DestinationBitrate -and -not $this.DestinationChannels) {
+                Write-Message 'No channels or bitrate provided for this audio track' -Type Warning
+            }
+            $bps = $this.DestinationBitrate
+            if (-not $bps) {
+                $bps = switch ($this.DestinationChannels) {
+                    1 {
+                        80
+                    }
+                    2 {
+                        160
+                    }
+                    6 {
+                        384
+                    }
+                    8 {
+                        512
+                    }
+                    default {
+                        Write-Message "No default bitrate found for $($this.DestinationChannels) channels" -Type Error
+                        throw "No default bitrate found for $($this.DestinationChannels) channels"
+                    }
+                }
+            }
+            $ffmpegArgs += "$($bps)k"
+            if ($this.DestinationChannels) {
+                $ffmpegArgs += "-ac:a:$($this.DestinationIndex)", $this.DestinationChannels
+            }
         }
         return $ffmpegArgs
     }
