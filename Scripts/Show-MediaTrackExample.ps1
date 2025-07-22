@@ -1,10 +1,15 @@
 # Example script demonstrating Show-MediaTrack and Format-MediaTrack functions
 # This script shows different ways to output tracks of different types
 
+cls
+Remove-Module NewMediaTools,MediaTools -Force
+Import-Module C:\modules\modules\NewMedia\NewMediaTools.psd1 -Force
+
 # Import the NewMedia module
-Import-Module "$PSScriptRoot\..\Modules\NewMedia" -Force
+Import-Module "$PSScriptRoot\Modules\NewMedia\NewMedia.psd1" -Force
 
 $path = 'C:\temp\06\s06e01.raw.mkv'
+
 # Example 1: Basic usage - show all tracks
 Write-Message "=== Example 1: Show all tracks ===" -Type Info
 Get-MediaTrack -Path $path | Show-MediaTrack
