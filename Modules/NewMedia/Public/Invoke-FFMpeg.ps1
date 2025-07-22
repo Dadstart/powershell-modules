@@ -29,7 +29,7 @@ function Invoke-FFMpeg {
         The returned ProcessResult object includes methods like IsSuccess() and IsFailure() for easy status checking.
     #>
     [CmdletBinding()]
-    [OutputType([ProcessResult])]
+    [OutputType([object])]
     param (
         [Parameter(Mandatory = $true, Position = 0)]
         [string[]]$Arguments
@@ -39,8 +39,8 @@ function Invoke-FFMpeg {
             $PSDefaultParameterValues["$function`:Verbose"] = $VerbosePreference
             $PSDefaultParameterValues["$function`:Debug"] = $DebugPreference
         }
-   }
-    process {        
+    }
+    process {
         # Check if ffmpeg is installed
         Test-FFMpegInstalled -Throw | Out-Null
         $finalArguments = @('-v', 'error', '-hide_banner') + $Arguments
