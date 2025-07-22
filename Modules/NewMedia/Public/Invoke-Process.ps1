@@ -83,7 +83,6 @@ function Invoke-Process {
         $proc.Dispose()
         Write-Verbose 'Invoke-Process: Process Disposed'
         # Create and return ProcessResult object
-
         return [PSCustomObject]@{
             Output = $stdout
             ErrorOutput = $stderr

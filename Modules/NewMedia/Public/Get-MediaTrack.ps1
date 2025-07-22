@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+Get-MediaTrack - Get media tracks from a file
+.DESCRIPTION
+Get-MediaTrack is a function that gets media tracks from a file.
+.PARAMETER Path
+The path to the file to get media tracks from.
+#>
 function Get-MediaTrack {
     [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
@@ -7,25 +15,20 @@ function Get-MediaTrack {
         [ValidateSet('Video', 'Audio', 'Subtitle', 'Data', 'All')]
         [string]$TrackType = 'All'
     )
-
     process {
         $inputPath = Get-Path -Path $Path -ValidatePath File -PathType Absolute
-
         $result = Invoke-FFProbe -Arguments @('-show_streams', '-i', $inputPath)
         if ($result.ExitCode -ne 0) {
             Write-Message "Failed to get media track for $($inputPath.FullName):`nFFProbe failed with exit code $($result.ExitCode): $($result.ErrorOutput)" -Type Error
             return @()
         }
-
         Write-Message "FFProbe returned $($result.Json.streams.Count) total streams" -Type Debug
-
         $tracks = New-Object System.Collections.Generic.List[MediaTrack]
         foreach ($stream in $result.Json.streams) {
             if ($TrackType -eq 'All' -or $stream.codec_type -eq $TrackType.ToLowerInvariant()) {
                 $tracks.Add([MediaTrack]::new($stream))
             }
         }
-
         Write-Message "Function returning $($tracks.Count) tracks" -Type Verbose
         return $tracks.ToArray()
     }

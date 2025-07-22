@@ -50,7 +50,6 @@ function Invoke-FFProbe {
             Write-Message "Invoke-FFProbe: Failed to execute ffprobe. Exit code: $($result.ExitCode)" -Type Error
             Write-Message "Invoke-FFProbe: Error: $($result.ErrorOutput)" -Type Debug
         }
-
         return [PSCustomObject]@{
             Output = $result.Output
             ErrorOutput = $result.ErrorOutput

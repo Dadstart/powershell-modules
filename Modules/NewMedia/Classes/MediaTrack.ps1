@@ -7,7 +7,6 @@ class MediaTrack {
     [string]   $Title
     [TimeSpan] $Duration
     [psobject] $Raw
-
     MediaTrack([psobject]$stream) {
         $this.Index    = $stream.index
         $this.Type     = $stream.codec_type
@@ -18,7 +17,6 @@ class MediaTrack {
         $this.Duration = [TimeSpan]::FromSeconds([double]$stream.duration)
         $this.Raw      = $stream
     }
-
     [string] ToString() {
         return "$($this.Type) Stream $($this.Index): $($this.Codec) [$($this.Language)]"
     }
