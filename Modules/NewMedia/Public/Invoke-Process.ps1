@@ -38,8 +38,9 @@ function Invoke-Process {
         [Parameter(Mandatory = $false, Position = 1)]
         [string[]]$Arguments = @()
     )
-    Write-Verbose "Invoke-Process: STARTING - Name: $Name"
-    Write-Verbose "Invoke-Process: Arguments: $($Arguments -join ' ')"
+    Write-Message "Invoke-Process: STARTING - Name: $Name" -Type Verbose
+    Write-Message "Invoke-Process: Arguments: $($Arguments -join ' ')" -Type Verbose
+
     try {
         # Set up process start info
         $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -49,7 +50,8 @@ function Invoke-Process {
             if ($_ -match '\s' -and $_ -notmatch '^".*"$') {
                 # Quote arguments that contain spaces and aren't already quoted
                 "`"$_`""
-            } else {
+            }
+            else {
                 $_
             }
         }
@@ -61,41 +63,45 @@ function Invoke-Process {
         # Create and start the process
         $proc = [System.Diagnostics.Process]::new()
         $proc.StartInfo = $psi
-        $proc.Start()
+        if (-not $proc.Start()) {
+            Write-Message "Invoke-Process: Process Failed`n`tExecutable: $Name`n`tArguments: $($psi.Arguments)`n`tExit Code: $($proc.ExitCode)`n`tError: $($proc.StandardError.ReadToEnd())" -Type Error
+            throw "Process Failed: $Name $($psi.Arguments)"
+        }
+
         # Read both streams asynchronously to prevent deadlocks
         $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
         $stderrTask = $proc.StandardError.ReadToEndAsync()
-        Write-Verbose 'Invoke-Process: process.WaitForExit()'
+        Write-Message 'Invoke-Process: process.WaitForExit()' -Type Verbose
         $proc.WaitForExit()
         # Get the results from the async tasks
         $stdout = $stdoutTask.Result
         $stderr = $stderrTask.Result
-        Write-Verbose "Invoke-Process: Process exited with code $($proc.ExitCode)"
-        Write-Debug "Invoke-Process: stdout length: $($stdout.Length)"
-        Write-Debug "Invoke-Process: stderr length: $($stderr.Length)"
+        Write-Message "Invoke-Process: Process exited with code $($proc.ExitCode)" -Type Verbose
+        Write-Message "Invoke-Process: stdout length: $($stdout.Length)" -Type Debug
+        Write-Message "Invoke-Process: stderr length: $($stderr.Length)" -Type Debug
         # Check for errors
         $exitCode = $proc.ExitCode
         if ($exitCode -ne 0) {
             Write-Warning "Invoke-Process: Process Failed`n`tExecutable: $Name`n`tArguments: $($psi.Arguments)`n`tExit Code: $exitCode`n`tError: $stderr"
         }
         # Dispose the process to free up resources
-        Write-Verbose 'Invoke-Process: Disposing Process'
+        Write-Message 'Invoke-Process: Disposing Process' -Type Verbose
         $proc.Dispose()
-        Write-Verbose 'Invoke-Process: Process Disposed'
+        Write-Message 'Invoke-Process: Process Disposed' -Type Verbose
         # Create and return ProcessResult object
         return [PSCustomObject]@{
-            Output = $stdout
+            Output      = $stdout
             ErrorOutput = $stderr
-            ExitCode = $exitCode
+            ExitCode    = $exitCode
         }
     }
     catch {
-        Write-Verbose 'Invoke-Process: Exception'
-        Write-Verbose "Invoke-Process: Error: $($_)"
-        Write-Verbose "Invoke-Process: Message: $($_.Exception.Message)"
-        Write-Verbose "Invoke-Process: FullyQualifiedErrorId: $($_.FullyQualifiedErrorId)"
-        Write-Verbose "Invoke-Process: ScriptStackTrace: $($_.ScriptStackTrace)"
-        Write-Verbose "Invoke-Process: CategoryInfo: $($_.CategoryInfo)"
+        Write-Message 'Invoke-Process: Exception' -Type Error
+        Write-Message "Invoke-Process: Error: $($_)" -Type Error
+        Write-Message "Invoke-Process: Message: $($_.Exception.Message)" -Type Error
+        Write-Message "Invoke-Process: FullyQualifiedErrorId: $($_.FullyQualifiedErrorId)" -Type Error
+        Write-Message "Invoke-Process: ScriptStackTrace: $($_.ScriptStackTrace)" -Type Error
+        Write-Message "Invoke-Process: CategoryInfo: $($_.CategoryInfo)" -Type Error
         throw $_
     }
 }
