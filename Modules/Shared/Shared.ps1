@@ -26,20 +26,33 @@ function Get-ModuleType {
     }
 }
 
-$allPublicFunctions = @()
-$allPublicClasses = @()
+$publicFunctions = @()
+$publicClasses = @()
 
-# Shared 'Module' Loading
-$classes = Get-ModuleType $ModuleRoot 'Classes'
-if ($classes) {
-    $allPublicClasses += $classes
-    foreach ($class in $classes) {
-        Write-Verbose "Loading module class: $class"
-        . (Join-Path $ModuleRoot -ChildPath 'Classes', "$class.ps1")
-        Write-Verbose "Loaded module class: $class"
+$publicFunctions += Get-ModuleType $ModuleRoot 'Public'
+$publicClasses += Get-ModuleType $ModuleRoot 'Classes'
+$privateFunctions += Get-ModuleType $ModuleRoot 'Private'
+
+
+# Dot-source every .ps1 under Classes FIRST
+Write-Host 'Loading shared classes' -ForegroundColor Cyan
+foreach ($class in $publicClasses) {
+    try {
+        . $($class.FullName)
+    }
+    catch {
+        Write-Host "✗ Failed to dot-source $($class.Name): $_" -ForegroundColor Red
     }
 }
 
+Write-Verbose 'Loading private functions'
+foreach ($function in $privateFunctions) {
+    Write-Verbose "Loading private function: $function"
+    . (Join-Path $ModuleRoot -ChildPath 'Private', "$function.ps1")
+    Write-Verbose "Loaded private function: $function"
+}
+
+Write-Verbose 'Loading public functions'
 $publicFunctions = Get-ModuleType $ModuleRoot 'Public'
 if ($publicFunctions) {
     $allPublicFunctions += $publicFunctions
@@ -50,19 +63,4 @@ if ($publicFunctions) {
     }
 }
 
-$privateFunctions = Get-ModuleType $ModuleRoot 'Private'
-foreach ($function in $privateFunctions) {
-    Write-Verbose "Loading private function: $function"
-    . (Join-Path $ModuleRoot -ChildPath 'Private', "$function.ps1")
-    Write-Verbose "Loaded private function: $function"
-}
-
-# Export all public functions
-if ($allPublicFunctions) {
-    Export-ModuleMember -Function $allPublicFunctions
-}
-
-# Export all public classes
-if ($allPublicClasses) {
-    Export-ModuleMember -Variable $allPublicClasses
-}
+Write-Verbose 'Exporting functions'
