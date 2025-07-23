@@ -28,18 +28,18 @@ function Invoke-WithErrorHandling {
         $result = Invoke-WithErrorHandling -ScriptBlock { Get-Content "nonexistent.txt" } -OperationName "File reading"
         Attempts to read a file and returns $null if it fails, with proper error logging.
     .EXAMPLE
-        $files = Invoke-WithErrorHandling -ScriptBlock { 
-            Get-ChildItem -Path "C:\Source" -Filter "*.mkv" 
+        $files = Invoke-WithErrorHandling -ScriptBlock {
+            Get-ChildItem -Path "C:\Source" -Filter "*.mkv"
         } -OperationName "Video file discovery" -DefaultReturnValue @()
         Discovers video files and returns empty array if operation fails.
     .EXAMPLE
-        Invoke-WithErrorHandling -ScriptBlock { 
-            Copy-Item "source.txt" "dest.txt" -Force 
+        Invoke-WithErrorHandling -ScriptBlock {
+            Copy-Item "source.txt" "dest.txt" -Force
         } -OperationName "File copying" -ThrowOnError
         Copies a file and throws an exception if it fails, with proper error logging.
     .EXAMPLE
-        $result = Invoke-WithErrorHandling -ScriptBlock { 
-            Process-VideoFiles -Path "C:\Videos" 
+        $result = Invoke-WithErrorHandling -ScriptBlock {
+            Process-VideoFiles -Path "C:\Videos"
         } -OperationName "Video processing" -ErrorEmoji "🎬" -DefaultReturnValue @()
         Processes video files with custom error emoji and returns empty array on failure.
     .OUTPUTS
@@ -78,4 +78,4 @@ function Invoke-WithErrorHandling {
         }
         return $DefaultReturnValue
     }
-} 
+}

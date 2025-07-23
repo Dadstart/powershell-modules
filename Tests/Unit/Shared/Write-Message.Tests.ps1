@@ -89,7 +89,7 @@ Describe 'Write-Message' {
             { Write-Message 'Test' -Type Info -NoNewline } | Should -Not -Throw
         }
         It 'Should allow building multi-part messages' {
-            { 
+            {
                 Write-Message 'Processing...' -Type Info -NoNewline
                 Write-Message ' Done!' -Type Success
             } | Should -Not -Throw

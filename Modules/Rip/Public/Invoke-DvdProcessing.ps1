@@ -30,7 +30,7 @@ function Invoke-DvdProcessing {
         to handle different file types in the same workflow.
         Common patterns:
         - "*.vob" - DVD video files
-        - "*.m2ts" - Blu-ray video files  
+        - "*.m2ts" - Blu-ray video files
         - "*.mkv" - Already-ripped content
         - "C4_*" - DVD rips with specific naming
         - "B3_*" - Blu-ray rips with specific naming
@@ -118,7 +118,7 @@ function Invoke-DvdProcessing {
         ├── Clips/         # Extracted sample clips (ChapterNumber for ChapterDuration seconds)
         ├── Captions/      # Extracted captions and subtitles
         ├── HandBrake/     # For HandBrake conversion output
-        ├── Remux/         # For remuxing operations  
+        ├── Remux/         # For remuxing operations
         ├── Topaz/         # For Topaz Video AI processing
         └── Bonus/         # For bonus content processing
         REFACTORED ARCHITECTURE:
@@ -221,4 +221,4 @@ function Invoke-DvdProcessing {
     end {
         Write-Message "DVD processing workflow completed for title: $Title" -Type Verbose
     }
-} 
+}

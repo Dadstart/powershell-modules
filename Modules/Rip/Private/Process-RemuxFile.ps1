@@ -57,4 +57,4 @@ function Process-RemuxFile {
             $remuxedFullName = Get-Path -Path $Destination, $remuxedFileName -PathType Absolute -ValidatePath File
     Write-Message "Remuxing to $remuxedFullName" -Type Verbose
     Add-MediaStream -InputPath $OriginalFile -Streams $resultStreams -OutputPath $remuxedFullName | Out-Null
-} 
+}

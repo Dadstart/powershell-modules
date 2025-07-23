@@ -44,4 +44,4 @@ class ProcessResult {
     [string]ToString() {
         return "ProcessResult{ExitCode=$($this.ExitCode), OutputLength=$($this.Output.Length), ErrorLength=$($this.Error.Length)}"
     }
-} 
+}

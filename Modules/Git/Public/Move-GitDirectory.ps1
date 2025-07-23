@@ -120,4 +120,4 @@ function Move-GitDirectory {
         Pop-Location
     }
     Write-Message "Function completed successfully!" -Type Verbose
-} 
+}

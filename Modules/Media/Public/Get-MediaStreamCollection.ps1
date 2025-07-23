@@ -121,4 +121,4 @@ function Get-MediaStreamCollection {
         Write-Verbose "Returning MediaStreamInfoCollection with $($collection.Count) files"
         return $collection
     }
-} 
+}

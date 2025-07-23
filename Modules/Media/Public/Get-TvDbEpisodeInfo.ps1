@@ -63,4 +63,4 @@ function Get-TvDbEpisodeInfo {
         Write-Message "TVDb episode retrieval failed: $($_.Exception.Message)" -Type Error
         throw "TVDb episode retrieval failed: $($_.Exception.Message)"
     }
-} 
+}

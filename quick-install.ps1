@@ -9,9 +9,9 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 function Write-InstallMessage {
     param([string]$Message, [string]$Type = "Info")
     switch ($Type) {
-        "Info" { 
+        "Info" {
             if (-not $Quiet) {
-                Write-Host $Message -ForegroundColor Cyan 
+                Write-Host $Message -ForegroundColor Cyan
             }
         }
         "Warning" { Write-Warning $Message }
@@ -70,4 +70,4 @@ else {
     exit 1
 }
 Set-WriteMessageConfig -IncludeContext
-Write-InstallMessage "Quick install completed successfully!" "Info" 
+Write-InstallMessage "Quick install completed successfully!" "Info"

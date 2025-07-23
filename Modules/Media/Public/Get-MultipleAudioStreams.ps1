@@ -21,8 +21,8 @@ function Get-MultipleAudioStreams {
     .OUTPUTS
         [MediaStreamInfoCollection] - Collection where keys are file paths and values are arrays of MediaStreamInfo objects.
     .NOTES
-        This function requires the Video module to be loaded and depends on Get-MediaStreamCollection for 
-        efficient stream extraction. The returned MediaStreamInfo objects provide methods like IsAudio(), 
+        This function requires the Video module to be loaded and depends on Get-MediaStreamCollection for
+        efficient stream extraction. The returned MediaStreamInfo objects provide methods like IsAudio(),
         GetDisplayName(), and ToString() for easier stream manipulation and display.
     #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -92,4 +92,4 @@ function Get-MultipleAudioStreams {
             return @{}
         }
     }
-} 
+}

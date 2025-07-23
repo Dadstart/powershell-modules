@@ -4,8 +4,8 @@ function Get-SubtitleStream {
         Gets subtitle stream information from video files in the specified path(s).
     .DESCRIPTION
         This function scans the specified video files (MKV and other formats) and extracts subtitle streams
-        using Get-MediaStreamCollection for efficient processing of multiple files. It filters the results 
-        by CodecName and Language if specified, and returns an array of MediaStreamInfo objects representing 
+        using Get-MediaStreamCollection for efficient processing of multiple files. It filters the results
+        by CodecName and Language if specified, and returns an array of MediaStreamInfo objects representing
         the subtitle streams.
     .PARAMETER Source
         One or more paths to video files or directories. Accepts pipeline input.
@@ -22,8 +22,8 @@ function Get-SubtitleStream {
     .OUTPUTS
         [MediaStreamInfo[]] - Array of MediaStreamInfo objects representing subtitle streams.
     .NOTES
-        This function requires the Video module to be loaded and depends on Get-MediaStreamCollection for 
-        efficient stream extraction. The returned MediaStreamInfo objects provide methods like IsSubtitle(), 
+        This function requires the Video module to be loaded and depends on Get-MediaStreamCollection for
+        efficient stream extraction. The returned MediaStreamInfo objects provide methods like IsSubtitle(),
         GetDisplayName(), and ToString() for easier stream manipulation and display.
     #>
     [CmdletBinding()]
@@ -93,4 +93,4 @@ function Get-SubtitleStream {
             return @()
         }
     }
-} 
+}

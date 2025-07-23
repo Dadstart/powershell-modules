@@ -155,7 +155,7 @@ function Export-AudioStream {
                     $extension = Get-MediaExtension -CodecType Audio -CodecName $stream.CodecName
                     $sb.Append($extension)
                 }
-                $outputFileName = $sb.ToString()                
+                $outputFileName = $sb.ToString()
                 Write-Message "OutputFileName: $outputFileName" -Type Verbose
                 # Determine output directory
                 $finalOutputDir = if ($OutputDirectory) { $OutputDirectory } else { [System.IO.Path]::GetDirectoryName($stream.SourceFile) }
@@ -237,4 +237,4 @@ function Export-AudioStream {
         # Return results
         return $allResults
     }
-} 
+}

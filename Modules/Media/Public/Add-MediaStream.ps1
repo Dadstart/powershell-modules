@@ -131,7 +131,7 @@ function Add-MediaStream {
         # -metadata:s:a:1 key=value sets metadata for the second audio stream in the output
         $metadata.Add("-metadata:s:$ffmpegType`:$i")
         $metadata.Add("language=$($stream.Language)")
-        $metadata.Add("-metadata:s:$ffmpegType`:$i") 
+        $metadata.Add("-metadata:s:$ffmpegType`:$i")
         $metadata.Add("title=`"$($stream.Title)`"")
     }
     # Assemble the final ffmpeg command

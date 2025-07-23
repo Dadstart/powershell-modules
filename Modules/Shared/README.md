@@ -223,13 +223,13 @@ foreach ($file in $files) {
     $result = Invoke-WithErrorHandling -ScriptBlock {
         Process-File -Path $file
     } -ErrorAction Continue
-    
+
     if ($result.Success) {
         Write-Message "Processed: $file" -Type Success
     } else {
         Write-Message "Failed: $file - $($result.Error)" -Type Error
     }
-    
+
     $progress.Increment()
 }
 

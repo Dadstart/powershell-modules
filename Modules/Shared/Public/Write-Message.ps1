@@ -184,8 +184,8 @@ function Write-Message {
             }
             else {
                 # Auto-detect terminal support for ANSI escape codes
-                $script:SupportsAnsi = $Host.UI.SupportsVirtualTerminal -or 
-                $env:TERM -or 
+                $script:SupportsAnsi = $Host.UI.SupportsVirtualTerminal -or
+                $env:TERM -or
                 $env:COLORTERM -or
                 ($env:OS -eq 'Windows_NT' -and $Host.UI.RawUI.WindowSize.Width -gt 0)
                 # Additional check for PowerShell 6+ on Windows
@@ -274,7 +274,7 @@ function Write-Message {
                 $ctx = '?'
             }
         }
-        
+
         # --- Structured output mode ---
         if ($effectiveAsJson) {
             $entry = [PSCustomObject]@{

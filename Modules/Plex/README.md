@@ -177,7 +177,7 @@ Import-Module .\Modules\Plex\PlexTools.psm1
 $connection = New-PlexConnection
 if (Test-PlexConnection $connection) {
     Write-Message "Successfully connected to Plex server" -Type Success
-    
+
     # Get available libraries
     $libraries = Get-PlexLibraries $connection
     Write-Message "Found $($libraries.Count) libraries" -Type Info
@@ -195,10 +195,10 @@ $libraries = Get-PlexLibraries $connection -IncludeDetails
 
 foreach ($library in $libraries) {
     Write-Message "Library: $($library.Name) ($($library.Type))" -Type Info
-    
+
     # Get some items from each library
     $items = Get-PlexLibraryItems $connection -LibraryId $library.Id -Limit 5
-    
+
     foreach ($item in $items) {
         Write-Message "  - $($item.Title)" -Type Info
     }
@@ -232,11 +232,11 @@ function New-PlexConnectionWithDefaults {
         [string]$ServerUrl = "http://localhost:32400",
         [string]$UserName
     )
-    
+
     try {
         # Create new connection with credential prompt
         $connection = New-PlexConnection -ServerUrl $ServerUrl -UserName $UserName
-        
+
         Write-Message "Connection created successfully" -Type Success
         return $connection
     }
@@ -259,25 +259,25 @@ function Monitor-PlexLibrary {
         [string]$LibraryName,
         [int]$CheckInterval = 300  # 5 minutes
     )
-    
+
     $lastCount = 0
-    
+
     while ($true) {
         try {
             $connection = New-PlexConnection
             $items = Get-PlexLibraryItems $connection -LibraryId 1
             $currentCount = $items.Count
-            
+
             if ($currentCount -ne $lastCount) {
                 $difference = $currentCount - $lastCount
                 $changeType = if ($difference -gt 0) { "added" } else { "removed" }
-                
+
                 Write-Message "Library '$LibraryName' has $([math]::Abs($difference)) items $changeType" -Type Info
                 Write-Message "Total items: $currentCount" -Type Info
-                
+
                 $lastCount = $currentCount
             }
-            
+
             Start-Sleep -Seconds $CheckInterval
         }
         catch {

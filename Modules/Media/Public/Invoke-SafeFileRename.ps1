@@ -307,4 +307,4 @@ function Invoke-SafeFileRename {
         Write-Message "✅ Directories processed: $processedDirectories" -Type Verbose
         Write-Message "📁 Total files processed: $totalFilesProcessed" -Type Verbose
     }
-} 
+}

@@ -17,8 +17,8 @@ function Get-EpisodeInfoFromFilename {
             $seasonNum = [int]$matches[1]
             $episodeNum = [int]$matches[2]
             # Find matching episode info
-            $matchingEpisode = $EpisodeInfo | Where-Object { 
-                $_.SeasonNumber -eq $seasonNum -and $_.EpisodeNumber -eq $episodeNum 
+            $matchingEpisode = $EpisodeInfo | Where-Object {
+                $_.SeasonNumber -eq $seasonNum -and $_.EpisodeNumber -eq $episodeNum
             } | Select-Object -First 1
             if ($matchingEpisode) {
                 return $matchingEpisode
@@ -30,4 +30,4 @@ function Get-EpisodeInfoFromFilename {
         Write-Message "Failed to get episode info from filename: $($_.Exception.Message)" -Type Error
         return $null
     }
-} 
+}

@@ -18,4 +18,4 @@ function Convert-TypeToBitrate {
         return $Script:AudioBitrates[$Type]
     }
     throw "Unknown audio type: $Type"
-} 
+}

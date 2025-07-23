@@ -189,4 +189,4 @@ class MediaStreamInfo {
     [string]ToString() {
         return "MediaStreamInfo{Index=$($this.Index), Type=$($this.CodecType), Codec=$($this.CodecName), TypeIndex=$($this.TypeIndex)}"
     }
-} 
+}

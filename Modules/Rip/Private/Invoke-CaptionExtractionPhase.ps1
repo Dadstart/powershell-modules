@@ -60,4 +60,4 @@ function Invoke-CaptionExtractionPhase {
         }
         return $captionStats
     }
-} 
+}

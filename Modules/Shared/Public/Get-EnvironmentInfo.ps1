@@ -153,4 +153,4 @@ function Get-EnvironmentInfo {
     if ($LaunchFile) {
         Start-Process $OutputPath
     }
-} 
+}

@@ -39,8 +39,8 @@ function Set-PreferenceInheritance {
     )
     if ($Clear) {
         # Clear all preference inheritance settings
-        $keysToRemove = $PSDefaultParameterValues.Keys | Where-Object { 
-            $_ -match ':(Verbose|Debug)$' 
+        $keysToRemove = $PSDefaultParameterValues.Keys | Where-Object {
+            $_ -match ':(Verbose|Debug)$'
         }
         foreach ($key in $keysToRemove) {
             $PSDefaultParameterValues.Remove($key)
@@ -59,4 +59,4 @@ function Set-PreferenceInheritance {
         $PSDefaultParameterValues["$function`:Debug"] = $DebugPreference
         Write-Message "Set preference inheritance for: $function" -Type Verbose
     }
-} 
+}

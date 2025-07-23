@@ -83,4 +83,4 @@ function ConvertTo-MediaStreamCollection {
     end {
         return $collection
     }
-} 
+}

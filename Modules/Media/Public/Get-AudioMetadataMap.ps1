@@ -59,4 +59,4 @@ function Get-AudioMetadataMap {
     end {
         return $allResults
     }
-} 
+}
