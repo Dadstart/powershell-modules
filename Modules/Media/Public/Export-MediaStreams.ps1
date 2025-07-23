@@ -72,7 +72,8 @@ function Export-MediaStreams {
         $inputPath = Resolve-Path $InputFile
         Write-Verbose "InputPath: $($inputPath.Path)"
         # Get all streams of the specified type from the input file
-        Get-MediaStreams -Path $inputPath.Path -Type $Type | ForEach-Object {
+        $mediaStreams = Get-MediaStreams -Path $inputPath.Path -Type $Type
+        $mediaStreams | ForEach-Object {
             # Generate file extension based on stream index and codec name
             # Note: Using Index directly because MediaStream objects use 0-based indices
             # which is what Export-MediaStream expects
@@ -83,13 +84,13 @@ function Export-MediaStreams {
             $outputPath =  ([System.IO.Path]::Combine($outputPath, '\', [System.IO.Path]::GetFileNameWithoutExtension($inputFile), $extension -join ''))
             Write-Verbose "OutputPath: $outputPath"
             # Check if output file already exists and handle Force parameter
-            if (Test-Path $outputPath -and -not $Force) {
+            if ((Test-Path $outputPath) -and (-not $Force)) {
                 Write-Host "$Type stream already exists: $outputPath"
                 continue
             }
             # Extract the current stream using Export-MediaStream
             Write-Host "Exporting $Type stream #$($_.Index) to $outputPath"
-            Export-MediaStream -InputPath ($inputPath.Path) -OutputPath $outputPath -Type $Type -Index $_.Index
+            Export-MediaStream -InputPath ($inputPath.Path) -OutputPath $outputPath -Type $Type -Index $_.TypeIndex
         }
     }
 }
