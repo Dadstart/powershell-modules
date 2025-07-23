@@ -19,7 +19,7 @@ function Get-MediaStream {
     )
     process {
         $inputPath = Get-Path -Path $Path -ValidatePath File -PathType Absolute
-        $result = Invoke-FFProbe -Arguments @('-show_streams', '-i', $inputPath)
+        $result = Invoke-FFProbe -Arguments @('-show_streams', '-i', "`"$inputPath`"")
         if ($result.ExitCode -ne 0) {
             Write-Message "Failed to get media track for $($inputPath.FullName):`nFFProbe failed with exit code $($result.ExitCode): $($result.ErrorOutput)" -Type Error
             throw "Failed to get media track for $($inputPath.FullName):`nFFProbe failed with exit code $($result.ExitCode): $($result.ErrorOutput)"
@@ -29,11 +29,10 @@ function Get-MediaStream {
         $streams = New-Object System.Collections.Generic.List[MediaStream]
         foreach ($stream in $result.Json.streams) {
             if ($TrackType -eq 'All' -or $stream.codec_type -eq $TrackType.ToLowerInvariant()) {
-                $tracks.Add([MediaStream]::new($stream))
+                $streams.Add([MediaStream]::new($stream))
             }
         }
         Write-Message "Function returning $($tracks.Count) tracks" -Type Verbose
-        return $tracks.ToArray()
         return $streams.ToArray()
     }
 }
