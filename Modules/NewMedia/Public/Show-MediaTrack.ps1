@@ -1,9 +1,9 @@
-function Show-MediaTrack {
+function Show-MediaStream {
     <#
     .SYNOPSIS
         Displays media tracks with type-specific formatting and properties.
     .DESCRIPTION
-        Show-MediaTrack formats and displays media track information with properties
+        Show-MediaStream formats and displays media track information with properties
         specific to each track type (Video, Audio, Subtitle, Data). The function
         uses consistent formatting and color coding to present track information
         in a readable format.
@@ -12,7 +12,7 @@ function Show-MediaTrack {
         Subtitle tracks show: Index, Codec, Language, Title, Duration
         Data tracks show: Index, Codec, Title, Duration
     .PARAMETER Track
-        The MediaTrack object(s) to display. Can be a single track or an array of tracks.
+        The MediaStream object(s) to display. Can be a single track or an array of tracks.
     .PARAMETER DetailLevel
         The level of detail to include in the output. Valid values are 'Basic', 'Detailed', and 'Full'.
         Default is 'Detailed'.
@@ -20,14 +20,14 @@ function Show-MediaTrack {
         Filter to show only specific track types. Valid values are 'Video', 'Audio', 'Subtitle', 'Data', 'All'.
         Default is 'All'.
     .EXAMPLE
-        Get-MediaTrack -Path "C:\video.mkv" | Show-MediaTrack
+        Get-MediaStream -Path "C:\video.mkv" | Show-MediaStream
         Displays all tracks from the video file with detailed formatting.
     .EXAMPLE
-        Get-MediaTrack -Path "C:\video.mkv" -TrackType Video | Show-MediaTrack -DetailLevel Full
+        Get-MediaStream -Path "C:\video.mkv" -TrackType Video | Show-MediaStream -DetailLevel Full
         Displays only video tracks with full detail including all raw properties.
     .EXAMPLE
-        $tracks = Get-MediaTrack -Path "C:\video.mkv"
-        Show-MediaTrack -Track $tracks -TrackType Audio -DetailLevel Basic
+        $tracks = Get-MediaStream -Path "C:\video.mkv"
+        Show-MediaStream -Track $tracks -TrackType Audio -DetailLevel Basic
         Displays only audio tracks with basic information.
     .OUTPUTS
         None. This function writes formatted output to the console.
@@ -35,13 +35,13 @@ function Show-MediaTrack {
         This function uses the Write-Message infrastructure for consistent formatting
         and color coding across the module.
     .LINK
-        Get-MediaTrack
+        Get-MediaStream
         Write-Message
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, ValueFromPipeline)]
-        [MediaTrack]$Track,
+        [MediaStream]$Track,
         [Parameter()]
         [ValidateSet('Basic', 'Detailed', 'Full')]
         [string]$DetailLevel = 'Detailed',
@@ -73,7 +73,7 @@ function Show-SingleTrack {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [MediaTrack]$Track,
+        [MediaStream]$Track,
         [Parameter(Mandatory)]
         [string]$DetailLevel
     )
@@ -126,7 +126,7 @@ function Show-VideoTrackProperties {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [MediaTrack]$Track,
+        [MediaStream]$Track,
         [Parameter(Mandatory)]
         [string]$DetailLevel
     )
@@ -176,7 +176,7 @@ function Show-AudioTrackProperties {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [MediaTrack]$Track,
+        [MediaStream]$Track,
         [Parameter(Mandatory)]
         [string]$DetailLevel
     )
@@ -214,7 +214,7 @@ function Show-SubtitleTrackProperties {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [MediaTrack]$Track,
+        [MediaStream]$Track,
         [Parameter(Mandatory)]
         [string]$DetailLevel
     )
@@ -237,7 +237,7 @@ function Show-DataTrackProperties {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [MediaTrack]$Track,
+        [MediaStream]$Track,
         [Parameter(Mandatory)]
         [string]$DetailLevel
     )

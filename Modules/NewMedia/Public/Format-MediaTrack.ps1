@@ -1,15 +1,15 @@
-function Format-MediaTrack {
+function Format-MediaStream {
     <#
     .SYNOPSIS
         Formats media tracks into structured objects for programmatic use.
     .DESCRIPTION
-        Format-MediaTrack converts MediaTrack objects into formatted PSCustomObjects
+        Format-MediaStream converts MediaStream objects into formatted PSCustomObjects
         with type-specific properties organized for easy consumption by other functions
         or for export to various formats (CSV, JSON, etc.).
         The function creates objects with common properties shared across all track types,
         plus type-specific properties relevant to each track type.
     .PARAMETER Track
-        The MediaTrack object(s) to format. Can be a single track or an array of tracks.
+        The MediaStream object(s) to format. Can be a single track or an array of tracks.
     .PARAMETER DetailLevel
         The level of detail to include in the output. Valid values are 'Basic', 'Detailed', and 'Full'.
         Default is 'Detailed'.
@@ -17,28 +17,28 @@ function Format-MediaTrack {
         Filter to format only specific track types. Valid values are 'Video', 'Audio', 'Subtitle', 'Data', 'All'.
         Default is 'All'.
     .EXAMPLE
-        Get-MediaTrack -Path "C:\video.mkv" | Format-MediaTrack | Format-Table -AutoSize
+        Get-MediaStream -Path "C:\video.mkv" | Format-MediaStream | Format-Table -AutoSize
         Formats all tracks and displays them in a table format.
     .EXAMPLE
-        Get-MediaTrack -Path "C:\video.mkv" | Format-MediaTrack -TrackType Video | Export-Csv -Path "video_tracks.csv"
+        Get-MediaStream -Path "C:\video.mkv" | Format-MediaStream -TrackType Video | Export-Csv -Path "video_tracks.csv"
         Formats only video tracks and exports them to CSV.
     .EXAMPLE
-        $formattedTracks = Get-MediaTrack -Path "C:\video.mkv" | Format-MediaTrack -DetailLevel Full
+        $formattedTracks = Get-MediaStream -Path "C:\video.mkv" | Format-MediaStream -DetailLevel Full
         $formattedTracks | ConvertTo-Json -Depth 10 | Out-File "tracks.json"
         Formats all tracks with full detail and exports to JSON.
     .OUTPUTS
         [PSCustomObject[]] - Array of formatted track objects with type-specific properties.
     .NOTES
-        This function is designed for programmatic use and data export, while Show-MediaTrack
+        This function is designed for programmatic use and data export, while Show-MediaStream
         is designed for human-readable console output.
     .LINK
-        Get-MediaTrack
-        Show-MediaTrack
+        Get-MediaStream
+        Show-MediaStream
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, ValueFromPipeline)]
-        [MediaTrack]$Track,
+        [MediaStream]$Track,
         [Parameter()]
         [ValidateSet('Basic', 'Detailed', 'Full')]
         [string]$DetailLevel = 'Detailed',
@@ -71,7 +71,7 @@ function Format-SingleTrack {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [MediaTrack]$Track,
+        [MediaStream]$Track,
         [Parameter(Mandatory)]
         [string]$DetailLevel
     )

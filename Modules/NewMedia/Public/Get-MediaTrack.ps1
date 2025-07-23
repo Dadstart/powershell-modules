@@ -1,12 +1,14 @@
 <#
 .SYNOPSIS
-Get-MediaTrack - Get media tracks from a file
+Get-MediaStream - Get media tracks from a file
+
 .DESCRIPTION
-Get-MediaTrack is a function that gets media tracks from a file.
+Get-MediaStream is a function that gets media tracks from a file.
+
 .PARAMETER Path
 The path to the file to get media tracks from.
 #>
-function Get-MediaTrack {
+function Get-MediaStream {
     [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
         [Parameter(Mandatory)]
@@ -23,7 +25,7 @@ function Get-MediaTrack {
             return @()
         }
         Write-Message "FFProbe returned $($result.Json.streams.Count) total streams" -Type Debug
-        $tracks = New-Object System.Collections.Generic.List[MediaTrack]
+        $tracks = New-Object System.Collections.Generic.List[MediaStream]
         foreach ($stream in $result.Json.streams) {
             if ($TrackType -eq 'All' -or $stream.codec_type -eq $TrackType.ToLowerInvariant()) {
                 $tracks.Add([MediaTrack]::new($stream))
@@ -31,5 +33,6 @@ function Get-MediaTrack {
         }
         Write-Message "Function returning $($tracks.Count) tracks" -Type Verbose
         return $tracks.ToArray()
+        return $streams.ToArray()
     }
 }
