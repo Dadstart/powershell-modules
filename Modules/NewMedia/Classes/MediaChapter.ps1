@@ -19,7 +19,6 @@ class MediaChapter {
         $this.Title = $Chapter.tags.title
         $this.Tags = @{}
         foreach ($kvp in $Chapter.tags?.psobject?.Properties) {
-            Write-Host "`$key: $($kvp.Name); `$value: $($kvp.Value)" -ForegroundColor White
             $this.Tags.Add($kvp.Name, $kvp.Value)
         }
         $this.Raw = $Chapter
