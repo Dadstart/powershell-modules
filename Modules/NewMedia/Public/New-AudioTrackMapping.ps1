@@ -88,10 +88,10 @@ function New-AudioTrackMapping {
     )
     process {
         if ($CopyOriginal) {
-            return [AudioTrackMapping]::new($SourceStream, $SourceIndex, $DestinationIndex, $null, 0, 0, $true, $Title)
+            return [AudioTrackMapping]::new($Title, $SourceStream, $SourceIndex, $DestinationIndex, $null, 0, 0, $true)
         }
         else {
-            return [AudioTrackMapping]::new($SourceStream, $SourceIndex, $DestinationIndex, $DestinationCodec, $DestinationBitrate, $DestinationChannels, $false, $Title)
+            return [AudioTrackMapping]::new($Title, $SourceStream, $SourceIndex, $DestinationIndex, $DestinationCodec, $DestinationBitrate, $DestinationChannels, $false)
         }
     }
 }
