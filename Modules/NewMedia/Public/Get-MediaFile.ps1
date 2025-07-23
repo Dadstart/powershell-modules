@@ -16,7 +16,7 @@ function Get-MediaFile {
     )
     process {
         $inputPath = Get-Path -Path $Path -ValidatePath File -PathType Absolute
- 
+
         $ffprobeArgs = @('-show_format', '-show_chapters', '-show_streams', '-i', $inputPath)
 
         $result = Invoke-FFProbe -Arguments $ffprobeArgs

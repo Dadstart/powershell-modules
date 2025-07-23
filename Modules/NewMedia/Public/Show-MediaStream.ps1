@@ -255,4 +255,4 @@ function Show-DataTrackProperties {
             Write-Message "Bitrate: $([math]::Round($raw.bit_rate / 1000, 1)) kbps" -Type Verbose
         }
     }
-} 
+}
