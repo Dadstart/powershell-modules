@@ -6,13 +6,18 @@ AudioTrackMapping is a class that represents an audio track mapping.
 .PARAMETER SourceIndex
 #>
 class AudioTrackMapping {
+    [string]  $Title
+    [int]     $SourceStream
     [int]     $SourceIndex
     [int]     $DestinationIndex
     [string]  $DestinationCodec
     [int]     $DestinationBitrate
     [int]     $DestinationChannels
     [bool]    $CopyOriginal
+
     AudioTrackMapping(
+        [string] $title,
+        [int]    $sourceStream,
         [int]    $sourceIndex,
         [int]    $destinationIndex,
         [string] $destinationCodec,
@@ -20,6 +25,8 @@ class AudioTrackMapping {
         [int]    $destinationChannels,
         [bool]   $copyOriginal
     ) {
+        $this.Title = $title
+        $this.SourceStream = $sourceStream
         $this.SourceIndex = $sourceIndex
         $this.DestinationIndex = $destinationIndex
         $this.DestinationCodec = $destinationCodec
@@ -27,6 +34,7 @@ class AudioTrackMapping {
         $this.DestinationChannels = $destinationChannels
         $this.CopyOriginal = $copyOriginal
     }
+
     [string] ToString() {
         return "Audio stream $($this.SourceIndex) → $($this.DestinationCodec)@$($this.DestinationBitrate)k (→ index $($this.DestinationIndex))" + $(if ($this.CopyOriginal) {
                 ' [Copy]'
@@ -35,15 +43,22 @@ class AudioTrackMapping {
                 ''
             })
     }
+
     [string[]] ToFfmpegArgs() {
-        $ffmpegArgs = @('-map', "0:a:$($this.SourceIndex)")
-        $ffmpegArgs += "-c:a:$($this.DestinationIndex)"
+        $ffmpegArgs = New-Object System.Collections.Generic.List[string]
+        $ffmpegArgs.Add('-map')
+        $ffmpegArgs.Add("$($this.SourceStream):a:$($this.SourceIndex)")
+        $ffmpegArgs.Add("-c:a:$($this.DestinationIndex)")
         if ($this.CopyOriginal) {
-            $ffmpegArgs += 'copy'
+            $ffmpegArgs.Add('copy')
+            if ($this.Title) {
+                $ffmpegArgs.Add("-metadata:s:a:$($this.DestinationIndex)")
+                $ffmpegArgs.Add("title=`"$($this.Title)`"")
+            }
         }
         else {
-            $ffmpegArgs += $this.DestinationCodec
-            $ffmpegArgs += "-b:a:$($this.DestinationIndex)"
+            $ffmpegArgs.Add($this.DestinationCodec)
+            $ffmpegArgs.Add("-b:a:$($this.DestinationIndex)")
             if (-not $this.DestinationBitrate -and -not $this.DestinationChannels) {
                 Write-Message 'No channels or bitrate provided for this audio track' -Type Warning
             }
@@ -68,11 +83,16 @@ class AudioTrackMapping {
                     }
                 }
             }
-            $ffmpegArgs += "$($bps)k"
+            $ffmpegArgs.Add("$($bps)k")
             if ($this.DestinationChannels) {
-                $ffmpegArgs += "-ac:a:$($this.DestinationIndex)", $this.DestinationChannels
+                $ffmpegArgs.Add("-ac:a:$($this.DestinationIndex)")
+                $ffmpegArgs.Add($this.DestinationChannels)
+            }
+            if ($this.Title) {
+                $ffmpegArgs.Add("-metadata:s:a:$($this.DestinationIndex)")
+                $ffmpegArgs.Add("title=`"$($this.Title)`"")
             }
         }
-        return $ffmpegArgs
+        return $ffmpegArgs.ToArray()
     }
 }

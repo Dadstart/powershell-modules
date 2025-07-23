@@ -11,6 +11,9 @@ function New-AudioTrackMapping {
         The mapping can either copy the original audio stream without re-encoding (when CopyOriginal
         is true) or transcode it to a different codec with specified bitrate and channel configuration.
     
+    .PARAMETER SourceStream
+        The zero-based index of the source audio stream in the input file.
+
     .PARAMETER SourceIndex
         The zero-based index of the source audio stream in the input file.
     
@@ -61,6 +64,9 @@ function New-AudioTrackMapping {
     #>
     [CmdletBinding(DefaultParameterSetName = 'Transcode')]
     param(
+        [Parameter(ParameterSetName = 'Copy')]
+        [Parameter(ParameterSetName = 'Transcode')]
+        [int]    $SourceStream = 0,
         [Parameter(Mandatory, ParameterSetName = 'Copy')]
         [Parameter(Mandatory, ParameterSetName = 'Transcode')]
         [int]    $SourceIndex,
@@ -75,14 +81,17 @@ function New-AudioTrackMapping {
         [Parameter(Mandatory, ParameterSetName = 'Transcode')]
         [int]    $DestinationChannels,
         [Parameter(Mandatory, ParameterSetName = 'Copy')]
-        [switch] $CopyOriginal
+        [switch] $CopyOriginal,
+        [Parameter(Mandatory, ParameterSetName = 'Copy')]
+        [Parameter(Mandatory, ParameterSetName = 'Transcode')]
+        [string] $Title
     )
     process {
         if ($CopyOriginal) {
-            return [AudioTrackMapping]::new($SourceIndex, $DestinationIndex, $null, 0, 0, $true)
+            return [AudioTrackMapping]::new($SourceStream, $SourceIndex, $DestinationIndex, $null, 0, 0, $true, $Title)
         }
         else {
-            return [AudioTrackMapping]::new($SourceIndex, $DestinationIndex, $DestinationCodec, $DestinationBitrate, $DestinationChannels, $false)
+            return [AudioTrackMapping]::new($SourceStream, $SourceIndex, $DestinationIndex, $DestinationCodec, $DestinationBitrate, $DestinationChannels, $false, $Title)
         }
     }
 }
