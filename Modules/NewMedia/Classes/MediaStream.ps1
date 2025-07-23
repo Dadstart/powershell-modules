@@ -1,6 +1,12 @@
 class MediaStream {
     [string] $FileName
-    [int] $
+    [int] $Index
+    [string] $Type
+    [string] $Codec
+    [string] $Language
+    [int] $Bitrate
+    [string] $Title
+    [TimeSpan] $Duration
     [psobject] $Raw
 
     MediaStream([psobject]$stream) {
@@ -18,3 +24,4 @@ class MediaStream {
         return "$($this.Type) Stream $($this.Index): $($this.Codec) [$($this.Language)]"
     }
 }
+
