@@ -1,5 +1,4 @@
 class MediaStream {
-    [string] $FileName
     [int] $Index
     [string] $Type
     [string] $Codec
