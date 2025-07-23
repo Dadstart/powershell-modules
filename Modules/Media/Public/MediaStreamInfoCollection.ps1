@@ -205,7 +205,7 @@ class MediaStreamInfoCollection {
                 Write-Error "Stream index $streamIndex out of range for file '$FilePath'" -ErrorAction Stop
             }
             $stream = $streamArray[$streamIndex]
-            $ffmpegArgs += $stream.GetFFMpegOutputArgs($outputPath) 
+            $ffmpegArgs += $stream.GetFFMpegOutputArgs($outputPath)
         }
         return $ffmpegArgs
     }

@@ -29,8 +29,8 @@ $formattedTracks | Format-Table -AutoSize
 
 # Example 5: Export to CSV
 Write-Message "=== Example 5: Export to CSV ===" -Type Info
-Get-MediaStream -Path $path | 
-    Format-MediaStream -DetailLevel Detailed | 
+Get-MediaStream -Path $path |
+    Format-MediaStream -DetailLevel Detailed |
     Export-Csv -Path "media_tracks.csv" -NoTypeInformation
 
 # Example 6: Filter and format specific track types
@@ -60,9 +60,9 @@ $surroundAudio | Format-Table Index, Codec, SampleRate, ChannelLayout, Bitrate -
 
 # Example 8: JSON export with full detail
 Write-Message "=== Example 8: JSON export with full detail ===" -Type Info
-Get-MediaStream -Path $path | 
-    Format-MediaStream -DetailLevel Full | 
-    ConvertTo-Json -Depth 10 | 
+Get-MediaStream -Path $path |
+    Format-MediaStream -DetailLevel Full |
+    ConvertTo-Json -Depth 10 |
     Out-File "media_tracks_full.json" -Encoding UTF8
 
-Write-Message "Examples completed. Check the generated files for detailed output." -Type Success 
+Write-Message "Examples completed. Check the generated files for detailed output." -Type Success

@@ -23,7 +23,7 @@ The Git module provides tools for:
    ```powershell
    # Using Winget
    winget install Git.Git
-   
+
    # Using Chocolatey (alternative)
    choco install git
    ```
@@ -147,13 +147,13 @@ function New-StandardizedCommit {
         [string]$Scope,
         [string]$Message
     )
-    
+
     # Stage all changes
     git add .
-    
+
     # Create commit
     New-GitCommit -Message $Message -Type $Type -Scope $Scope
-    
+
     Write-Message "Created $Type commit: $Message" -Type Success
 }
 
@@ -170,16 +170,16 @@ function New-FeaturePullRequest {
         [string]$FeatureName,
         [string]$Description
     )
-    
+
     $branchName = "feature/$FeatureName"
     $title = "Add $FeatureName"
-    
+
     # Ensure we're on the feature branch
     git checkout $branchName
-    
+
     # Create pull request
     New-GitPullRequest -Title $title -Body $Description -SourceBranch $branchName -Labels @("enhancement")
-    
+
     Write-Message "Created pull request for $FeatureName" -Type Success
 }
 

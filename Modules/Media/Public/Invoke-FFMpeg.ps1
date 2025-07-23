@@ -40,7 +40,7 @@ function Invoke-FFMpeg {
             $PSDefaultParameterValues["$function`:Debug"] = $DebugPreference
         }
    }
-    process {        
+    process {
         # Check if ffmpeg is installed
         Test-FFMpegInstalled -Throw | Out-Null
         $finalArguments = @('-v', 'error', '-hide_banner') + $Arguments

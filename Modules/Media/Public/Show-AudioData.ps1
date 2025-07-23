@@ -43,4 +43,4 @@ function Show-AudioData {
             throw "Failed to write audio data for $File`: $($_.Exception.Message)"
         }
     }
-} 
+}

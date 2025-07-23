@@ -50,4 +50,4 @@ class FFProbeResult {
         $jsonInfo = if ($this.Json) { "HasJson" } else { "NoJson" }
         return "FFProbeResult{ExitCode=$($this.ExitCode), $jsonInfo, OutputLength=$($this.Output.Length), ErrorLength=$($this.Error.Length)}"
     }
-} 
+}

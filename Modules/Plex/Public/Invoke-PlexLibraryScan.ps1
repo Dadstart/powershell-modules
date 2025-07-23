@@ -34,4 +34,4 @@ function Invoke-PlexLibraryScan {
         Write-Message "❌ Failed to initiate library scan: $($_.Exception.Message)" -Type Error
         return $false
     }
-} 
+}

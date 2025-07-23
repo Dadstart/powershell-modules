@@ -165,4 +165,4 @@ function Get-PlexLibraryItems {
         Write-Message "❌ Failed to retrieve library items: $($_.Exception.Message)" -Type Error
         throw
     }
-} 
+}

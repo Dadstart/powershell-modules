@@ -33,4 +33,4 @@ function Invoke-CheckedCommand {
         Write-Message "Command execution failed: $($_.Exception.Message)" -Type Error
         throw "Command execution failed: $($_.Exception.Message)"
     }
-} 
+}

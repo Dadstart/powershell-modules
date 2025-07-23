@@ -16,4 +16,4 @@ function Get-TvDbEpisodeIds {
         Write-Message "Failed to get TVDb episode IDs: $($_.Exception.Message)" -Type Error
         throw "Failed to get TVDb episode IDs: $($_.Exception.Message)"
     }
-} 
+}

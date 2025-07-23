@@ -78,4 +78,4 @@ function New-ProcessingDirectoryStructure {
         Write-Message "📂 Subdirectories: $($createdSubDirs.Count)" -Type Verbose
         return $result
     }
-} 
+}

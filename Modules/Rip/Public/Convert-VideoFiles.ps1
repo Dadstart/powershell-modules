@@ -27,7 +27,7 @@ function Convert-VideoFiles {
         $PSDefaultParameterValues['Invoke-Process:Debug'] = $DebugPreference
     }
     process {
-        if ($Files) {            
+        if ($Files) {
             $allFiles += $Files
         }
     }
@@ -129,4 +129,4 @@ function Convert-VideoFiles {
             throw "Convert-VideoFiles: Video conversion failed: $($_.Exception.Message)"
         }
     }
-} 
+}

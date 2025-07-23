@@ -27,7 +27,7 @@ function Get-Path {
         Specifies the type of path validation to perform. This parameter ensures the path exists and is of the expected type.
         This parameter is mutually exclusive with Create.
         - File: Validates that the path exists and is a file
-        - Directory: Validates that the path exists and is a directory  
+        - Directory: Validates that the path exists and is a directory
         - Either: Validates that the path exists (can be either file or directory)
         - None: No validation performed (default)
     .PARAMETER ValidationErrorAction

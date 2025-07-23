@@ -41,4 +41,4 @@ function Use-TempDirectory {
             Write-Message "Temp directory cleaned up: $tempDir" -Type Debug
         }
     }
-} 
+}

@@ -9,7 +9,7 @@ function Write-InstallMessage {
     switch ($Type) {
         'Info' {
             if (-not $Quiet) {
-                Write-Host $Message -ForegroundColor Cyan 
+                Write-Host $Message -ForegroundColor Cyan
             }
         }
         'Warning' { Write-Warning $Message }

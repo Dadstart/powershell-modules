@@ -9,7 +9,7 @@
                     $this.RefreshToken()
                 </ScriptBlock>
             </ScriptMethod>
-            <!-- 
+            <!--
             <ScriptProperty>
                 <Name>UpperName</Name>
                 <GetScriptBlock>$_.Name.ToUpper()</GetScriptBlock>

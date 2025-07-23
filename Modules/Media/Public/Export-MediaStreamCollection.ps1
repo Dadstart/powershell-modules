@@ -72,4 +72,4 @@ function Export-MediaStreamCollection {
         # Use the collection's ExportAllStreams method
         $Collection.ExportAllStreams($OutputDirectory, $Language, $typeFilter, $Force)
     }
-} 
+}

@@ -81,4 +81,4 @@ function Convert-ToConstantFrameRate {
         Write-Message "Constant frame rate conversion failed: $($_.Exception.Message)" -Type Error
         throw "Constant frame rate conversion failed: $($_.Exception.Message)"
     }
-} 
+}

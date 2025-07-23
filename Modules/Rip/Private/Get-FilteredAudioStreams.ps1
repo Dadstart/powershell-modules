@@ -84,6 +84,6 @@ function Get-FilteredAudioStreams {
             'File'    = $filePath
             'Streams' = $currentStreams
         }
-    } 
+    }
     return $result
 }

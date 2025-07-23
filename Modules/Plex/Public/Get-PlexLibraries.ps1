@@ -91,4 +91,4 @@ function Get-PlexLibraries {
         Write-Message "❌ Failed to retrieve libraries: $($_.Exception.Message)" -Type Error
         throw
     }
-} 
+}

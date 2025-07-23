@@ -41,4 +41,4 @@ function Get-PlexMediaInfo {
         Write-Message "❌ Failed to retrieve media info: $($_.Exception.Message)" -Type Error
         throw
     }
-} 
+}
