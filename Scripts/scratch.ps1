@@ -104,7 +104,7 @@ function ConvertTo-Cropped {
             $outputFile = [System.IO.Path]::ChangeExtension($inputFile, '_cropped.mkv')
             Write-Host "📝 Processing $($inputFile) -> $($outputFile)" -ForegroundColor Cyan
             Add-CropValues $mediaFile
-            if ($mediaFile.CropValue) {                
+            if ($mediaFile.CropValue) {
                 Write-Host "🎯 Crop value: $($mediaFile.CropValue)" -ForegroundColor Gray
                 Invoke-CropItem $mediaFile -OutputFile $outputFile
                 $cropped.Add($mediaFile)
@@ -112,7 +112,7 @@ function ConvertTo-Cropped {
                 Write-Host '🚫 No crop value found' -ForegroundColor Red
                 $skipped.Add($mediaFile)
             }
-        }        
+        }
     }
     end {
         Write-Host '✅ Done with all files' -ForegroundColor Green
