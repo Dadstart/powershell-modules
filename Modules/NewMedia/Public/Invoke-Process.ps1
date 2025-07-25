@@ -47,15 +47,6 @@ function Invoke-Process {
         $psi.FileName = $Name
         # Properly quote arguments to handle paths with spaces
         $quotedArguments = $Arguments | ForEach-Object {
-<<<<<<< HEAD
-            if ($_ -match '\s' -and $_ -notmatch '^".*"$') {
-                # Quote arguments that contain spaces and aren't already quoted
-                "`"$_`""
-            }
-            else {
-                $_
-            }
-=======
             $arg = $_
 
             # Check if the argument is already properly quoted (starts and ends with quotes)
@@ -77,7 +68,6 @@ function Invoke-Process {
             }
 
             return $arg
->>>>>>> 41b8e44 (Add NewMediaTools module. This will eventually replace the MediaTools module.)
         }
         $psi.Arguments = $quotedArguments -join ' '
         $psi.RedirectStandardOutput = $true
