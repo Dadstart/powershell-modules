@@ -69,7 +69,7 @@ function Add-CropValues {
 }
 
 
-function Crop-Item {
+function Invoke-CropItem {
     param (
         [CmdletBinding()]
         [Parameter(Mandatory, ValueFromPipeline, Position = 0)]
@@ -95,19 +95,19 @@ function ConvertTo-Cropped {
     )
     begin {
         $mediaFiles = Get-ChildItem $InputFolder -Filter *.mkv | ForEach-Object { Get-MediaFile $_ }
-        Write-Host "Found $($mediaFiles.Count) files" -ForegroundColor Cyan
+        Write-Host "📽️ Found $($mediaFiles.Count) files" -ForegroundColor Cyan
     }
     process {
         foreach ($mediaFile in $mediaFiles) {
             $inputFile = $mediaFile.Path
             $outputFile = [System.IO.Path]::ChangeExtension($inputFile, '_cropped.mkv')
-            Write-Host "Processing $($inputFile) -> $($outputFile)" -ForegroundColor Cyan
+            Write-Host "📝 Processing $($inputFile) -> $($outputFile)" -ForegroundColor Cyan
             Add-CropValues $mediaFile
-            Write-Host "Crop value: $($mediaFile.CropValue)" -ForegroundColor Gray
-            Crop-Item $mediaFile -OutputFile $outputFile
+            Write-Host "🎯 Crop value: $($mediaFile.CropValue)" -ForegroundColor Gray
+            Invoke-CropItem $mediaFile -OutputFile $outputFile
         }
     }
     end {
-        Write-Host 'Done with all files' -ForegroundColor Green
+        Write-Host '✅ Done with all files' -ForegroundColor Green
     }
 }
