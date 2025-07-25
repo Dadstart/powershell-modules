@@ -17,4 +17,4 @@ function Resolve-InputPath {
         Write-Message "Failed to resolve path: $($_.Exception.Message)" -Type Error
         throw "Failed to resolve path: $($_.Exception.Message)"
     }
-} 
+}

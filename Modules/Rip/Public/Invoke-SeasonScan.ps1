@@ -67,4 +67,4 @@ function Invoke-SeasonScan {
         Write-Message "Stack trace: $($_.ScriptStackTrace)" -Type Verbose
         return @()
     }
-} 
+}

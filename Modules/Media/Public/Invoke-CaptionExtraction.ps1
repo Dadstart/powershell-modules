@@ -1,6 +1,6 @@
 <#
     Subtitle Codec → File Extension Mapping
-    | Codec Name | Description | Typical Extension | Extractable with FFmpeg | 
+    | Codec Name | Description | Typical Extension | Extractable with FFmpeg |
     subrip: Text-based subtitles; .srt, .vtt
     webvtt: Web Video Text Tracks; .vtt
     ass / ssa: Advanced SubStation Alpha; .ass, .ssa

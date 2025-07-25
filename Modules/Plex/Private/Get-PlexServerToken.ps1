@@ -14,7 +14,7 @@ function Get-PlexServerToken {
         'X-Plex-Version'           = "V0.01"
         'X-Plex-Username'          = $Credential.UserName
         'Accept'                   = 'application/xml'
-        'Content-Type'             = 'application/xml'    
+        'Content-Type'             = 'application/xml'
     }
     # Send the request
     $response = Invoke-RestMethod -Uri "https://plex.tv/users/sign_in.xml" -Method POST -Headers $headers

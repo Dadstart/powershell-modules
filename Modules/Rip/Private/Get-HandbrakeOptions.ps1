@@ -139,4 +139,4 @@ function Get-HandbrakeOptions {
         $options += @('--chapters', $Chapters)
     }
     return $options
-} 
+}

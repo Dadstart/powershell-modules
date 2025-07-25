@@ -31,7 +31,7 @@ The Media module provides tools for:
    ```powershell
    # Using Winget
    winget install Gyan.FFmpeg
-   
+
    # Using Chocolatey (alternative)
    choco install ffmpeg
    ```
@@ -40,7 +40,7 @@ The Media module provides tools for:
    ```powershell
    # Using Winget
    winget install MKVToolNix.MKVToolNix
-   
+
    # Using Chocolatey (alternative)
    choco install mkvtoolnix
    ```
@@ -49,7 +49,7 @@ The Media module provides tools for:
    ```powershell
    # Check FFmpeg
    ffmpeg -version
-   
+
    # Check MKVToolNix (if installed)
    mkvmerge --version
    ```
@@ -460,19 +460,19 @@ function Export-AllAudioStreams {
         [string]$InputPath,
         [string]$OutputDirectory
     )
-    
+
     # Get all audio streams
     $audioStreams = Get-MediaStreams -Path $InputPath -StreamType Audio
-    
+
     Write-Message "Found $($audioStreams.Count) audio streams" -Type Info
-    
+
     foreach ($stream in $audioStreams) {
         $outputPath = Join-Path $OutputDirectory "audio_$($stream.Index).aac"
-        
+
         Write-Message "Exporting audio stream $($stream.Index)" -Type Processing
-        
+
         Export-AudioStream -Path $InputPath -Index $stream.Index -OutputPath $outputPath
-        
+
         Write-Message "Exported: $outputPath" -Type Success
     }
 }
@@ -495,16 +495,16 @@ Write-Message "Found $($mkvFiles.Count) MKV files to process" -Type Info
 
 foreach ($file in $mkvFiles) {
     Write-Message "Processing: $($file.Name)" -Type Processing
-    
+
     # Get media stats
     $stats = Get-MediaStats -Path $file.FullName
-    
+
     # Create output path
     $outputPath = Join-Path $outputDir $file.Name
-    
+
     # Copy with verification
     Invoke-VideoCopy -SourcePath $file.FullName -DestinationPath $outputPath -Verify
-    
+
     Write-Message "Completed: $($file.Name)" -Type Success
 }
 ```
@@ -518,22 +518,22 @@ function Process-WithMonitoring {
         [string]$InputPath,
         [string]$OutputPath
     )
-    
+
     # Start system monitoring
     $monitor = Start-SystemMonitoring -Interval 10
-    
+
     try {
         Write-Message "Starting media processing" -Type Processing
-        
+
         # Perform the operation
         Invoke-FFMpeg -Arguments "-i `"$InputPath`" -c:v libx264 -c:a aac `"$OutputPath`"" -ShowProgress
-        
+
         Write-Message "Processing completed" -Type Success
     }
     finally {
         # Stop monitoring
         $monitor.Stop()
-        
+
         # Show final snapshot
         Show-SystemSnapshot
     }
@@ -553,24 +553,24 @@ function Organize-PlexLibrary {
         [string]$Pattern,
         [string]$NewCategory
     )
-    
+
     # Get files matching pattern
     $files = Get-ChildItem -Path $LibraryPath -Filter $Pattern -Recurse
-    
+
     Write-Message "Found $($files.Count) files to organize" -Type Info
-    
+
     foreach ($file in $files) {
         # Create new category folder
         $categoryPath = Join-Path $LibraryPath $NewCategory
         Add-PlexFolder -Path $categoryPath
-        
+
         # Move file to new category
         $newPath = Join-Path $categoryPath $file.Name
         Move-PlexFile -SourcePath $file.FullName -DestinationPath $newPath
-        
+
         Write-Message "Moved: $($file.Name)" -Type Success
     }
-    
+
     # Remove empty folders
     Remove-PlexEmptyFolder -Path $LibraryPath
 }

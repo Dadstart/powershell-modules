@@ -120,7 +120,7 @@ function Get-FilteredVideoFiles {
                     $sizeGB = [math]::Round($ex.Length / 1GB, 2)
                     $reason = if ($ex.Length -le $MinimumFileSize) { "Size: ${sizeGB}GB" } else { 'Pattern mismatch' }
                     Write-Message "⏭️ Excluded: $($ex.Name) ($reason)" -Type Verbose
-                }   
+                }
                 $accepted = $accepted | Sort-Object Name
                 Write-Message "✅ Accepted: $($accepted.Count) files from $directory" -Type Verbose
                 $allAcceptedFiles += $accepted
@@ -130,4 +130,4 @@ function Get-FilteredVideoFiles {
             return $allAcceptedFiles
         }
     }
-} 
+}

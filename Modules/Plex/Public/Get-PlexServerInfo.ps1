@@ -69,4 +69,4 @@ function Get-PlexServerInfo {
         Write-Message "❌ Failed to retrieve server information: $($_.Exception.Message)" -Type Error
         throw
     }
-} 
+}

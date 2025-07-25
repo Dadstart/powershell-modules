@@ -27,7 +27,7 @@ function Get-Path {
         Specifies the type of path validation to perform. This parameter ensures the path exists and is of the expected type.
         This parameter is mutually exclusive with Create.
         - File: Validates that the path exists and is a file
-        - Directory: Validates that the path exists and is a directory  
+        - Directory: Validates that the path exists and is a directory
         - Either: Validates that the path exists (can be either file or directory)
         - None: No validation performed (default)
     .PARAMETER ValidationErrorAction
@@ -112,12 +112,15 @@ function Get-Path {
     Write-Message "Create: $Create" -Type Verbose
     Write-Message "ValidatePath: $ValidatePath" -Type Verbose
     Write-Message "ValidationErrorAction: $ValidationErrorAction" -Type Verbose
+
     # Validate that Create and ValidatePath are not both specified
     if ($Create -ne 'None' -and $ValidatePath -ne 'None') {
         throw 'Parameters Create and ValidatePath are mutually exclusive. Use Create to create a path or ValidatePath to validate an existing path, but not both.'
     }
+
     $combinedPath = [System.IO.Path]::Combine($Path)
     Write-Message "CombinedPath: $combinedPath" -Type Verbose
+
     # Resolve relative to current directory if the path is not already absolute
     if ([System.IO.Path]::IsPathRooted($combinedPath)) {
         $absolutePath = [System.IO.Path]::GetFullPath($combinedPath)
@@ -127,7 +130,7 @@ function Get-Path {
         $absolutePath = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($currentDir, $combinedPath))
     }
     Write-Message "AbsolutePath: $absolutePath" -Type Verbose
-    Write-Message "Processing path: $absolutePath" -Type Verbose
+
     # Perform path validation if requested
     if ($ValidatePath -ne 'None') {
         $validationResult = $true
@@ -167,36 +170,7 @@ function Get-Path {
             }
         }
     }
-    # Create item if requested
-    if ($Create -ne 'None') {
-        switch ($Create) {
-            'Directory' {
-                if (-not [System.IO.Directory]::Exists($absolutePath)) {
-                    [System.IO.Directory]::CreateDirectory($absolutePath) | Out-Null
-                    Write-Message "Created directory: '$absolutePath'" -Type Verbose
-                }
-                else {
-                    Write-Message "Directory already exists: '$absolutePath'" -Type Verbose
-                }
-            }
-            'File' {
-                # Ensure parent directory exists
-                $parentDirectory = [System.IO.Path]::GetDirectoryName($absolutePath)
-                if (-not [string]::IsNullOrEmpty($parentDirectory) -and -not [System.IO.Directory]::Exists($parentDirectory)) {
-                    [System.IO.Directory]::CreateDirectory($parentDirectory) | Out-Null
-                    Write-Message "Created parent directory: '$parentDirectory'" -Type Verbose
-                }
-                # Create the file if it doesn't exist
-                if (-not [System.IO.File]::Exists($absolutePath)) {
-                    [System.IO.File]::Create($absolutePath).Close()
-                    Write-Message "Created file: '$absolutePath'" -Type Verbose
-                }
-                else {
-                    Write-Message "File already exists: '$absolutePath'" -Type Verbose
-                }
-            }
-        }
-    }
+
     # Process the path based on PathType
     switch ($PathType) {
         'Parent' {
@@ -228,6 +202,37 @@ function Get-Path {
             }
             else {
                 $finalPath = $absolutePath
+            }
+        }
+    }
+
+    # Create item if requested
+    if ($Create -ne 'None') {
+        switch ($Create) {
+            'Directory' {
+                if (-not [System.IO.Directory]::Exists($finalPath)) {
+                    [System.IO.Directory]::CreateDirectory($finalPath) | Out-Null
+                    Write-Message "Created directory: '$finalPath'" -Type Verbose
+                }
+                else {
+                    Write-Message "Directory already exists: '$finalPath'" -Type Verbose
+                }
+            }
+            'File' {
+                # Ensure parent directory exists
+                $parentDirectory = [System.IO.Path]::GetDirectoryName($finalPath)
+                if (-not [string]::IsNullOrEmpty($parentDirectory) -and -not [System.IO.Directory]::Exists($parentDirectory)) {
+                    [System.IO.Directory]::CreateDirectory($parentDirectory) | Out-Null
+                    Write-Message "Created parent directory: '$parentDirectory'" -Type Verbose
+                }
+                # Create the file if it doesn't exist
+                if (-not [System.IO.File]::Exists($finalPath)) {
+                    [System.IO.File]::Create($finalPath).Close()
+                    Write-Message "Created file: '$finalPath'" -Type Verbose
+                }
+                else {
+                    Write-Message "File already exists: '$finalPath'" -Type Verbose
+                }
             }
         }
     }

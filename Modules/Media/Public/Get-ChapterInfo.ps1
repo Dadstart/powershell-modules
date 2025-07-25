@@ -58,4 +58,4 @@ function Get-ChapterInfo {
             return $null
         }
     }
-} 
+}

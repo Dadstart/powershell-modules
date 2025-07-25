@@ -4,8 +4,8 @@ function Get-AudioStream {
         Gets audio stream information from video files in the specified path(s).
     .DESCRIPTION
         This function scans the specified video files (MKV and other formats) and extracts audio streams
-        using Get-MediaStreamCollection for efficient processing of multiple files. It filters the results 
-        by CodecName and Language if specified, and returns an array of MediaStreamInfo objects representing 
+        using Get-MediaStreamCollection for efficient processing of multiple files. It filters the results
+        by CodecName and Language if specified, and returns an array of MediaStreamInfo objects representing
         the audio streams.
     .PARAMETER Source
         One or more paths to video files or directories. Accepts pipeline input.
@@ -22,8 +22,8 @@ function Get-AudioStream {
     .OUTPUTS
         [MediaStreamInfo[]] - Array of MediaStreamInfo objects representing audio streams.
     .NOTES
-        This function requires the Video module to be loaded and depends on Get-MediaStreamCollection for 
-        efficient stream extraction. The returned MediaStreamInfo objects provide methods like IsAudio(), 
+        This function requires the Video module to be loaded and depends on Get-MediaStreamCollection for
+        efficient stream extraction. The returned MediaStreamInfo objects provide methods like IsAudio(),
         GetDisplayName(), and ToString() for easier stream manipulation and display.
     #>
     [CmdletBinding()]
@@ -96,4 +96,4 @@ function Get-AudioStream {
             return @()
         }
     }
-} 
+}

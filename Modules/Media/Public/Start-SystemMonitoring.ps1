@@ -19,7 +19,7 @@ function Start-SystemMonitoring {
         'Timestamp',
         'CPU_UsagePct',
         'Mem_UsedMB',
-        'Mem_TotalMB', 
+        'Mem_TotalMB',
         'Mem_UsagePct',
         'Disk_IOPct',
         'GPU_UsagePct',
@@ -169,4 +169,4 @@ function Start-SystemMonitoring {
         Write-Message "`nMonitoring stopped. Data saved to: $OutputPath" -Type Verbose
         Write-Message "Total iterations: $iteration" -Type Verbose
     }
-} 
+}

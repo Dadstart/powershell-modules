@@ -43,4 +43,4 @@ function Test-PlexConnection {
         Write-Message "❌ Failed to connect to Plex server: $($_)" -Type Error
         return $false
     }
-} 
+}

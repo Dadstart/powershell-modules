@@ -42,4 +42,4 @@
     }
     # HelpInfo URI of this module
     HelpInfoURI = 'https://github.com/Dadstart/powershell-modules/issues'
-} 
+}

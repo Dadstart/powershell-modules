@@ -89,4 +89,4 @@ function Get-AudioData {
         $videoProgress.Stop(@{ Status = 'Video processing completed' })
         return $results
     }
-} 
+}

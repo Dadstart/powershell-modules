@@ -241,4 +241,4 @@ function Export-SubtitleStream {
         # Return results
         return $allResults
     }
-} 
+}

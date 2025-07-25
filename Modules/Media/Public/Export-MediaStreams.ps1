@@ -56,7 +56,7 @@ function Export-MediaStreams {
         [Parameter(Mandatory)]
         [string]$OutputDirectory,
         [Parameter(Mandatory)]
-        [ValidateSet('Audio','Subtitle','Video')]
+        [ValidateSet('Audio', 'Subtitle', 'Video')]
         [string]$Type,
         [Parameter()]
         [switch]$Force
@@ -70,26 +70,33 @@ function Export-MediaStreams {
     process {
         # Resolve the input file path to absolute path
         $inputPath = Resolve-Path $InputFile
-        Write-Verbose "InputPath: $($inputPath.Path)"
+        Write-Message "InputPath: $($inputPath.Path)" -Type Verbose
+        Write-Message "OutputDirectory: $OutputDirectory" -Type Verbose
+        Write-Message "Type: $Type" -Type Verbose
+        Write-Message "Force: $Force" -Type Verbose
+
         # Get all streams of the specified type from the input file
-        Get-MediaStreams -Path $inputPath.Path -Type $Type | ForEach-Object {
+        $mediaStreams = Get-MediaStreams -Path $inputPath.Path -Type $Type
+        $mediaStreams | ForEach-Object {
             # Generate file extension based on stream index and codec name
             # Note: Using Index directly because MediaStream objects use 0-based indices
             # which is what Export-MediaStream expects
             $extension = ".$($_.Index).$($_.CodecName)"
-            Write-Verbose "Extension: $extension"
+            Write-Message "Extension: $extension" -Type Verbose
+
             # Build the output path by combining output directory, original filename, and extension
-            $outputPath = (Resolve-Path $OutputDirectory).Path
-            $outputPath =  ([System.IO.Path]::Combine($outputPath, '\', [System.IO.Path]::GetFileNameWithoutExtension($inputFile), $extension -join ''))
-            Write-Verbose "OutputPath: $outputPath"
+            $outputPathDir = (Resolve-Path $OutputDirectory).Path
+            $outputPathFile = Join-Path -Path $outputPathDir -ChildPath "$([System.IO.Path]::GetFileNameWithoutExtension($inputFile))$extension"
+            Write-Message "OutputPath: $outputPathFile" -Type Verbose
+
             # Check if output file already exists and handle Force parameter
-            if (Test-Path $outputPath -and -not $Force) {
-                Write-Host "$Type stream already exists: $outputPath"
+            if ((Test-Path $outputPathFile) -and (-not $Force)) {
+                Write-Message "$Type stream already exists: $outputPathFile" -Type Warning
                 continue
             }
+
             # Extract the current stream using Export-MediaStream
-            Write-Host "Exporting $Type stream #$($_.Index) to $outputPath"
-            Export-MediaStream -InputPath ($inputPath.Path) -OutputPath $outputPath -Type $Type -Index $_.Index
+            Export-MediaStream -InputPath ($inputPath.Path) -OutputPath $outputPathFile -Type $Type -Index $_.TypeIndex
         }
     }
 }

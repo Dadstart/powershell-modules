@@ -98,7 +98,7 @@ function Get-MediaStreams {
                 # Check if stream matches the requested type
                 $matchesType = ($Type -eq [StreamType]::All) -or ($stream.codec_type -eq $streamTypeString)
                 if ($matchesType) {
-                    Write-Verbose "Processing stream $($stream.index) of type $($stream.codec_type)"                
+                    Write-Verbose "Processing stream $($stream.index) of type $($stream.codec_type)"
                     # Create stream object with required properties
                     $streamObj = [PSCustomObject]@{
                         SourceFile  = $resolvedPath
@@ -107,7 +107,7 @@ function Get-MediaStreams {
                         CodecName   = [string]$stream.codec_name
                         TypeIndex   = [int]$typeIndex
                         Language    = [string]$stream.tags.language
-                        Title       = [string]$stream.tags.title    
+                        Title       = [string]$stream.tags.title
                         Disposition = $stream.disposition
                         Tags        = $stream.tags
                     }

@@ -61,4 +61,4 @@ function New-ProcessingDirectory {
         Write-Message "Stack trace: $($_.ScriptStackTrace)" -Type Verbose
         throw
     }
-} 
+}

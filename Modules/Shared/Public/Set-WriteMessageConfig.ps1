@@ -18,7 +18,7 @@ function Set-WriteMessageConfig {
     .PARAMETER AsJson
         When specified, outputs all messages in JSON format by default.
     .PARAMETER LevelColors
-        Hashtable mapping message types to colors. Valid colors: Black, DarkBlue, DarkGreen, 
+        Hashtable mapping message types to colors. Valid colors: Black, DarkBlue, DarkGreen,
         DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan,
         Red, Magenta, Yellow, and White.
     .PARAMETER IncludeContext

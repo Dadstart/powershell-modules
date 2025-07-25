@@ -12,14 +12,14 @@ function Get-SystemSnapshot {
     # Get all basic counters in one batch
     $counterData = Get-Counter -Counter $counters -ErrorAction SilentlyContinue
     # Extract values with error handling
-    $cpu = if ($counterData) { 
-        ($counterData.CounterSamples | Where-Object {$_.Path -like '*Processor*'}).CookedValue 
+    $cpu = if ($counterData) {
+        ($counterData.CounterSamples | Where-Object {$_.Path -like '*Processor*'}).CookedValue
     } else { 0 }
-    $memAvailable = if ($counterData) { 
-        ($counterData.CounterSamples | Where-Object {$_.Path -like '*Memory*'}).CookedValue 
+    $memAvailable = if ($counterData) {
+        ($counterData.CounterSamples | Where-Object {$_.Path -like '*Memory*'}).CookedValue
     } else { 0 }
-    $diskIO = if ($counterData) { 
-        ($counterData.CounterSamples | Where-Object {$_.Path -like '*PhysicalDisk*'}).CookedValue 
+    $diskIO = if ($counterData) {
+        ($counterData.CounterSamples | Where-Object {$_.Path -like '*PhysicalDisk*'}).CookedValue
     } else { 0 }
     # Memory calculation
     $memTotal = (Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue).TotalPhysicalMemory / 1MB
@@ -84,7 +84,7 @@ function Get-SystemSnapshot {
     $gpuTemp = 0
     try {
         # Try to get CPU temperature via WMI
-        $cpuTemp = (Get-CimInstance MSAcpi_ThermalZoneTemperature -Namespace "root/wmi" -ErrorAction SilentlyContinue | 
+        $cpuTemp = (Get-CimInstance MSAcpi_ThermalZoneTemperature -Namespace "root/wmi" -ErrorAction SilentlyContinue |
                    Select-Object -First 1).CurrentTemperature
         if ($cpuTemp) {
             $cpuTemp = ($cpuTemp / 10) - 273.15  # Convert from 10ths of Kelvin to Celsius

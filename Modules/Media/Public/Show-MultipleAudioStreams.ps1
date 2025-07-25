@@ -19,8 +19,8 @@ function Show-MultipleAudioStreams {
         Get-ChildItem *.mkv | Show-MultipleAudioStreams -Language "spa" -ShowStreams
         Shows Spanish audio streams from MKV files in the current directory with detailed stream info.
     .NOTES
-        This function requires the Video module to be loaded and depends on Get-MediaStreamCollection for 
-        efficient stream extraction. The function uses MediaStreamInfo objects which provide methods like 
+        This function requires the Video module to be loaded and depends on Get-MediaStreamCollection for
+        efficient stream extraction. The function uses MediaStreamInfo objects which provide methods like
         GetDisplayName() for better stream information display.
     #>
     [CmdletBinding()]
@@ -85,4 +85,4 @@ function Show-MultipleAudioStreams {
             Write-Message "Failed to show multiple audio streams: $($_.Exception.Message)" -Type Error
         }
     }
-} 
+}

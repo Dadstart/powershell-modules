@@ -25,4 +25,4 @@ function Get-EnhancedTitle {
         Write-Message "Failed to get enhanced title: $($_.Exception.Message)" -Type Error
         return $BaseTitle
     }
-} 
+}

@@ -187,4 +187,4 @@ function Get-MediaExtension {
         Write-Message "No mapping found for $CodecType codec '$CodecName', using '.$CodecName' as extension" -Type Verbose
         return ".$CodecName"
     }
-} 
+}

@@ -138,4 +138,4 @@ function Copy-FileWithMetadata {
             return $copiedFiles
         }
     }
-} 
+}

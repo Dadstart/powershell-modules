@@ -30,10 +30,10 @@ The Rip module provides tools for:
    ```powershell
    # Using Winget
    winget install HandBrake.HandBrake
-   
+
    # Using Chocolatey (alternative)
    choco install handbrake-cli
-   
+
    # Download from official site
    # https://handbrake.fr/downloads2.php
    ```
@@ -42,7 +42,7 @@ The Rip module provides tools for:
    ```powershell
    # Using Winget
    winget install Gyan.FFmpeg
-   
+
    # Using Chocolatey (alternative)
    choco install ffmpeg
    ```
@@ -51,7 +51,7 @@ The Rip module provides tools for:
    ```powershell
    # Check HandBrake
    HandBrakeCLI --version
-   
+
    # Check FFmpeg
    ffmpeg -version
    ```
@@ -176,7 +176,7 @@ git clone https://github.com/Dadstart/powershell-modules
 ```Powershell
    # Using Winget
    winget install GuinpinSoft.MakeMKV
-   
+
    # Using Chocolatey (alternative)
    choco install MakeMKV
 
@@ -291,11 +291,11 @@ Write-Message "Found $($mkvFiles.Count) MKV files to convert" -Type Info
 # Convert each file
 foreach ($file in $mkvFiles) {
     $outputPath = Join-Path $outputDir $file.BaseName + ".mp4"
-    
+
     Write-Message "Converting $($file.Name)" -Type Processing
-    
+
     Convert-VideoFiles -InputPath $file.FullName -OutputPath $outputPath -Preset "Fast 1080p30"
-    
+
     Write-Message "Completed: $($file.Name)" -Type Success
 }
 ```
@@ -310,20 +310,20 @@ function Process-TvSeries {
         [string]$OutputPath,
         [string]$Quality = "High"
     )
-    
+
     # Get all season directories
     $seasons = Get-ChildItem -Path $SeriesPath -Directory | Where-Object { $_.Name -like "Season*" }
-    
+
     Write-Message "Found $($seasons.Count) seasons to process" -Type Info
-    
+
     foreach ($season in $seasons) {
         $seasonOutput = Join-Path $OutputPath $season.Name
-        
+
         Write-Message "Processing $($season.Name)" -Type Processing
-        
+
         # Process the season
         Invoke-SeasonScan -SeasonPath $season.FullName -OutputPath $seasonOutput -Quality $Quality
-        
+
         Write-Message "Completed: $($season.Name)" -Type Success
     }
 }
@@ -427,7 +427,7 @@ Configure HandBrake parameters:
 # Common presets
 $presets = @(
     "Fast 1080p30",
-    "Fast 720p30", 
+    "Fast 720p30",
     "HQ 1080p30 Surround",
     "Super HQ 1080p30 Surround"
 )

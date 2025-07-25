@@ -89,7 +89,7 @@ See [FORMATTING.md](FORMATTING.md).
 
 ## Testing
 
-** UNDER REVIEW ** 
+** UNDER REVIEW **
 
 ### Writing Tests
 
@@ -247,4 +247,4 @@ docs(readme): update installation instructions
 - Use discussions for questions and general help
 - Join our community channels (if available)
 
-Thank you for contributing to PowerShell Modules by Dadstart! 
+Thank you for contributing to PowerShell Modules by Dadstart!

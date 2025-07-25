@@ -104,7 +104,7 @@ function Get-UserData {
         ####
 
         [string]$UserName,
-        
+
         [Parameter()]
         [ValidateRange(1, 100)]
         [int]$MaxResults = 10
@@ -121,7 +121,7 @@ function Get-UserData {
 ```Powershell
 if ($condition) {
     Write-Host "Condition is true"
-    
+
     if ($nestedCondition) {
         Write-Host "Nested condition is true"
     }
@@ -230,7 +230,7 @@ function Get-UserData {
         ####
 
     )
-    
+
     # Function body
 }
 ```
@@ -246,19 +246,19 @@ function Set-Configuration {
         ####
 
         [string]$ConfigPath,
-        
+
         [Parameter()]
         [switch]$Force
     )
-    
+
     begin {
         # Initialization code
     }
-    
+
     process {
         # Main processing logic
     }
-    
+
     end {
         # Cleanup code
     }
@@ -344,12 +344,12 @@ New-Item -Path "C:\Users\$env:USERNAME\Documents\Reports" `
 
 .EXAMPLE
     Get-UserData -UserName "JohnDoe"
-    
+
     Retrieves basic information for user "JohnDoe".
 
 .EXAMPLE
     Get-UserData -UserName "JaneSmith" -DetailLevel "Full" -IncludeMetadata
-    
+
     Retrieves full detailed information including metadata for user "JaneSmith".
 
 .INPUTS
@@ -481,7 +481,7 @@ function Get-Data {
         [ValidateNotNullOrEmpty()]
         [ValidatePattern('^[a-zA-Z0-9_-]+$')]
         [string]$Name,
-        
+
         [Parameter(
             Mandatory,
             ParameterSetName = 'ById',
@@ -489,14 +489,14 @@ function Get-Data {
         )]
         [ValidateRange(1, [int]::MaxValue)]
         [int]$Id,
-        
+
         [Parameter()]
         [ValidateSet('Basic', 'Detailed', 'Full')]
         [string]$DetailLevel = 'Basic',
-        
+
         [Parameter()]
         [switch]$IncludeMetadata,
-        
+
         [Parameter()]
         [ValidateNotNull()]
         [hashtable]$Options = @{}
@@ -566,25 +566,25 @@ function Process-Items {
         ####
 
     )
-    
+
     begin {
         Write-Verbose "Starting to process items"
         $processedCount = 0
     }
-    
+
     process {
         try {
             # Process each item
             $result = $InputObject | Convert-Item
             $processedCount++
-            
+
             Write-Output $result
         }
         catch {
             Write-Error "Failed to process item: $($_.Exception.Message)"
         }
     }
-    
+
     end {
         Write-Verbose "Processed $processedCount items"
     }

@@ -33,4 +33,4 @@ $CurrentPSModulePath = $env:PSModulePath
 if ($CurrentPSModulePath -notlike "*$ModulesPath*") {
     $env:PSModulePath = "$ModulesPath;$CurrentPSModulePath"
 }
-Write-Host "PowerShell Modules Workspace profile loaded successfully!" -ForegroundColor Green 
+Write-Host "PowerShell Modules Workspace profile loaded successfully!" -ForegroundColor Green
