@@ -64,7 +64,7 @@ function Invoke-CaptionExtraction {
         try {
             Write-Message "📝 Processing caption extraction for: $File" -Type Processing
             # Use Get-MediaStreamCollection for efficient processing
-            $streamCollection = Get-MediaStreamCollection -Path $File -Type Subtitle
+            $streamCollection = Get-MediaStreamCollection -Path "$File" -Type Subtitle
             if (-not $streamCollection -or $streamCollection.Count -eq 0) {
                 Write-Message "⏭️ No subtitle streams found in $File. File will be skipped." -Type Warning
                 $skippedCount++
