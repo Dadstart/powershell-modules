@@ -24,6 +24,7 @@ function Convert-MediaFile {
         [Parameter(Mandatory)][string] $OutputFile,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         [Parameter(Mandatory)][VideoEncodingSettings] $VideoSettings,
         [Parameter(Mandatory)][AudioTrackMapping[]] $AudioMappings
     )
@@ -52,6 +53,8 @@ function Convert-MediaFile {
     }
 }
 =======
+=======
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
         [Parameter(Mandatory)][object] $VideoSettings,
@@ -153,6 +156,9 @@ function Convert-MediaFileFromArgumentList {
     Write-Message -Message "Convert $Description completed" -Type Success
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
+=======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)

@@ -25,6 +25,10 @@ class VideoEncodingSettings {
     [string] $Codec
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+    [double] $Bitrate
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
     [double] $Bitrate
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
@@ -40,6 +44,7 @@ class VideoEncodingSettings {
         [string] $codec,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         [int]    $crf = 21,
         [string] $preset = 'slow',
         [string] $codecProfile = 'high',
@@ -47,6 +52,8 @@ class VideoEncodingSettings {
     ) {
         $this.Codec = $codec
 =======
+=======
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
         [double] $bitrate,
@@ -58,6 +65,9 @@ class VideoEncodingSettings {
         $this.Codec = $codec
         $this.Bitrate = $bitrate
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
+=======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
@@ -66,6 +76,7 @@ class VideoEncodingSettings {
         $this.CodecProfile = $codecProfile
         $this.Tune = $tune
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     [string] ToString() {
@@ -118,6 +129,8 @@ class VideoEncodingSettings {
 =======
 =======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
+=======
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 
     [string] ToString() {
         if ($this.Bitrate) {
@@ -168,6 +181,9 @@ class VideoEncodingSettings {
 
         return $ffmpegArgs.ToArray()
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
+=======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)

@@ -1,5 +1,9 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+[CmdletBinding()]
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 [CmdletBinding()]
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
@@ -11,6 +15,7 @@ param(
     [switch] $SkipConvert
 )
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 $inputDir = Get-Path $InputDirectory -PathType Absolute
@@ -38,6 +43,8 @@ $allFiles | ForEach-Object {
     Write-Progress -Activity "Converting $($allFiles.Count) files" -Id 1 -Status "$i of $($allFiles.Count)" -PercentComplete ([double]($i - 1) / [double]$allFiles.Count)
     Write-Host $outputFile -ForegroundColor Cyan
 =======
+=======
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 @('Convert-MediaFile','Write-Message', 'Invoke-FFMpeg', 'Invoke-Process') | ForEach-Object {
@@ -70,6 +77,9 @@ $allFiles | ForEach-Object {
     Write-Message "OutputFile: $outputFile"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
+=======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
@@ -79,10 +89,15 @@ $allFiles | ForEach-Object {
 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 $progress.Stop(@{ Status = 'Directory conversion completed' })
 
 Write-Progress -Activity "Converting $($allFiles.Count) files" -Id 1 -PercentComplete 100 -Status 'Complete' -Completed
 Write-Host 'Complete' -ForegroundColor Green
+=======
+
+Write-Message '📂 Directory conversion completed' -Type Success
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 
 Write-Message '📂 Directory conversion completed' -Type Success

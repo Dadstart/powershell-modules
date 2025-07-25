@@ -47,6 +47,7 @@ function New-VideoEncodingSettings {
     param(
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         [Parameter(Mandatory)]
         [string] $Codec,
         [Parameter()]
@@ -61,6 +62,8 @@ function New-VideoEncodingSettings {
     process {
         return [VideoEncodingSettings]::new($Codec, $CRF, $Preset, $CodecProfile, $Tune)
 =======
+=======
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
         [Parameter(Mandatory, ParameterSetName = 'CRF')]
@@ -81,6 +84,9 @@ function New-VideoEncodingSettings {
     process {
         return [VideoEncodingSettings]::new($Codec, $Bitrate, $CRF, $Preset, $CodecProfile, $Tune)
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
+=======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
