@@ -79,9 +79,7 @@ function Invoke-CropItem {
     )
     process {
         # Apply crop and encode with x264
-        if ($false) {
-            ffmpeg -i "$MediaFile.Path" -vf "crop=$($MediaFile.CropValue)" -c:v libx264 -preset veryslow -crf 17 -c:a copy "$OutputFile"
-        }
+        ffmpeg -i "$($MediaFile.Path)" -vf "crop=$($MediaFile.CropValue)" -c:v libx264 -preset veryslow -crf 17 -c:a copy "$OutputFile"
 
         Write-Host "Crop complete: $OutputFile" -ForegroundColor Green
     }
@@ -96,6 +94,9 @@ function ConvertTo-Cropped {
     begin {
         $mediaFiles = Get-ChildItem $InputFolder -Filter *.mkv | ForEach-Object { Get-MediaFile $_ }
         Write-Host "📽️ Found $($mediaFiles.Count) files" -ForegroundColor Cyan
+
+        $cropped = New-Object System.Collections.Generic.List[MediaFile]
+        $skipped = New-Object System.Collections.Generic.List[MediaFile]
     }
     process {
         foreach ($mediaFile in $mediaFiles) {
@@ -103,11 +104,24 @@ function ConvertTo-Cropped {
             $outputFile = [System.IO.Path]::ChangeExtension($inputFile, '_cropped.mkv')
             Write-Host "📝 Processing $($inputFile) -> $($outputFile)" -ForegroundColor Cyan
             Add-CropValues $mediaFile
-            Write-Host "🎯 Crop value: $($mediaFile.CropValue)" -ForegroundColor Gray
-            Invoke-CropItem $mediaFile -OutputFile $outputFile
-        }
+            if ($mediaFile.CropValue) {                
+                Write-Host "🎯 Crop value: $($mediaFile.CropValue)" -ForegroundColor Gray
+                Invoke-CropItem $mediaFile -OutputFile $outputFile
+                $cropped.Add($mediaFile)
+            } else {
+                Write-Host '🚫 No crop value found' -ForegroundColor Red
+                $skipped.Add($mediaFile)
+            }
+        }        
     }
     end {
         Write-Host '✅ Done with all files' -ForegroundColor Green
+        Write-Host "📂 Cropped $($cropped.Count) files" -ForegroundColor Green
+        $skippedFiles = ($skipped | ForEach-Object { $_.Path }) -join '`n'
+        Write-Host "📂 Skipped $($skipped.Count) files:" -ForegroundColor Magenta
+        Write-Host "`t$($skippedFiles -join '`n`t')" -ForegroundColor Magenta
     }
 }
+
+$scratchVer = 2
+Write-Host "🔄 Scratch version: $scratchVer" -ForegroundColor Cyan
