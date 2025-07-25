@@ -24,6 +24,10 @@ The tune to use.
 class VideoEncodingSettings {
     [string] $Codec
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+    [double] $Bitrate
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 =======
     [double] $Bitrate
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
@@ -35,6 +39,7 @@ class VideoEncodingSettings {
     VideoEncodingSettings(
         [string] $codec,
 <<<<<<< HEAD
+<<<<<<< HEAD
         [int]    $crf = 21,
         [string] $preset = 'slow',
         [string] $codecProfile = 'high',
@@ -42,6 +47,8 @@ class VideoEncodingSettings {
     ) {
         $this.Codec = $codec
 =======
+=======
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
         [double] $bitrate,
         [int]    $crf,
         [string] $preset,
@@ -50,12 +57,16 @@ class VideoEncodingSettings {
     ) {
         $this.Codec = $codec
         $this.Bitrate = $bitrate
+<<<<<<< HEAD
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
+=======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
         $this.Preset = $preset
         $this.CRF = $crf
         $this.CodecProfile = $codecProfile
         $this.Tune = $tune
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
     [string] ToString() {
         return "$($this.Codec), CRF=$($this.CRF), Preset=$($this.Preset)"
@@ -105,6 +116,8 @@ class VideoEncodingSettings {
 
         return $ffmpegArgs
 =======
+=======
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
 
     [string] ToString() {
         if ($this.Bitrate) {
@@ -154,6 +167,9 @@ class VideoEncodingSettings {
         }
 
         return $ffmpegArgs.ToArray()
+<<<<<<< HEAD
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
+=======
 >>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
     }
 }
