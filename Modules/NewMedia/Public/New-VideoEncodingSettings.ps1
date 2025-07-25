@@ -45,6 +45,7 @@ function New-VideoEncodingSettings {
     #>
     [CmdletBinding()]
     param(
+<<<<<<< HEAD
         [Parameter(Mandatory)]
         [string] $Codec,
         [Parameter()]
@@ -58,5 +59,24 @@ function New-VideoEncodingSettings {
     )
     process {
         return [VideoEncodingSettings]::new($Codec, $CRF, $Preset, $CodecProfile, $Tune)
+=======
+        [Parameter(Mandatory, ParameterSetName = 'CRF')]
+        [Parameter(Mandatory, ParameterSetName = 'VBR')]
+        [string] $Codec,
+        [Parameter(Mandatory, ParameterSetName = 'VBR')]
+        [double] $Bitrate,
+        [Parameter(Mandatory, ParameterSetName = 'CRF')]
+        [int] $CRF,
+        [Parameter(ParameterSetName = 'CRF')]
+        [Parameter(ParameterSetName = 'VBR')]
+        [string] $Preset = 'slow',
+        [Parameter(ParameterSetName = 'CRF')]
+        [string] $CodecProfile = 'high',
+        [Parameter(ParameterSetName = 'CRF')]
+        [string] $Tune = 'film'
+    )
+    process {
+        return [VideoEncodingSettings]::new($Codec, $Bitrate, $CRF, $Preset, $CodecProfile, $Tune)
+>>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
     }
 }
