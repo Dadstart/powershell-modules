@@ -22,41 +22,6 @@ function Convert-MediaFile {
     param(
         [Parameter(Mandatory)][string[]] $InputFiles,
         [Parameter(Mandatory)][string] $OutputFile,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        [Parameter(Mandatory)][VideoEncodingSettings] $VideoSettings,
-        [Parameter(Mandatory)][AudioTrackMapping[]] $AudioMappings
-    )
-    process {
-        Test-FFMpegInstalled -Throw
-        # Build video+audio
-        $ff = New-Object System.Collections.Generic.List[string]
-        $ff.Add('-y')
-        foreach ($inputFile in $InputFiles) {
-            $ff.Add('-i')
-            $ff.Add("`"$inputFile`"")
-        }
-        $ff.AddRange($VideoSettings.ToFfMpegArgs())
-
-        foreach ($am in $AudioMappings) {
-            $ff.AddRange($am.ToFfmpegArgs())
-        }
-        $ff.Add('-sn')
-        $ff.Add("`"$OutputFile`"")
-        Write-Host "FFMPEG: $($ff.ToArray() -join ' ')" -ForegroundColor Green
-        $result = Invoke-FFMpeg -Arguments $ff.ToArray()
-        if ($result.ExitCode -ne 0) {
-            Write-Error "Encode failed (ExitCode: $($result.ExitCode)): $($result.Error)"
-            throw "Encode failed (ExitCode: $($result.ExitCode)): $($result.Error)"
-        }
-    }
-}
-=======
-=======
->>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
-=======
->>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
         [Parameter(Mandatory)][object] $VideoSettings,
         [Parameter(Mandatory)][object[]] $AudioMappings
     )
@@ -155,10 +120,3 @@ function Convert-MediaFileFromArgumentList {
 
     Write-Message -Message "Convert $Description completed" -Type Success
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
-=======
->>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
-=======
->>>>>>> 1a97b2f (Add MediaFile/MediaFormat/MediaStream/MediChapter. Add Convert-MediaFile to perform encoding.)
