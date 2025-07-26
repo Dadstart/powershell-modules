@@ -30,10 +30,10 @@ Write-Message "Converting $InputFile to $OutputFile" -Type Processing
 $passLogFile = [System.IO.Path]::ChangeExtension($OutputFile, '.ffmpeg')
 
 Write-Message 'Starting 2-pass encoding - Pass 1' -Type Processing
-
 # Pass 1: Video only, no audio
 $pass1Args = @(
-    '-i', "`"$InputFile`"",
+    '-y',
+    '-i', $InputFile,
     '-c:v', 'libx264',
     '-preset', 'slow',
     '-b:v', '5000k',
@@ -56,12 +56,13 @@ Write-Message 'Starting 2-pass encoding - Pass 2' -Type Processing
 
 # Pass 2: Full conversion with audio streams
 $pass2Args = @(
-    '-i', "`"$InputFile`"",
+    '-y',
+    '-i', $InputFile,
     '-c:v', 'libx264',
     '-preset', 'slow',
     '-b:v', '5000k',
     '-pass', '2',
-    '-passlogfile', "`"$passLogFile`"",
+    '-passlogfile', $passLogFile,
     # Map video stream
     '-map', '0:v:0',
     # Audio stream 2 (DTS Surround 5.1) becomes first output stream, encoded as AAC 6-channel 384kbps
@@ -69,11 +70,11 @@ $pass2Args = @(
     '-c:a:0', 'aac',
     '-b:a:0', '384k',
     '-ac:a:0', '6',
-    '-metadata:s:a:0', 'title=Surround 5.1',
+    '-metadata:s:a:0', 'title="Surround 5.1"',
     # Audio stream 1 (DTS-HD) becomes second output stream, copied as-is
     '-map', '0:a:0',
     '-c:a:1', 'copy',
-    '-metadata:s:a:1', 'title=DTS-HD',
+    '-metadata:s:a:1', 'title="DTS-HD"',
     # Copy metadata and chapters from input
     '-map_metadata', '0',
     '-map_chapters', '0',
