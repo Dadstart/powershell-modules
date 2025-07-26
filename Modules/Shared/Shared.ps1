@@ -28,20 +28,29 @@ function Get-ModuleType {
 
 $publicFunctions = @()
 $publicClasses = @()
+$privateFunctions = @()
 
 $publicFunctions += Get-ModuleType $ModuleRoot 'Public'
+Write-Host "Public Functions: $($publicFunctions -join ', ')" -ForegroundColor Cyan
 $publicClasses += Get-ModuleType $ModuleRoot 'Classes'
+Write-Host "Public Classes: $($publicClasses -join ', ')" -ForegroundColor Cyan
 $privateFunctions += Get-ModuleType $ModuleRoot 'Private'
+Write-Host "Private Functions: $($privateFunctions -join ', ')" -ForegroundColor Cyan
 
 
 # Dot-source every .ps1 under Classes FIRST
 Write-Host 'Loading shared classes' -ForegroundColor Cyan
 foreach ($class in $publicClasses) {
+    Write-Host "Class: $($class)" -ForegroundColor Cyan
+    Write-Host "Loading public class: $($class)" -ForegroundColor Cyan
     try {
-        . $($class.FullName)
+        $classPath = Join-Path $ModuleRoot -ChildPath 'Classes' | Join-Path -ChildPath "$class.ps1"
+        . $classPath
     }
     catch {
-        Write-Host "✗ Failed to dot-source $($class.Name): $_" -ForegroundColor Red
+        Write-Host "✗ Failed to dot-source $($class): $_" -ForegroundColor Red
+        Write-Host "⚠️ $err" -ForegroundColor Yellow
+        throw "⚠️ $err"
     }
 }
 
