@@ -52,13 +52,16 @@ function Invoke-Process {
             if ($arg -match '^".*"$') {
                 $arg
             }
-            # If the argument contains spaces or special characters, quote it
-            elseif ($arg -match '\s|["&|<>]') {
-                # Escape any existing quotes and wrap in quotes
-                $escapedArg = $arg -replace '"', '""'
-                "`"$escapedArg`""
+            # If the argument contains spaces but no quotes, quote it
+            elseif ($arg -match '\s' -and $arg -notmatch '"') {
+                "`"$arg`""
             }
-            # Otherwise, use as-is
+            # If the argument contains spaces and quotes, it's likely already properly formatted
+            # (like -metadata title="DTS-HD"), so use as-is
+            elseif ($arg -match '\s' -and $arg -match '"') {
+                $arg
+            }
+            # Otherwise, use as-is (no spaces, no special characters)
             else {
                 $arg
             }
