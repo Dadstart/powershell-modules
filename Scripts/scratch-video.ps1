@@ -27,7 +27,7 @@ Write-Message "Converting $InputFile to $OutputFile" -Type Processing
 # don't use Convert-MediaFile
 
 # 2-pass encoding with libx264 preset slow, 5000k bitrate
-$passLogFile = [System.IO.Path]::ChangeExtension($OutputFile, '.ffmpeg')
+$passLogFile = [System.IO.Path]::ChangeExtension((Get-Path -Path $OutputFile -Pathtype Leaf), ".ffmpeg")
 
 Write-Message 'Starting 2-pass encoding - Pass 1' -Type Processing
 # Pass 1: Video only, no audio
@@ -38,7 +38,7 @@ $pass1Args = @(
     '-preset', 'slow',
     '-b:v', '5000k',
     '-pass', '1',
-    '-passlogfile', "`"$passLogFile`"",
+    '-passlogfile', $passLogFile,
     '-an',  # No audio
     '-sn',  # No subtitles
     '-f', 'null',
@@ -81,7 +81,7 @@ $pass2Args = @(
     # MP4 optimization
     '-movflags', '+faststart',
     '-y',  # Overwrite output
-    "`"$OutputFile`""
+    $OutputFile
 )
 
 $result = Invoke-FFMpeg -Arguments $pass2Args -Verbose

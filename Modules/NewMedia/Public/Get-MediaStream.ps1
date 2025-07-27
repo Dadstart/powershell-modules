@@ -19,7 +19,7 @@ function Get-MediaStream {
     )
     process {
         $inputPath = Get-Path -Path $Path -ValidatePath File -PathType Absolute
-        $result = Invoke-FFProbe -Arguments @('-show_streams', '-i', "`"$inputPath`"")
+        $result = Invoke-FFProbe -Arguments @('-show_streams', '-i', $inputPath)
         if ($result.ExitCode -ne 0) {
             Write-Message "Failed to get media track for $($inputPath.FullName):`nFFProbe failed with exit code $($result.ExitCode): $($result.ErrorOutput)" -Type Error
             throw "Failed to get media track for $($inputPath.FullName):`nFFProbe failed with exit code $($result.ExitCode): $($result.ErrorOutput)"

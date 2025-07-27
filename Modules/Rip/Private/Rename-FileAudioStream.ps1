@@ -33,7 +33,7 @@ function Rename-FileAudioStream {
             Copy-Item -Path $File -Destination $tempFileFullName -Force
             #   ffmpeg -i input.mp4 -map 0 -c copy -metadata:s:a:[Index] title [Title] output.mp4
             $ffmpegArgs = @(
-                '-i', "`"$tempFileFullName`"",
+                '-i', $tempFileFullName,
                 '-map', '0'
             )
             for ($i = 0; $i -lt $Titles.Count; $i++) {
@@ -51,7 +51,7 @@ function Rename-FileAudioStream {
             $ffmpegArgs += @(
                 '-c', 'copy',
                 '-y',
-                "`"$File`""
+                $File
             )
             Write-Message "Invoking FFmpeg with arguments: $ffmpegArgs" -Type Verbose
             Invoke-FFmpeg -Arguments $ffmpegArgs | Out-Null

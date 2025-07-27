@@ -47,7 +47,7 @@ function Export-MediaStream {
         # Build FFmpeg arguments for stream extraction
         $ffmpegArgs = New-Object System.Collections.Generic.List[string]
         $ffmpegArgs.Add('-i')
-        $ffmpegArgs.Add("`"$inputFile`"")
+        $ffmpegArgs.Add($inputFile)
 
         # Add stream mapping based on type and index
         if ($Type -eq 'All') {
@@ -71,7 +71,7 @@ function Export-MediaStream {
         # Add output file
         $ffmpegArgs.Add('-c')
         $ffmpegArgs.Add('copy')  # Copy stream without re-encoding
-        $ffmpegArgs.Add("`"$outputFile`"")
+        $ffmpegArgs.Add($outputFile)
 
         $ffmpegArgsArray = $ffmpegArgs.ToArray()
         Write-Message "FFmpeg arguments: $($ffmpegArgsArray -join ' ')" -Type Debug

@@ -48,26 +48,20 @@ function Invoke-Process {
         # Properly quote arguments to handle paths with spaces
         $quotedArguments = $Arguments | ForEach-Object {
             $arg = $_
-
-            # Check if the argument is already properly quoted (starts and ends with quotes)
+            # If the argument is already properly quoted (starts and ends with quotes), use as-is
             if ($arg -match '^".*"$') {
-                return $arg
+                $arg
             }
-
-            # Check if the argument contains whitespace that needs quoting
-            if ($arg -match '\s') {
-                # Check if it's a key=value pair with quoted value containing spaces
-                if ($arg -match '^([^=]+)="([^"]*\s[^"]*)"(.*)$') {
-                    # This is already properly formatted with quotes around the value
-                    return $arg
-                }
-                else {
-                    # Quote the entire argument
-                    return "`"$arg`""
-                }
+            # If the argument contains spaces or special characters, quote it
+            elseif ($arg -match '\s|["&|<>]') {
+                # Escape any existing quotes and wrap in quotes
+                $escapedArg = $arg -replace '"', '""'
+                "`"$escapedArg`""
             }
-
-            return $arg
+            # Otherwise, use as-is
+            else {
+                $arg
+            }
         }
         $psi.Arguments = $quotedArguments -join ' '
         $psi.RedirectStandardOutput = $true
