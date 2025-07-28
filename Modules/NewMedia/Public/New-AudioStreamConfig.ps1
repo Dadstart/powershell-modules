@@ -28,7 +28,7 @@ function New-AudioStreamConfig {
     .OUTPUTS
         [AudioStreamConfig] An audio stream configuration object.
     #>
-    [OutputType([AudioStreamConfig])]
+    [OutputType([object])]
     param (
         [Parameter(Mandatory = $true, Position = 0)]
         [int]$InputStreamIndex,

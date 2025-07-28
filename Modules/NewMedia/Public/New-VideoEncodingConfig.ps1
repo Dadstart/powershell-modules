@@ -68,7 +68,7 @@ function New-VideoEncodingConfig {
         - slower: Even better compression
         - veryslow: Best compression, slowest encoding
     #>
-    [OutputType([VideoEncodingConfig])]
+    [OutputType([object])]
     param (
         [Parameter(ParameterSetName = 'VBR', Mandatory = $true)]
         [string]$Bitrate,
