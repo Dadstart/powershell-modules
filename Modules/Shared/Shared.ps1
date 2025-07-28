@@ -31,25 +31,25 @@ $publicClasses = @()
 $privateFunctions = @()
 
 $publicFunctions += Get-ModuleType $ModuleRoot 'Public'
-Write-Host "Public Functions: $($publicFunctions -join ', ')" -ForegroundColor Cyan
+Write-Verbose "Public Functions: $($publicFunctions -join ', ')"
 $publicClasses += Get-ModuleType $ModuleRoot 'Classes'
-Write-Host "Public Classes: $($publicClasses -join ', ')" -ForegroundColor Cyan
+Write-Verbose "Public Classes: $($publicClasses -join ', ')"
 $privateFunctions += Get-ModuleType $ModuleRoot 'Private'
-Write-Host "Private Functions: $($privateFunctions -join ', ')" -ForegroundColor Cyan
+Write-Verbose "Private Functions: $($privateFunctions -join ', ')"
 
 
 # Dot-source every .ps1 under Classes FIRST
-Write-Host 'Loading shared classes' -ForegroundColor Cyan
+Write-Verbose 'Loading shared classes'
 foreach ($class in $publicClasses) {
-    Write-Host "Class: $($class)" -ForegroundColor Cyan
-    Write-Host "Loading public class: $($class)" -ForegroundColor Cyan
+    Write-Verbose "Class: $($class)"
+    Write-Verbose "Loading public class: $($class)"
     try {
         $classPath = Join-Path $ModuleRoot -ChildPath 'Classes' | Join-Path -ChildPath "$class.ps1"
         . $classPath
     }
     catch {
-        Write-Host "✗ Failed to dot-source $($class): $_" -ForegroundColor Red
-        Write-Host "⚠️ $err" -ForegroundColor Yellow
+        Write-Error "✗ Failed to dot-source $($class): $_"
+        Write-Error "⚠️ $err"
         throw "⚠️ $err"
     }
 }
@@ -71,5 +71,3 @@ if ($publicFunctions) {
         Write-Verbose "Loaded shared function: $function"
     }
 }
-
-Write-Verbose 'Exporting functions'
