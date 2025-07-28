@@ -29,27 +29,27 @@ function Test-CropValues {
     }
     process {
         Write-Message "Testing multiple crop values for: $InputFile" -Type Processing
-        
+
         if ($CropValues.Count -eq 0) {
             # Default test values - common letterboxing scenarios
             $CropValues = @(
-                "720:352:0:62",    # Original detected value
-                "720:352:0:60",    # Slightly less top crop
-                "720:352:0:58",    # Even less top crop
-                "720:352:0:64",    # Slightly more top crop
-                "720:352:0:66",    # More top crop
-                "720:360:0:60",    # Different height
-                "720:368:0:56"     # Different height
+                '720:352:0:62',    # Original detected value
+                '720:352:0:60',    # Slightly less top crop
+                '720:352:0:58',    # Even less top crop
+                '720:352:0:64',    # Slightly more top crop
+                '720:352:0:66',    # More top crop
+                '720:360:0:60',    # Different height
+                '720:368:0:56'     # Different height
             )
         }
-        
+
         $results = @()
-        
+
         foreach ($cropValue in $CropValues) {
             $outputFile = "${OutputPrefix}_${cropValue.Replace(':', '_')}.jpg"
-            
+
             Write-Message "Testing crop: $cropValue" -Type Info
-            
+
             $ffmpegArgs = @(
                 '-ss', '00:01:00',
                 '-t', '5',
@@ -59,18 +59,18 @@ function Test-CropValues {
                 '-y',
                 $outputFile
             )
-            
+
             $ffmpegResult = Invoke-FFMpeg -Arguments $ffmpegArgs
-            
+
             $result = [PSCustomObject]@{
                 CropValue = $cropValue
                 OutputFile = $outputFile
                 Success = ($ffmpegResult.ExitCode -eq 0)
                 Error = if ($ffmpegResult.ExitCode -ne 0) { $ffmpegResult.Error } else { $null }
             }
-            
+
             $results += $result
-            
+
             if ($result.Success) {
                 Write-Message "✅ Created: $outputFile" -Type Success
             }
@@ -78,8 +78,8 @@ function Test-CropValues {
                 Write-Message "❌ Failed: $($result.Error)" -Type Error
             }
         }
-        
-        Write-Message "Crop testing complete. Check the generated preview images." -Type Info
+
+        Write-Message 'Crop testing complete. Check the generated preview images.' -Type Info
         return $results
     }
 }
@@ -104,7 +104,7 @@ function Test-CropPreview {
     process {
         Write-Message "Creating crop preview for: $InputFile" -Type Processing
         Write-Message "Crop value: $CropValue" -Type Info
-        
+
         # Create a preview image with the crop applied
         $ffmpegArgs = @(
             '-ss', '00:01:00',  # Start at 1 minute
@@ -158,14 +158,14 @@ function Get-CropValue {
             '-select_streams', 'v:0',
             $inputFile
         )
-        
-        Write-Message "Getting video dimensions..." -Type Info
+
+        Write-Message 'Getting video dimensions...' -Type Info
         $probeResult = Invoke-FFMpeg -Arguments $probeArgs
         if ($probeResult.ExitCode -ne 0) {
             Write-Message "Failed to probe video: $($probeResult.Error)" -Type Error
             return $null
         }
-        
+
         try {
             $videoInfo = $probeResult.Output | ConvertFrom-Json
             $width = $videoInfo.streams[0].width
@@ -179,10 +179,10 @@ function Get-CropValue {
 
         # Collect crop values from multiple sample points
         $allCropValues = @()
-        
+
         foreach ($samplePoint in $SamplePoints) {
             Write-Message "Sampling at $samplePoint..." -Type Info
-            
+
             # Improved cropdetect with better parameters
             $ffmpegArgs = @(
                 '-ss', $samplePoint,
@@ -191,14 +191,14 @@ function Get-CropValue {
                 '-vf', "cropdetect=mode=mvedges:limit=$CropThreshold:round=1:reset=1",
                 '-f', 'null'
             )
-            
+
             Write-Message "Running cropdetect with arguments: $($ffmpegArgs -join ' ')" -Type Info
             $ffmpegResult = Invoke-FFMpeg -Arguments $ffmpegArgs
             $cropDetect = $ffmpegResult.Output
 
             # Extract all crop values from this sample
             $cropMatches = $cropDetect | Select-String 'crop=\d+:\d+:\d+:\d+'
-            
+
             if ($cropMatches) {
                 foreach ($match in $cropMatches) {
                     $cropValue = $match.ToString() -replace '.*crop=', ''
@@ -217,7 +217,7 @@ function Get-CropValue {
         # Find the most common crop value (consensus)
         $cropCounts = $allCropValues | Group-Object | Sort-Object Count -Descending
         $mostCommonCrop = $cropCounts[0].Name
-        
+
         Write-Message "Found $($allCropValues.Count) crop values across $($SamplePoints.Count) samples" -Type Info
         Write-Message "Most common crop value: $mostCommonCrop (appears $($cropCounts[0].Count) times)" -Type Info
 
@@ -227,50 +227,49 @@ function Get-CropValue {
             $cropHeight = [int]$Matches[2]
             $cropX = [int]$Matches[3]
             $cropY = [int]$Matches[4]
-            
+
             # Validation checks
             $isValid = $true
             $warnings = @()
-            
+
             # Check if crop dimensions are reasonable
             if ($cropWidth -lt $width * 0.5) {
                 $warnings += "Crop width ($cropWidth) is less than 50% of original width ($width)"
                 $isValid = $false
             }
-            
+
             if ($cropHeight -lt $height * 0.5) {
                 $warnings += "Crop height ($cropHeight) is less than 50% of original height ($height)"
                 $isValid = $false
             }
-            
             if ($cropX + $cropWidth -gt $width) {
                 $warnings += "Crop extends beyond video width"
                 $isValid = $false
             }
-            
+
             if ($cropY + $cropHeight -gt $height) {
                 $warnings += "Crop extends beyond video height"
                 $isValid = $false
             }
-            
+
             # Check if crop is too small (less than 10% of original)
             if ($cropWidth * $cropHeight -lt $width * $height * 0.1) {
                 $warnings += "Crop area is less than 10% of original video area"
                 $isValid = $false
             }
-            
+
             if ($warnings.Count -gt 0) {
                 Write-Message "Crop validation warnings:" -Type Warning
                 foreach ($warning in $warnings) {
                     Write-Message "  - $warning" -Type Warning
                 }
-                
+
                 if (-not $isValid) {
                     Write-Message "Crop validation failed. Consider manual crop or adjusting threshold." -Type Error
                     return $null
                 }
             }
-            
+
             Write-Message "Crop validation passed. Final crop: ${cropWidth}x${cropHeight}+${cropX}+${cropY}" -Type Success
             return $mostCommonCrop
         }
@@ -406,5 +405,5 @@ function ConvertTo-Cropped {
 }
 
 $prevScratchVer = $global:scratchVer
-$scratchVer = 12
+$scratchVer = 13
 Write-Host "🔄 Scratch version: $prevScratchVer 🔒 $scratchVer ➡️ $($global:scratchVer) ✅" -ForegroundColor Cyan
