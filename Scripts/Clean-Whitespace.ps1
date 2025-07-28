@@ -6,6 +6,7 @@ param (
     [Parameter()]
     [string]$Exclude
 )
+Write-Host "Cleaning whitespace in $Extension files in $Path"
 Get-ChildItem -Path $Path -Recurse -Filter "*$Extension" -File -Exclude $Exclude | ForEach-Object {
     $FilePath = $_.FullName
     $CleanedLines = Get-Content $FilePath | ForEach-Object {
