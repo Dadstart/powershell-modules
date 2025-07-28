@@ -226,33 +226,40 @@ class AudioStreamConfig {
     .PARAMETER outputStreamIndex
         The index of the output audio stream (0-based).
     .RETURNVALUE
-        An array of FFmpeg arguments for audio stream processing.
+        A List[string] of FFmpeg arguments for audio stream processing.
     .EXAMPLE
         $config = [AudioStreamConfig]::new(1, 'aac', '384k', 6, 'Surround 5.1')
         $args = $config.ToFfmpegArgs(0)
-        # Returns: @('-map', '0:a:1', '-c:a:0', 'aac', '-b:a:0', '384k', '-ac:a:0', '6', '-metadata:s:a:0', 'title=Surround 5.1')
+        # Returns: List with '-map', '0:a:1', '-c:a:0', 'aac', '-b:a:0', '384k', '-ac:a:0', '6', '-metadata:s:a:0', 'title=Surround 5.1'
     .EXAMPLE
         $config = [AudioStreamConfig]::new(0, 'DTS-HD')
         $args = $config.ToFfmpegArgs(0)
-        # Returns: @('-map', '0:a:0', '-c:a:0', 'copy', '-metadata:s:a:0', 'title=DTS-HD')
+        # Returns: List with '-map', '0:a:0', '-c:a:0', 'copy', '-metadata:s:a:0', 'title=DTS-HD'
     #>
-    [object[]]ToFfmpegArgs([int]$outputStreamIndex) {
-        $args = @('-map', "0:a:$($this.InputStreamIndex)")
+    [System.Collections.Generic.List[string]]ToFfmpegArgs([int]$outputStreamIndex) {
+        $args = [System.Collections.Generic.List[string]]::new()
+        $args.Add('-map')
+        $args.Add("0:a:$($this.InputStreamIndex)")
 
         if ($this.Copy) {
-            $args += "-c:a:$outputStreamIndex", 'copy'
+            $args.Add("-c:a:$outputStreamIndex")
+            $args.Add('copy')
         } else {
-            $args += "-c:a:$outputStreamIndex", $this.Codec
+            $args.Add("-c:a:$outputStreamIndex")
+            $args.Add($this.Codec)
             if ($this.Bitrate) {
-                $args += "-b:a:$outputStreamIndex", $this.Bitrate
+                $args.Add("-b:a:$outputStreamIndex")
+                $args.Add($this.Bitrate)
             }
             if ($this.Channels) {
-                $args += "-ac:a:$outputStreamIndex", $this.Channels.ToString()
+                $args.Add("-ac:a:$outputStreamIndex")
+                $args.Add($this.Channels.ToString())
             }
         }
 
         # Add metadata
-        $args += "-metadata:s:a:$outputStreamIndex", "title=`"$($this.Title)`""
+        $args.Add("-metadata:s:a:$outputStreamIndex")
+        $args.Add("title=`"$($this.Title)`"")
 
         return $args
     }

@@ -315,33 +315,42 @@ class VideoEncodingConfig {
         Generates the appropriate FFmpeg arguments based on the encoding mode
         and parameters specified in the configuration.
     .RETURNVALUE
-        An array of FFmpeg arguments for video encoding.
+        A List[string] of FFmpeg arguments for video encoding.
     .EXAMPLE
         $config = [VideoEncodingConfig]::new('5000k', 'slow')
         $args = $config.GetFFmpegArgs()
-        # Returns: @('-c:v', 'libx264', '-preset', 'slow', '-b:v', '5000k')
+        # Returns: List with '-c:v', 'libx264', '-preset', 'slow', '-b:v', '5000k'
     #>
-    [object[]]GetFFmpegArgs() {
-        $args = @('-c:v', 'libx264', '-preset', $this.Preset)
+    [System.Collections.Generic.List[string]]GetFFmpegArgs() {
+        $args = [System.Collections.Generic.List[string]]::new()
+        $args.Add('-c:v')
+        $args.Add('libx264')
+        $args.Add('-preset')
+        $args.Add($this.Preset)
         
         switch ($this.EncodingMode) {
             'VBR' { 
-                $args += '-b:v', $this.Bitrate
+                $args.Add('-b:v')
+                $args.Add($this.Bitrate)
             }
             'CRF' { 
-                $args += '-crf', $this.CRF.ToString()
+                $args.Add('-crf')
+                $args.Add($this.CRF.ToString())
             }
             'CQP' { 
-                $args += '-qp', $this.QP.ToString()
+                $args.Add('-qp')
+                $args.Add($this.QP.ToString())
             }
         }
         
         if ($this.Profile) {
-            $args += '-profile:v', $this.Profile
+            $args.Add('-profile:v')
+            $args.Add($this.Profile)
         }
         
         if ($this.Level) {
-            $args += '-level', $this.Level
+            $args.Add('-level')
+            $args.Add($this.Level)
         }
         
         return $args

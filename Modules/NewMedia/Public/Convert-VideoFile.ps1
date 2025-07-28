@@ -148,23 +148,25 @@ function Convert-VideoFile {
         try {
             # Pass 1: Video only, no audio
             Write-Message 'Starting 2-pass encoding - Pass 1' -Type Processing
-            $pass1Args = @(
-                '-y',
-                '-i', $inputPath
-            )
+            $pass1Args = [System.Collections.Generic.List[string]]::new()
+            $pass1Args.Add('-y')
+            $pass1Args.Add('-i')
+            $pass1Args.Add($inputPath)
 
             # Add video encoding arguments from configuration
-            $pass1Args += $VideoEncoding.GetFFmpegArgs()
+            $videoArgs = $VideoEncoding.GetFFmpegArgs()
+            $pass1Args.AddRange($videoArgs)
 
             # Add pass-specific arguments
-            $pass1Args += @(
-                '-pass', '1',
-                '-passlogfile', $passLogFile,
-                '-an',  # No audio
-                '-sn',  # No subtitles
-                '-f', 'null',
-                'NUL'
-            )
+            $pass1Args.Add('-pass')
+            $pass1Args.Add('1')
+            $pass1Args.Add('-passlogfile')
+            $pass1Args.Add($passLogFile)
+            $pass1Args.Add('-an')  # No audio
+            $pass1Args.Add('-sn')  # No subtitles
+            $pass1Args.Add('-f')
+            $pass1Args.Add('null')
+            $pass1Args.Add('NUL')
 
             $result = Invoke-FFMpeg -Arguments $pass1Args
             if ($result.ExitCode -ne 0) {
@@ -176,34 +178,40 @@ function Convert-VideoFile {
 
             # Pass 2: Full conversion with audio streams
             Write-Message 'Starting 2-pass encoding - Pass 2' -Type Processing
-            $pass2Args = @(
-                '-y',
-                '-i', $inputPath
-            )
+            $pass2Args = [System.Collections.Generic.List[string]]::new()
+            $pass2Args.Add('-y')
+            $pass2Args.Add('-i')
+            $pass2Args.Add($inputPath)
 
             # Add video encoding arguments from configuration
-            $pass2Args += $VideoEncoding.GetFFmpegArgs()
+            $videoArgs = $VideoEncoding.GetFFmpegArgs()
+            $pass2Args.AddRange($videoArgs)
 
             # Add pass-specific arguments
-            $pass2Args += @(
-                '-pass', '2',
-                '-passlogfile', $passLogFile,
-                # Map video stream
-                '-map', '0:v:0'
-            )
+            $pass2Args.Add('-pass')
+            $pass2Args.Add('2')
+            $pass2Args.Add('-passlogfile')
+            $pass2Args.Add($passLogFile)
+            # Map video stream
+            $pass2Args.Add('-map')
+            $pass2Args.Add('0:v:0')
 
             # Add audio stream configurations
             for ($i = 0; $i -lt $AudioStreams.Count; $i++) {
                 $audioConfig = $AudioStreams[$i]
-                $pass2Args += $audioConfig.ToFfmpegArgs($i)
+                $audioArgs = $audioConfig.ToFfmpegArgs($i)
+                $pass2Args.AddRange($audioArgs)
             }
             # Copy metadata and chapters from input
-            $pass2Args += '-map_metadata', '0'
-            $pass2Args += '-map_chapters', '0'
+            $pass2Args.Add('-map_metadata')
+            $pass2Args.Add('0')
+            $pass2Args.Add('-map_chapters')
+            $pass2Args.Add('0')
 
             # MP4 optimization
-            $pass2Args += '-movflags', '+faststart'
-            $pass2Args += $outputPath
+            $pass2Args.Add('-movflags')
+            $pass2Args.Add('+faststart')
+            $pass2Args.Add($outputPath)
 
             $result = Invoke-FFMpeg -Arguments $pass2Args
             if ($result.ExitCode -ne 0) {
