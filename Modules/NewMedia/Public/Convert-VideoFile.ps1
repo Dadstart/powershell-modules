@@ -10,8 +10,11 @@ function Convert-VideoFile {
         - Audio stream 1 (DTS-HD) becomes the second output stream, copied as-is
         - Preserves metadata and chapters from the input file
         - Optimizes MP4 output with faststart flag
+
+        The function supports pipeline input, allowing you to convert multiple files by piping them to the function.
+        When using pipeline input, each file will be converted to the same output file (overwriting previous conversions).
     .PARAMETER InputFile
-        The path to the input video file to convert.
+        The path to the input video file to convert. Accepts pipeline input and can process multiple files.
     .PARAMETER OutputFile
         The path for the output video file.
     .PARAMETER VideoBitrate
@@ -30,6 +33,12 @@ function Convert-VideoFile {
     .EXAMPLE
         Convert-VideoFile -InputFile "input.mkv" -OutputFile "output.mp4" -VideoBitrate "4000k" -VideoPreset "medium"
         Converts with custom video bitrate and preset.
+    .EXAMPLE
+        "input1.mkv", "input2.mkv" | Convert-VideoFile -OutputFile "output.mp4"
+        Converts multiple input files to the same output file (each will overwrite the previous).
+    .EXAMPLE
+        Get-ChildItem -Path "C:\Videos" -Filter "*.mkv" | Convert-VideoFile -OutputFile "C:\Output\converted.mp4"
+        Converts all MKV files in a directory to a single output file.
     .OUTPUTS
         None. The function outputs status messages using Write-Message.
     .NOTES
@@ -39,7 +48,7 @@ function Convert-VideoFile {
     #>
     [OutputType([void])]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$InputFile,
 
         [Parameter(Mandatory = $true)]
@@ -63,10 +72,14 @@ function Convert-VideoFile {
     )
 
     begin {
-        foreach ($function in @('Invoke-FFMpeg', 'Get-Path', 'Write-Message')) {
+        foreach ($function in @('Invoke-FFMpeg', 'Invoke-Process', 'Get-Path', 'Write-Message')) {
             $PSDefaultParameterValues["$function`:Verbose"] = $VerbosePreference
             $PSDefaultParameterValues["$function`:Debug"] = $DebugPreference
         }
+
+        # Initialize pipeline processing variables
+        $pipelineInputs = @()
+        $processedCount = 0
     }
 
     process {
@@ -74,7 +87,14 @@ function Convert-VideoFile {
         $inputPath = Get-Path -Path $InputFile -PathType Absolute -ValidatePath File
         $outputPath = Get-Path -Path $OutputFile -PathType Absolute
 
+        # Track pipeline inputs
+        $pipelineInputs += $inputPath
+        $processedCount++
+
         Write-Message "Converting $inputPath to $outputPath" -Type Processing
+        if ($pipelineInputs.Count -gt 1) {
+            Write-Message "Processing file $processedCount of $($pipelineInputs.Count) in pipeline" -Type Info
+        }
         Write-Message "Video settings: libx264 preset $VideoPreset, bitrate $VideoBitrate" -Type Info
         Write-Message "Audio settings: AAC $AudioChannels-channel, bitrate $AudioBitrate" -Type Info
 
@@ -171,6 +191,13 @@ function Convert-VideoFile {
                 Remove-Item $passLogFile -Force -ErrorAction SilentlyContinue
                 Write-Message 'Cleaned up pass log file after error' -Type Verbose
             }
+        }
+    }
+
+    end {
+        # Provide summary for pipeline processing
+        if ($pipelineInputs.Count -gt 1) {
+            Write-Message "Pipeline processing completed. Processed $processedCount files to $outputPath" -Type Success
         }
     }
 }
