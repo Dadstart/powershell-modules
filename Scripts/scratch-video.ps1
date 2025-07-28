@@ -6,8 +6,8 @@ param (
     [string]$OutputFile
 )
 
-$InputFile = Resolve-Path $InputFile
-$OutputFile = Join-Path (Get-Location) $OutputFile
+$InputFile = Get-Path $InputFile -PathType Absolute -ValidatePath File
+$OutputFile = Get-Path $OutputFile -PathType Absolute
 
 $mediaFile = Get-MediaFile -Path $InputFile
 
