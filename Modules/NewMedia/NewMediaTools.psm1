@@ -53,6 +53,8 @@ $classDependencies = @{
     'AudioTrackMapping.ps1' = @()
     'SubtitleTrackMapping.ps1' = @()
     'VideoEncodingSettings.ps1' = @()
+    'AudioStreamConfig.ps1' = @()
+    'VideoEncodingConfig.ps1' = @()
 }
 
 # Load classes in dependency order

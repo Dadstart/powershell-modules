@@ -214,4 +214,46 @@ class AudioStreamConfig {
             return "Stream $($this.InputStreamIndex) -> $($this.Codec) $($this.Bitrate) $($this.Channels)ch ($($this.Title))"
         }
     }
+
+    <#
+    .SYNOPSIS
+        Returns FFmpeg arguments for the audio stream configuration.
+    .DESCRIPTION
+        Generates the appropriate FFmpeg arguments based on the audio stream configuration.
+        For encoding configurations, this includes codec, bitrate, and channel settings.
+        For copy configurations, this includes the copy codec setting.
+        The method also includes metadata arguments for the audio stream title.
+    .PARAMETER outputStreamIndex
+        The index of the output audio stream (0-based).
+    .RETURNVALUE
+        An array of FFmpeg arguments for audio stream processing.
+    .EXAMPLE
+        $config = [AudioStreamConfig]::new(1, 'aac', '384k', 6, 'Surround 5.1')
+        $args = $config.ToFfmpegArgs(0)
+        # Returns: @('-map', '0:a:1', '-c:a:0', 'aac', '-b:a:0', '384k', '-ac:a:0', '6', '-metadata:s:a:0', 'title=Surround 5.1')
+    .EXAMPLE
+        $config = [AudioStreamConfig]::new(0, 'DTS-HD')
+        $args = $config.ToFfmpegArgs(0)
+        # Returns: @('-map', '0:a:0', '-c:a:0', 'copy', '-metadata:s:a:0', 'title=DTS-HD')
+    #>
+    [object[]]ToFfmpegArgs([int]$outputStreamIndex) {
+        $args = @('-map', "0:a:$($this.InputStreamIndex)")
+
+        if ($this.Copy) {
+            $args += "-c:a:$outputStreamIndex", 'copy'
+        } else {
+            $args += "-c:a:$outputStreamIndex", $this.Codec
+            if ($this.Bitrate) {
+                $args += "-b:a:$outputStreamIndex", $this.Bitrate
+            }
+            if ($this.Channels) {
+                $args += "-ac:a:$outputStreamIndex", $this.Channels.ToString()
+            }
+        }
+
+        # Add metadata
+        $args += "-metadata:s:a:$outputStreamIndex", "title=`"$($this.Title)`""
+
+        return $args
+    }
 }

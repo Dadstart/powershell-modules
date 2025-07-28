@@ -195,26 +195,7 @@ function Convert-VideoFile {
             # Add audio stream configurations
             for ($i = 0; $i -lt $AudioStreams.Count; $i++) {
                 $audioConfig = $AudioStreams[$i]
-
-                # Map the audio stream
-                $pass2Args += '-map', "0:a:$($audioConfig.InputStreamIndex)"
-
-                if ($audioConfig.Copy) {
-                    # Copy stream as-is
-                    $pass2Args += "-c:a:$i", 'copy'
-                } else {
-                    # Encode stream
-                    $pass2Args += "-c:a:$i", $audioConfig.Codec
-                    if ($audioConfig.Bitrate) {
-                        $pass2Args += "-b:a:$i", $audioConfig.Bitrate
-                    }
-                    if ($audioConfig.Channels) {
-                        $pass2Args += "-ac:a:$i", $audioConfig.Channels.ToString()
-                    }
-                }
-
-                # Add metadata
-                $pass2Args += "-metadata:s:a:$i", "title=`"$($audioConfig.Title)`""
+                $pass2Args += $audioConfig.ToFfmpegArgs($i)
             }
             # Copy metadata and chapters from input
             $pass2Args += '-map_metadata', '0'
