@@ -2,17 +2,18 @@ function Convert-VideoFile {
     [CmdletBinding()]
     <#
     .SYNOPSIS
-        Converts a video file using 2-pass encoding with specific audio stream configurations.
+        Converts a video file using 2-pass encoding with configurable audio stream processing.
     .DESCRIPTION
-        Convert-VideoFile performs a 2-pass video conversion using libx264 with the 'slow' preset
-        and 5000k bitrate. The function handles specific audio stream configurations:
-        - Audio stream 2 (DTS Surround 5.1) becomes the first output stream, encoded as AAC 6-channel 384kbps
-        - Audio stream 1 (DTS-HD) becomes the second output stream, copied as-is
-        - Preserves metadata and chapters from the input file
-        - Optimizes MP4 output with faststart flag
-
-        The function supports pipeline input, allowing you to convert multiple files by piping them to the function.
-        When using pipeline input, each file will be converted to the same output file (overwriting previous conversions).
+        Convert-VideoFile performs a 2-pass video conversion using libx264 with configurable settings.
+        The function supports flexible audio stream configuration using AudioStreamConfig objects,
+        allowing you to encode or copy audio streams with custom settings.
+        
+        Features:
+        - 2-pass video encoding with libx264
+        - Configurable audio stream processing (encode or copy)
+        - Pipeline support for batch processing
+        - Metadata and chapter preservation
+        - MP4 optimization with faststart flag
     .PARAMETER InputFile
         The path to the input video file to convert. Accepts pipeline input and can process multiple files.
     .PARAMETER OutputFile
@@ -21,21 +22,21 @@ function Convert-VideoFile {
         The video bitrate in kbps. Default is 5000k.
     .PARAMETER VideoPreset
         The libx264 preset to use. Default is 'slow'.
-    .PARAMETER AudioBitrate
-        The bitrate for the AAC audio stream in kbps. Default is 384k.
-    .PARAMETER AudioChannels
-        The number of channels for the AAC audio stream. Default is 6.
+    .PARAMETER AudioStreams
+        Array of AudioStreamConfig objects defining how to process audio streams.
+        If not specified, uses default configuration (stream 1 -> AAC, stream 0 -> copy).
     .PARAMETER CleanupPassLog
         Whether to clean up the pass log file after conversion. Default is $true.
     .EXAMPLE
-        Convert-VideoFile -InputFile "C:\Videos\input.mkv" -OutputFile "C:\Videos\output.mp4"
-        Converts input.mkv to output.mp4 using default settings.
+        Convert-VideoFile -InputFile "input.mkv" -OutputFile "output.mp4"
+        Converts with default audio configuration (stream 1 -> AAC, stream 0 -> copy).
     .EXAMPLE
-        Convert-VideoFile -InputFile "input.mkv" -OutputFile "output.mp4" -VideoBitrate "4000k" -VideoPreset "medium"
-        Converts with custom video bitrate and preset.
-    .EXAMPLE
-        "input1.mkv", "input2.mkv" | Convert-VideoFile -OutputFile "output.mp4"
-        Converts multiple input files to the same output file (each will overwrite the previous).
+        $audioConfigs = @(
+            (New-AudioStreamConfig -InputStreamIndex 1 -Codec 'aac' -Bitrate '384k' -Channels 6 -Title 'Surround 5.1'),
+            (New-AudioStreamConfig -InputStreamIndex 0 -Title 'DTS-HD' -Copy)
+        )
+        Convert-VideoFile -InputFile "input.mkv" -OutputFile "output.mp4" -AudioStreams $audioConfigs
+        Converts with custom audio stream configurations.
     .EXAMPLE
         Get-ChildItem -Path "C:\Videos" -Filter "*.mkv" | Convert-VideoFile -OutputFile "C:\Output\converted.mp4"
         Converts all MKV files in a directory to a single output file.
@@ -62,10 +63,7 @@ function Convert-VideoFile {
         [string]$VideoPreset = 'slow',
 
         [Parameter()]
-        [string]$AudioBitrate = '384k',
-
-        [Parameter()]
-        [int]$AudioChannels = 6,
+        [AudioStreamConfig[]]$AudioStreams,
 
         [Parameter()]
         [bool]$CleanupPassLog = $true
@@ -80,6 +78,14 @@ function Convert-VideoFile {
         # Initialize pipeline processing variables
         $pipelineInputs = @()
         $processedCount = 0
+        
+        # Set up default audio configuration if none provided
+        if (-not $AudioStreams) {
+            $AudioStreams = @(
+                [AudioStreamConfig]::new(1, 'aac', '384k', 6, 'Surround 5.1'),
+                [AudioStreamConfig]::new(0, 'DTS-HD')
+            )
+        }
     }
 
     process {
@@ -96,7 +102,10 @@ function Convert-VideoFile {
             Write-Message "Processing file $processedCount of $($pipelineInputs.Count) in pipeline" -Type Info
         }
         Write-Message "Video settings: libx264 preset $VideoPreset, bitrate $VideoBitrate" -Type Info
-        Write-Message "Audio settings: AAC $AudioChannels-channel, bitrate $AudioBitrate" -Type Info
+        Write-Message "Audio configuration:" -Type Info
+        foreach ($audioConfig in $AudioStreams) {
+            Write-Message "  $audioConfig" -Type Info
+        }
 
         # Create pass log file path
         $leafPath = Get-Path -Path $OutputFile -PathType Leaf
@@ -138,24 +147,41 @@ function Convert-VideoFile {
                 '-pass', '2',
                 '-passlogfile', $passLogFile,
                 # Map video stream
-                '-map', '0:v:0',
-                # Audio stream 2 (DTS Surround 5.1) becomes first output stream, encoded as AAC
-                '-map', '0:a:1',
-                '-c:a:0', 'aac',
-                '-b:a:0', $AudioBitrate,
-                '-ac:a:0', $AudioChannels.ToString(),
-                '-metadata:s:a:0', 'title="Surround 5.1"',
-                # Audio stream 1 (DTS-HD) becomes second output stream, copied as-is
-                '-map', '0:a:0',
-                '-c:a:1', 'copy',
-                '-metadata:s:a:1', 'title="DTS-HD"',
-                # Copy metadata and chapters from input
-                '-map_metadata', '0',
-                '-map_chapters', '0',
-                # MP4 optimization
-                '-movflags', '+faststart',
-                $outputPath
+                '-map', '0:v:0'
             )
+            
+            # Add audio stream configurations
+            for ($i = 0; $i -lt $AudioStreams.Count; $i++) {
+                $audioConfig = $AudioStreams[$i]
+                
+                # Map the audio stream
+                $pass2Args += '-map', "0:a:$($audioConfig.InputStreamIndex)"
+                
+                if ($audioConfig.Copy) {
+                    # Copy stream as-is
+                    $pass2Args += "-c:a:$i", 'copy'
+                } else {
+                    # Encode stream
+                    $pass2Args += "-c:a:$i", $audioConfig.Codec
+                    if ($audioConfig.Bitrate) {
+                        $pass2Args += "-b:a:$i", $audioConfig.Bitrate
+                    }
+                    if ($audioConfig.Channels) {
+                        $pass2Args += "-ac:a:$i", $audioConfig.Channels.ToString()
+                    }
+                }
+                
+                # Add metadata
+                $pass2Args += "-metadata:s:a:$i", "title=`"$($audioConfig.Title)`""
+            }
+            
+            # Copy metadata and chapters from input
+            $pass2Args += '-map_metadata', '0'
+            $pass2Args += '-map_chapters', '0'
+            
+            # MP4 optimization
+            $pass2Args += '-movflags', '+faststart'
+            $pass2Args += $outputPath
 
             $result = Invoke-FFMpeg -Arguments $pass2Args
             if ($result.ExitCode -ne 0) {
