@@ -38,7 +38,7 @@ function Convert-MediaFile {
         $baseArgs.Add('-y')
         foreach ($inputFile in $InputFiles) {
             $baseArgs.Add('-i')
-            $baseArgs.Add("`"$inputFile`"")
+            $baseArgs.Add($inputFile)
         }
 
         # Audio
@@ -60,7 +60,7 @@ function Convert-MediaFile {
             $finalArgs.Add('-pass')
             $finalArgs.Add('1')
             $finalArgs.Add('-passlogfile')
-            $finalArgs.Add("`"$passLogFile`"")
+            $finalArgs.Add($passLogFile)
             $pass1Args.Add('-f')
             $pass1Args.Add('null')
             $pass1Args.Add('NUL')
@@ -74,14 +74,14 @@ function Convert-MediaFile {
             $finalArgs.Add('-pass')
             $finalArgs.Add('2')
             $finalArgs.Add('-passlogfile')
-            $finalArgs.Add("`"$passLogFile`"")
-            $finalArgs.Add("`"$OutputFile`"")
+            $finalArgs.Add($passLogFile)
+            $finalArgs.Add($OutputFile)
 
             Convert-MediaFileFromArgumentList -BaseArgs $pass2Args -AudioArgs $audioArgs -FinalArgs $finalArgs -Description 'VBR Pass 2'
         }
         else {
             $finalArgs = New-Object System.Collections.Generic.List[string]
-            $finalArgs.Add("`"$OutputFile`"")
+            $finalArgs.Add($OutputFile)
 
             Convert-MediaFileFromArgumentList -BaseArgs $baseArgs -AudioArgs $audioArgs -FinalArgs $finalArgs -Description 'CRF'
         }

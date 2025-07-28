@@ -1,5 +1,4 @@
 function Invoke-FFMpeg {
-    [CmdletBinding()]
     <#
     .SYNOPSIS
         Executes ffmpeg with the specified arguments and returns a ProcessResult object.
@@ -39,7 +38,7 @@ function Invoke-FFMpeg {
             $PSDefaultParameterValues["$function`:Verbose"] = $VerbosePreference
             $PSDefaultParameterValues["$function`:Debug"] = $DebugPreference
         }
-   }
+    }
     process {
         # Check if ffmpeg is installed
         Test-FFMpegInstalled -Throw | Out-Null

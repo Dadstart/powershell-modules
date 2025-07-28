@@ -63,11 +63,11 @@ function Convert-VideoFiles {
                 $startTime = Get-Date
                 Write-Message "Convert-VideoFiles: $filePrefix`: Conversion started at $startTime" -Type Verbose
                 $extraArgs = @(
-                    '--input', "`"$inputFileAbs`"",
-                    '--output', "`"$outputFileAbs`""
+                    '--input', $inputFileAbs,
+                    '--output', $outputFileAbs
                 )
                 if ($PresetFile) {
-                    $extraArgs += "--preset-import-file `"$PresetFile`""
+                    $extraArgs += "--preset-import-file", $PresetFile
                 }
                 $fullArgs = @($HandbrakeOptions + $extraArgs)
                 $handbrakeExe = 'C:\Program Files\HandBrake\HandBrakeCLI.exe'

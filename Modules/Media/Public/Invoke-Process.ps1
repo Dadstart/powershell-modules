@@ -47,11 +47,23 @@ function Invoke-Process {
         $psi.FileName = $Name
         # Properly quote arguments to handle paths with spaces
         $quotedArguments = $Arguments | ForEach-Object {
-            if ($_ -match '\s' -and $_ -notmatch '^".*"$') {
-                # Quote arguments that contain spaces and aren't already quoted
-                "`"$_`""
-            } else {
-                $_
+            $arg = $_
+            # If the argument is already properly quoted (starts and ends with quotes), use as-is
+            if ($arg -match '^".*"$') {
+                $arg
+            }
+            # If the argument contains spaces but no quotes, quote it
+            elseif ($arg -match '\s' -and $arg -notmatch '"') {
+                "`"$arg`""
+            }
+            # If the argument contains spaces and quotes, it's likely already properly formatted
+            # (like -metadata title="DTS-HD"), so use as-is
+            elseif ($arg -match '\s' -and $arg -match '"') {
+                $arg
+            }
+            # Otherwise, use as-is (no spaces, no special characters)
+            else {
+                $arg
             }
         }
         $psi.Arguments = $quotedArguments -join ' '
