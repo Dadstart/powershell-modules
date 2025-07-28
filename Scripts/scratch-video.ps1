@@ -9,7 +9,7 @@ param (
 $InputFile = Get-Path $InputFile -PathType Absolute -ValidatePath File
 $OutputFile = Get-Path $OutputFile -PathType Absolute
 
-$mediaFile = Get-MediaFile -Path $InputFile
+# $mediaFile = Get-MediaFile -Path $InputFile
 
 # Convert the mediaFile/InputFile
 Write-Message "Converting $InputFile to $OutputFile" -Type Processing
@@ -27,7 +27,7 @@ Write-Message "Converting $InputFile to $OutputFile" -Type Processing
 # don't use Convert-MediaFile
 
 # 2-pass encoding with libx264 preset slow, 5000k bitrate
-$passLogFile = [System.IO.Path]::ChangeExtension((Get-Path -Path $OutputFile -Pathtype Leaf), ".ffmpeg")
+$passLogFile = [System.IO.Path]::ChangeExtension((Get-Path -Path $OutputFile -Pathtype Leaf), '.ffmpeg')
 
 Write-Message 'Starting 2-pass encoding - Pass 1' -Type Processing
 # Pass 1: Video only, no audio
@@ -100,6 +100,7 @@ if (Test-Path $passLogFile) {
 
 if (Test-Path $OutputFile) {
     Write-Message 'Conversion completed successfully' -Type Success
-} else {
+}
+else {
     Write-Message 'Conversion failed' -Type Error
 }
