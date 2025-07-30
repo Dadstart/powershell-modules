@@ -181,6 +181,17 @@ function Invoke-DvdProcessing {
     }
     process {
         Invoke-WithErrorHandling -OperationName 'DVD processing' -DefaultReturnValue @() -ErrorEmoji '🎬' -ScriptBlock {
+            # Add wildcards to patterns
+            $FilePatterns = $FilePatterns | ForEach-Object {
+                $val = $_
+                if ($_[0] -ne '*') {
+                    $val = "*$($_)"
+                }
+                if ($_[-1] -ne '*') {
+                    $val = "$val*"
+                }
+                return $val
+            }
             # Step 1: Create directory structure using the extracted helper function
             $dirStructure = New-ProcessingDirectoryStructure -Title $Title -Season $Season
             $seasonDir = $dirStructure.SeasonDir
