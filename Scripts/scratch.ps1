@@ -208,26 +208,32 @@ function Get-CropValue {
         }
     }
     process {
+        # Ensure CropThreshold has a valid value
+        if (-not $CropThreshold) {
+            # Why is this needed? This parameter has a ValidateRange(1, 100) attribute
+            Write-Warning '⚠️ CropThreshold is not set, using default value of 20'
+            $CropThreshold = 20
+        }
+        
         Write-Message 'Detecting crop parameters with improved algorithm...' -Type Processing
 
         # Get video dimensions first
         $probeArgs = @(
-            '-v', 'quiet',
-            '-print_format', 'json',
             '-show_streams',
             '-select_streams', 'v:0',
             $InputFile
         )
 
         Write-Message 'Getting video dimensions...' -Type Info
-        $probeResult = Invoke-FFMpeg -Arguments $probeArgs
+        $probeResult = Invoke-FFProbe -Arguments $probeArgs
         if ($probeResult.ExitCode -ne 0) {
-            Write-Message "Failed to probe video: $($probeResult.Error)" -Type Error
+            $errorMsg = if ($probeResult.ErrorContent) { $probeResult.ErrorContent } else { $probeResult.Error }
+            Write-Message "Failed to probe video: $errorMsg" -Type Error
             return $null
         }
 
         try {
-            $videoInfo = $probeResult.Output | ConvertFrom-Json
+            $videoInfo = if ($probeResult.Json) { $probeResult.Json } else { $probeResult.Output | ConvertFrom-Json }
             $width = $videoInfo.streams[0].width
             $height = $videoInfo.streams[0].height
             Write-Message "Original video dimensions: ${width}x${height}" -Type Info
@@ -262,8 +268,9 @@ function Get-CropValue {
                         '-ss', $samplePoint,
                         '-t', $SampleDuration.ToString(),
                         '-i', $InputFile,
-                        '-vf', "cropdetect=mode=mvedges:limit=$CropThreshold:round=1:reset=1",
-                        '-f', 'null'
+                        '-vf', "cropdetect=mode=mvedges:limit=$CropThreshold`:round=1:reset=1",
+                        '-f', 'null',
+                        '-'
                     )
 
                     Write-Message "Running cropdetect with arguments: $($ffmpegArgs -join ' ')" -Type Info
@@ -571,5 +578,5 @@ function Get-CropSummary {
 }
 
 $prevScratchVer = $global:scratchVer
-$scratchVer = 13
+$scratchVer = 17
 Write-Host "🔄 Scratch version: $prevScratchVer 🔒 $scratchVer ➡️ $($global:scratchVer) ✅" -ForegroundColor Cyan
