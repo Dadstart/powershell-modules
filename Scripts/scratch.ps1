@@ -196,7 +196,7 @@ function Get-CropValue {
         [int]$CropThreshold = 20,
         [ValidateRange(1, 60)]
         [int]$SampleDuration = 10,
-        [string[]]$SamplePoints = @('00:01:00', '00:05:00', '00:10:00', '00:15:00'),
+        [string[]]$SamplePoints = @('00:00:00', '00:00:30', '00:01:00', '00:02:00'),
         [switch]$QuickMode = $false
     )
     begin {
@@ -274,7 +274,7 @@ function Get-CropValue {
                     )
 
                     Write-Message "Running cropdetect with arguments: $($ffmpegArgs -join ' ')" -Type Info
-                    $ffmpegResult = Invoke-FFMpeg -Arguments $ffmpegArgs
+                    $ffmpegResult = Invoke-FFMpeg -Arguments $ffmpegArgs -Verbosity 'info'
                     $cropDetect = $ffmpegResult.Output
 
                     # Extract all crop values from this sample
@@ -578,5 +578,5 @@ function Get-CropSummary {
 }
 
 $prevScratchVer = $global:scratchVer
-$scratchVer = 17
+$scratchVer = 18
 Write-Host "🔄 Scratch version: $prevScratchVer 🔒 $scratchVer ➡️ $($global:scratchVer) ✅" -ForegroundColor Cyan

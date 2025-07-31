@@ -32,7 +32,10 @@ function Invoke-FFMpeg {
     [OutputType([object])]
     param (
         [Parameter(Mandatory = $true, Position = 0)]
-        [string[]]$Arguments
+        [string[]]$Arguments,
+        [Parameter()]
+        [ValidateSet('quiet', 'panic', 'fatal', 'error', 'warning', 'info', 'verbose', 'debug', 'trace')]
+        [string]$Verbosity = 'error'
     )
     begin {
         foreach ($function in @('Invoke-Process')) {
@@ -43,7 +46,7 @@ function Invoke-FFMpeg {
     process {
         # Check if ffmpeg is installed
         Test-FFMpegInstalled -Throw | Out-Null
-        $finalArguments = @('-v', 'error', '-hide_banner') + $Arguments
+        $finalArguments = @('-v', $Verbosity, '-hide_banner') + $Arguments
         Write-Verbose "Invoke-FFMpeg: Arguments: $($finalArguments -join ' ')"
         $processResult = Invoke-Process ffmpeg $finalArguments
         Write-Debug "Invoke-FFMpeg: Process exit code: $($processResult.ExitCode)"
