@@ -71,6 +71,7 @@ function Invoke-Process {
         $psi.RedirectStandardError = $true
         $psi.UseShellExecute = $false
         $psi.CreateNoWindow = $true
+        $psi.WorkingDirectory = Get-Location
         # Create and start the process
         $proc = [System.Diagnostics.Process]::new()
         $proc.StartInfo = $psi
