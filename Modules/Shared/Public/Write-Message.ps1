@@ -296,6 +296,11 @@ function Write-Message {
         }
     }
     process {
+        # Log to file first
+        if ($effectiveLogFile) {
+            Add-Content -Path $effectiveLogFile -Value $text
+        }
+
         # Route to appropriate PowerShell stream based on type
         switch ($Type) {
             'Debug' {
@@ -371,9 +376,6 @@ function Write-Message {
                     else {
                         Write-Host -Object $text -ForegroundColor $effectiveColor
                     }
-                }
-                if ($effectiveLogFile) {
-                    Add-Content -Path $effectiveLogFile -Value $text
                 }
             }
         }
