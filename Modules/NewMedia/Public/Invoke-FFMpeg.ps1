@@ -51,7 +51,7 @@ function Invoke-FFMpeg {
         $processResult = Invoke-Process ffmpeg $finalArguments
         Write-Debug "Invoke-FFMpeg: Process exit code: $($processResult.ExitCode)"
         Write-Debug "Invoke-FFMpeg: Output length: $($processResult.Output.Length)"
-        Write-Debug "Invoke-FFMpeg: Error length: $($processResult.Error.Length)"
+        Write-Debug "Invoke-FFMpeg: Error length: $($processResult.ErrorOutput.Length)"
         if ($processResult.ExitCode -ne 0) {
             Write-Error "Invoke-FFMpeg: Failed to execute ffmpeg. Exit code: $($processResult.ExitCode)"
         }
