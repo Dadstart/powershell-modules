@@ -59,52 +59,79 @@ class VideoEncodingSettings {
         }
     }
 
-    [string[]] ToFfmpegArgs([int] $pass) {
+    [hashtable] ToFfmpegArgs([int] $pass, [string] $passLogFile) {
         if (($pass -lt 0) -or ($pass -gt 2)) {
             throw 'Phase must be 0, 1 or 2'
         }
 
         # Construct ffmpeg command
-        $ffmpegArgs = New-Object System.Collections.Generic.List[string]
+        $ffmpegArgs = @{}
         if ($this.CRF -or ($pass -eq 2)) {
-            $ffmpegArgs.Add('-map')
-            $ffmpegArgs.Add('0:v:0')
+            $ffmpegArgs['-map'] = '0:v:0'
         }
 
         $libCodec = switch ($this.Codec) {
-            'x264' { 'libx264' }
-            'x265' { 'libx265' }
-            default { $this.Codec }
+            'x264' {
+                'libx264'
+            }
+            'x265' {
+                'libx265'
+            }
+            default {
+                $this.Codec
+            }
         }
 
-        $ffmpegArgs.Add('-c:v')
-        $ffmpegArgs.Add($libCodec)
-        $ffmpegArgs.Add('-preset')
-        $ffmpegArgs.Add($this.Preset)
+        $ffmpegArgs['-c:v'] = $libCodec
+        $ffmpegArgs['-preset'] = $this.Preset
         if ($this.Bitrate) {
-            $ffmpegArgs.Add('-b:v')
-            $ffmpegArgs.Add("$($this.Bitrate)k")
+            $ffmpegArgs['-b:v'] = "$($this.Bitrate)k"
         }
         else {
-            $ffmpegArgs.Add('-crf')
-            $ffmpegArgs.Add($this.CRF)
-            $ffmpegArgs.Add('-pix_fmt')
-            $ffmpegArgs.Add('yuv420p')
+            $ffmpegArgs['-crf'] = $this.CRF
+            $ffmpegArgs['-pix_fmt'] = 'yuv420p'
         }
 
         if ($this.CRF -or ($pass -eq 2)) {
-            $ffmpegArgs.Add('-map_metadata')
-            $ffmpegArgs.Add('0')
-            $ffmpegArgs.Add('-map_chapters')
-            $ffmpegArgs.Add('0')
-            $ffmpegArgs.Add('-movflags')
-            $ffmpegArgs.Add('+faststart')
+            $ffmpegArgs['-map_metadata'] = '0'
+            $ffmpegArgs['-map_chapters'] = '0'
+            $ffmpegArgs['-movflags'] = '+faststart'
+        }
+
+        switch ($libCodec) {
+            'libx264' {
+                switch ($pass) {
+                    1 {
+                        $ffmpegArgs['-pass'] = '1'
+                        $ffmpegArgs['-passlogfile'] = $passLogFile
+                    }
+                    2 {
+                        $ffmpegArgs['-pass'] = '2'
+                        $ffmpegArgs['-passlogfile'] = $passLogFile
+                    }
+                }
+            }
+            'libx265' {
+                switch ($pass) {
+                    1 {
+                        $ffmpegArgs['-x265-params'] += ':pass=1:stats=$passLogFile'
+                    }
+                    2 {
+                        $ffmpegArgs['-x265-params'] += ':pass=2:stats=$passLogFile'
+                    }
+                }
+            }
+            default {
+                throw "Unsupported codec: $libCodec"
+            }
         }
 
         if ($this.AdditionalArgs) {
-            Add-HashtableArgs -FinalArgs $ffmpegArgs -AdditionalArgs $this.AdditionalArgs
+            foreach ($key in $this.AdditionalArgs.Keys) {
+                $ffmpegArgs[$key] = $this.AdditionalArgs[$key]
+            }
         }
 
-        return $ffmpegArgs.ToArray()
+        return $ffmpegArgs
     }
 }

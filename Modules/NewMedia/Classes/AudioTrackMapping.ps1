@@ -44,55 +44,41 @@ class AudioTrackMapping {
             })
     }
 
-    [string[]] ToFfmpegArgs() {
-        $ffmpegArgs = New-Object System.Collections.Generic.List[string]
-        $ffmpegArgs.Add('-map')
-        $ffmpegArgs.Add("$($this.SourceStream):a:$($this.SourceIndex)")
-        $ffmpegArgs.Add("-c:a:$($this.DestinationIndex)")
+    [hashtable] ToFfmpegArgs() {
+        $ffmpegArgs = @{}
+        $ffmpegArgs['-map'] = "$($this.SourceStream):a:$($this.SourceIndex)"
+        $ffmpegArgs["-c:a:$($this.DestinationIndex)"] = if ($this.CopyOriginal) { 'copy' } else { $this.DestinationCodec }
+        
         if ($this.CopyOriginal) {
-            $ffmpegArgs.Add('copy')
             if ($this.Title) {
-                $ffmpegArgs.Add("-metadata:s:a:$($this.DestinationIndex)")
-                $ffmpegArgs.Add("title=`"$($this.Title)`"")
+                $ffmpegArgs["-metadata:s:a:$($this.DestinationIndex)"] = "title=`"$($this.Title)`""
             }
         }
         else {
-            $ffmpegArgs.Add($this.DestinationCodec)
-            $ffmpegArgs.Add("-b:a:$($this.DestinationIndex)")
             if (-not $this.DestinationBitrate -and -not $this.DestinationChannels) {
                 Write-Message 'No channels or bitrate provided for this audio track' -Type Warning
             }
             $bps = $this.DestinationBitrate
             if (-not $bps) {
                 $bps = switch ($this.DestinationChannels) {
-                    1 {
-                        80
-                    }
-                    2 {
-                        160
-                    }
-                    6 {
-                        384
-                    }
-                    8 {
-                        512
-                    }
+                    1 { 80 }
+                    2 { 160 }
+                    6 { 384 }
+                    8 { 512 }
                     default {
                         Write-Message "No default bitrate found for $($this.DestinationChannels) channels" -Type Error
                         throw "No default bitrate found for $($this.DestinationChannels) channels"
                     }
                 }
             }
-            $ffmpegArgs.Add("$($bps)k")
+            $ffmpegArgs["-b:a:$($this.DestinationIndex)"] = "$($bps)k"
             if ($this.DestinationChannels) {
-                $ffmpegArgs.Add("-ac:a:$($this.DestinationIndex)")
-                $ffmpegArgs.Add($this.DestinationChannels)
+                $ffmpegArgs["-ac:a:$($this.DestinationIndex)"] = $this.DestinationChannels
             }
             if ($this.Title) {
-                $ffmpegArgs.Add("-metadata:s:a:$($this.DestinationIndex)")
-                $ffmpegArgs.Add("title=`"$($this.Title)`"")
+                $ffmpegArgs["-metadata:s:a:$($this.DestinationIndex)"] = "title=`"$($this.Title)`""
             }
         }
-        return $ffmpegArgs.ToArray()
+        return $ffmpegArgs
     }
 }
