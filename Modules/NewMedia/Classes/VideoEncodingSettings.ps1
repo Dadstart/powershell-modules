@@ -28,7 +28,7 @@ class VideoEncodingSettings {
     [string] $Preset
     [string] $CodecProfile
     [string] $Tune
-    [string[]] $AdditionalArgs
+    [hashtable] $AdditionalArgs
 
     VideoEncodingSettings(
         [string] $codec,
@@ -37,7 +37,7 @@ class VideoEncodingSettings {
         [string] $preset,
         [string] $codecProfile,
         [string] $tune,
-        [string[]] $additionalArgs
+        [hashtable] $additionalArgs
     ) {
         $this.Codec = $codec
         $this.Bitrate = $bitrate
@@ -102,7 +102,7 @@ class VideoEncodingSettings {
         }
 
         if ($this.AdditionalArgs) {
-            $ffmpegArgs.AddRange($this.AdditionalArgs)
+            Add-HashtableArgs -FinalArgs $ffmpegArgs -AdditionalArgs $this.AdditionalArgs
         }
 
         return $ffmpegArgs.ToArray()

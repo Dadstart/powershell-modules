@@ -24,7 +24,7 @@ function Convert-MediaFile {
         [Parameter(Mandatory)][string] $OutputFile,
         [Parameter(Mandatory)][object] $VideoSettings,
         [Parameter(Mandatory)][object[]] $AudioMappings,
-        [Parameter()][string[]] $AdditionalArgs
+        [Parameter()][hashtable] $AdditionalArgs
     )
     begin {
         @('Write-Message', 'Invoke-FFMpeg', 'Invoke-Process') | ForEach-Object {
@@ -80,9 +80,7 @@ function Convert-MediaFile {
             $finalArgs.Add('2')
             $finalArgs.Add('-passlogfile')
             $finalArgs.Add($passLogFile)
-            if ($additionalArgs) {
-                $finalArgs.AddRange($additionalArgs)
-            }
+            Add-HashtableArgs -FinalArgs $finalArgs -AdditionalArgs $AdditionalArgs
             $finalArgs.Add($OutputFile)
 
             Convert-MediaFileFromArgumentList -BaseArgs $pass2Args -AudioArgs $audioArgs -FinalArgs $finalArgs -Description 'VBR Pass 2'
@@ -90,15 +88,15 @@ function Convert-MediaFile {
         else {
             $finalArgs = New-Object System.Collections.Generic.List[string]
             $finalArgs.AddRange($VideoSettings.ToFfMpegArgs(0))
-            if ($additionalArgs) {
-                $finalArgs.AddRange($additionalArgs)
-            }
+            Add-HashtableArgs -FinalArgs $finalArgs -AdditionalArgs $AdditionalArgs
             $finalArgs.Add($OutputFile)
 
             Convert-MediaFileFromArgumentList -BaseArgs $baseArgs -AudioArgs $audioArgs -FinalArgs $finalArgs -Description 'CRF'
         }
     }
 }
+
+
 
 function Convert-MediaFileFromArgumentList {
     [CmdletBinding()]
