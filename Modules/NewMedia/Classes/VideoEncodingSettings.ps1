@@ -28,6 +28,7 @@ class VideoEncodingSettings {
     [string] $Preset
     [string] $CodecProfile
     [string] $Tune
+    [string[]] $AdditionalArgs
 
     VideoEncodingSettings(
         [string] $codec,
@@ -35,7 +36,8 @@ class VideoEncodingSettings {
         [int]    $crf,
         [string] $preset,
         [string] $codecProfile,
-        [string] $tune
+        [string] $tune,
+        [string[]] $additionalArgs
     ) {
         $this.Codec = $codec
         $this.Bitrate = $bitrate
@@ -43,6 +45,7 @@ class VideoEncodingSettings {
         $this.CRF = $crf
         $this.CodecProfile = $codecProfile
         $this.Tune = $tune
+        $this.AdditionalArgs = $additionalArgs
     }
 
 
@@ -68,7 +71,12 @@ class VideoEncodingSettings {
             $ffmpegArgs.Add('0:v:0')
         }
 
-        $libCodec = $this.Codec -eq 'x264' ? 'libx264' : $this.Codec
+        $libCodec = switch ($this.Codec) {
+            'x264' { 'libx264' }
+            'x265' { 'libx265' }
+            default { $this.Codec }
+        }
+
         $ffmpegArgs.Add('-c:v')
         $ffmpegArgs.Add($libCodec)
         $ffmpegArgs.Add('-preset')
@@ -91,6 +99,10 @@ class VideoEncodingSettings {
             $ffmpegArgs.Add('0')
             $ffmpegArgs.Add('-movflags')
             $ffmpegArgs.Add('+faststart')
+        }
+
+        if ($this.AdditionalArgs) {
+            $ffmpegArgs.AddRange($this.AdditionalArgs)
         }
 
         return $ffmpegArgs.ToArray()

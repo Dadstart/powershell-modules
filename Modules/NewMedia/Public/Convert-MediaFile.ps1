@@ -23,7 +23,8 @@ function Convert-MediaFile {
         [Parameter(Mandatory)][string[]] $InputFiles,
         [Parameter(Mandatory)][string] $OutputFile,
         [Parameter(Mandatory)][object] $VideoSettings,
-        [Parameter(Mandatory)][object[]] $AudioMappings
+        [Parameter(Mandatory)][object[]] $AudioMappings,
+        [Parameter()][string[]] $AdditionalArgs
     )
     begin {
         @('Write-Message', 'Invoke-FFMpeg', 'Invoke-Process') | ForEach-Object {
@@ -51,7 +52,9 @@ function Convert-MediaFile {
             $passLogFile = [System.IO.Path]::ChangeExtension($OutputFile, '.ffmpeg')
             # Pass 1
             $pass1Args = New-Object System.Collections.Generic.List[string]
-            $pass1Args.AddRange($baseArgs)
+            if ($baseArgs) {
+                $pass1Args.AddRange($baseArgs)
+            }
             $pass1Args.AddRange($VideoSettings.ToFfMpegArgs(1))
             $pass1Args.Add('-an')
             $pass1Args.Add('-sn')
@@ -67,7 +70,9 @@ function Convert-MediaFile {
             Convert-MediaFileFromArgumentList -BaseArgs $pass1Args -FinalArgs $finalArgs -Description 'VBR Pass 1'
 
             $pass2Args = New-Object System.Collections.Generic.List[string]
-            $pass2Args.AddRange($baseArgs)
+            if ($baseArgs) {
+                $pass2Args.AddRange($baseArgs)
+            }
             $pass2Args.AddRange($VideoSettings.ToFfMpegArgs(2))
 
             $finalArgs = New-Object System.Collections.Generic.List[string]
@@ -75,12 +80,19 @@ function Convert-MediaFile {
             $finalArgs.Add('2')
             $finalArgs.Add('-passlogfile')
             $finalArgs.Add($passLogFile)
+            if ($additionalArgs) {
+                $finalArgs.AddRange($additionalArgs)
+            }
             $finalArgs.Add($OutputFile)
 
             Convert-MediaFileFromArgumentList -BaseArgs $pass2Args -AudioArgs $audioArgs -FinalArgs $finalArgs -Description 'VBR Pass 2'
         }
         else {
             $finalArgs = New-Object System.Collections.Generic.List[string]
+            $finalArgs.AddRange($VideoSettings.ToFfMpegArgs(0))
+            if ($additionalArgs) {
+                $finalArgs.AddRange($additionalArgs)
+            }
             $finalArgs.Add($OutputFile)
 
             Convert-MediaFileFromArgumentList -BaseArgs $baseArgs -AudioArgs $audioArgs -FinalArgs $finalArgs -Description 'CRF'
