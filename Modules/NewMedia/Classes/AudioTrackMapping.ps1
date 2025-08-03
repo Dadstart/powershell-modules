@@ -44,11 +44,11 @@ class AudioTrackMapping {
             })
     }
 
-    [hashtable] ToFfmpegArgs() {
-        $ffmpegArgs = @{}
+    [ordered] ToFfmpegArgs() {
+        $ffmpegArgs = [ordered]@{}
         $ffmpegArgs['-map'] = "$($this.SourceStream):a:$($this.SourceIndex)"
         $ffmpegArgs["-c:a:$($this.DestinationIndex)"] = if ($this.CopyOriginal) { 'copy' } else { $this.DestinationCodec }
-        
+
         if ($this.CopyOriginal) {
             if ($this.Title) {
                 $ffmpegArgs["-metadata:s:a:$($this.DestinationIndex)"] = "title=`"$($this.Title)`""

@@ -17,6 +17,7 @@
     RootModule = 'Shared.psm1'
     # Functions to export from this module
     FunctionsToExport = @(
+        'Add-OrderedHashtable',
         'Get-EnvironmentInfo',
         'Get-Path',
         'Get-String',

@@ -59,13 +59,13 @@ class VideoEncodingSettings {
         }
     }
 
-    [hashtable] ToFfmpegArgs([int] $pass, [string] $passLogFile) {
+    [ordered] ToFfmpegArgs([int] $pass, [string] $passLogFile) {
         if (($pass -lt 0) -or ($pass -gt 2)) {
             throw 'Phase must be 0, 1 or 2'
         }
 
         # Construct ffmpeg command
-        $ffmpegArgs = @{}
+        $ffmpegArgs = [ordered]@{}
         if ($this.CRF -or ($pass -eq 2)) {
             $ffmpegArgs['-map'] = '0:v:0'
         }
