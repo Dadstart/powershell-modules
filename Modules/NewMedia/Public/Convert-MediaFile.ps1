@@ -23,7 +23,8 @@ function Convert-MediaFile {
         [Parameter(Mandatory)][string[]] $InputFiles,
         [Parameter(Mandatory)][string] $OutputFile,
         [Parameter(Mandatory)][object] $VideoSettings,
-        [Parameter(Mandatory)][object[]] $AudioMappings
+        [Parameter(Mandatory)][object[]] $AudioMappings,
+        [Parameter()][hashtable] $AdditionalArgs
     )
     begin {
         @('Write-Message', 'Invoke-FFMpeg', 'Invoke-Process') | ForEach-Object {
@@ -34,82 +35,83 @@ function Convert-MediaFile {
     process {
         Test-FFMpegInstalled -Throw
 
-        $baseArgs = New-Object System.Collections.Generic.List[string]
-        $baseArgs.Add('-y')
+        # Base arguments hashtable
+        $baseArgs = [ordered]@{
+            '-y' = $null
+        }
         foreach ($inputFile in $InputFiles) {
-            $baseArgs.Add('-i')
-            $baseArgs.Add($inputFile)
+            $baseArgs['-i'] = $inputFile
         }
 
-        # Audio
-        $audioArgs = New-Object System.Collections.Generic.List[string]
+        # Audio arguments hashtable
+        $audioArgs = [ordered]@{}
         foreach ($am in $AudioMappings) {
-            $audioArgs.AddRange($am.ToFfmpegArgs())
+            $ffmpegArgs = $am.ToFfmpegArgs()
+            Add-OrderedHashtable -TargetHashtable $audioArgs -SourceHashtable $ffmpegArgs
         }
 
         if ($VideoSettings.Bitrate) {
             $passLogFile = [System.IO.Path]::ChangeExtension($OutputFile, '.ffmpeg')
-            # Pass 1
-            $pass1Args = New-Object System.Collections.Generic.List[string]
-            $pass1Args.AddRange($baseArgs)
-            $pass1Args.AddRange($VideoSettings.ToFfMpegArgs(1))
-            $pass1Args.Add('-an')
-            $pass1Args.Add('-sn')
 
-            $finalArgs = New-Object System.Collections.Generic.List[string]
-            $finalArgs.Add('-pass')
-            $finalArgs.Add('1')
-            $finalArgs.Add('-passlogfile')
-            $finalArgs.Add($passLogFile)
-            $pass1Args.Add('-f')
-            $pass1Args.Add('null')
-            $pass1Args.Add('NUL')
-            Convert-MediaFileFromArgumentList -BaseArgs $pass1Args -FinalArgs $finalArgs -Description 'VBR Pass 1'
+            # Pass 1 arguments hashtable
+            $pass1Args = [ordered]@{}
 
-            $pass2Args = New-Object System.Collections.Generic.List[string]
-            $pass2Args.AddRange($baseArgs)
-            $pass2Args.AddRange($VideoSettings.ToFfMpegArgs(2))
+            Add-OrderedHashtable -TargetHashtable $pass1Args -SourceHashtable $baseArgs
+            $videoArgs = $VideoSettings.ToFfMpegArgs(1, $passLogFile)
+            Add-OrderedHashtable -TargetHashtable $pass1Args -SourceHashtable $videoArgs
+            $pass1Args['-an'] = $null
+            $pass1Args['-sn'] = $null
 
-            $finalArgs = New-Object System.Collections.Generic.List[string]
-            $finalArgs.Add('-pass')
-            $finalArgs.Add('2')
-            $finalArgs.Add('-passlogfile')
-            $finalArgs.Add($passLogFile)
-            $finalArgs.Add($OutputFile)
+            # Pass 1 final arguments hashtable
+            $pass1FinalArgs = [ordered]@{
+                '-f'  = 'null'
+                'NUL' = $null
+            }
+            Convert-MediaFileFromArgumentList -ArgumentHashtables @($pass1Args, $pass1FinalArgs) -Description 'VBR Pass 1'
 
-            Convert-MediaFileFromArgumentList -BaseArgs $pass2Args -AudioArgs $audioArgs -FinalArgs $finalArgs -Description 'VBR Pass 2'
+            # Pass 2 arguments hashtable
+            $pass2Args = [ordered]@{}
+            Add-OrderedHashtable -TargetHashtable $pass2Args -SourceHashtable $baseArgs
+            $videoArgs = $VideoSettings.ToFfMpegArgs(2, $passLogFile)
+            Add-OrderedHashtable -TargetHashtable $pass2Args -SourceHashtable $videoArgs
+
+            # Pass 2 final arguments hashtable
+            $pass2FinalArgs = [ordered]@{}
+            Add-OrderedHashtable -TargetHashtable $pass2FinalArgs -SourceHashtable $AdditionalArgs
+            $pass2FinalArgs[$OutputFile] = $null
+
+            Convert-MediaFileFromArgumentList -ArgumentHashtables @($pass2Args, $audioArgs, $pass2FinalArgs) -Description 'VBR Pass 2'
         }
         else {
-            $finalArgs = New-Object System.Collections.Generic.List[string]
-            $finalArgs.Add($OutputFile)
+            # CRF final arguments hashtable
+            $finalArgs = $VideoSettings.ToFfMpegArgs(0, $null)
+            Add-OrderedHashtable -TargetHashtable $finalArgs -SourceHashtable $AdditionalArgs
+            $finalArgs[$OutputFile] = $null
 
-            Convert-MediaFileFromArgumentList -BaseArgs $baseArgs -AudioArgs $audioArgs -FinalArgs $finalArgs -Description 'CRF'
+            Convert-MediaFileFromArgumentList -ArgumentHashtables @($baseArgs, $audioArgs, $finalArgs) -Description 'CRF'
         }
     }
 }
+
+
 
 function Convert-MediaFileFromArgumentList {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [System.Collections.Generic.List[string]] $BaseArgs,
-        [Parameter()]
-        [System.Collections.Generic.List[string]] $AudioArgs,
-        [Parameter()]
-        [System.Collections.Generic.List[string]] $FinalArgs,
+        [hashtable[]] $ArgumentHashtables,
         [Parameter(Mandatory)]
         [string] $Description
     )
 
     Write-Message -Message "Converting $Description" -Type Processing
     $ffmpegArgs = New-Object System.Collections.Generic.List[string]
-    $ffmpegArgs.AddRange($BaseArgs)
-    if ($AudioArgs) {
-        $ffmpegArgs.AddRange($AudioArgs)
+
+    # Process each hashtable in order
+    foreach ($hashtable in $ArgumentHashtables) {
+        Add-HashtableArgs -FinalArgs $ffmpegArgs -AdditionalArgs $hashtable
     }
-    if ($FinalArgs) {
-        $ffmpegArgs.AddRange($FinalArgs)
-    }
+
     $ffmpegArgsArray = $ffmpegArgs.ToArray()
 
     Write-Message "Arguments: $($ffmpegArgsArray -join ' ')" -Type Info

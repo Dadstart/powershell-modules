@@ -58,9 +58,12 @@ function New-VideoEncodingSettings {
         [Parameter(ParameterSetName = 'CRF')]
         [string] $CodecProfile = 'high',
         [Parameter(ParameterSetName = 'CRF')]
-        [string] $Tune = 'film'
+        [string] $Tune = 'film',
+        [Parameter(ParameterSetName = 'CRF')]
+        [Parameter(ParameterSetName = 'VBR')]
+        [hashtable] $AdditionalArgs
     )
     process {
-        return [VideoEncodingSettings]::new($Codec, $Bitrate, $CRF, $Preset, $CodecProfile, $Tune)
+        return [VideoEncodingSettings]::new($Codec, $Bitrate, $CRF, $Preset, $CodecProfile, $Tune, $AdditionalArgs)
     }
 }

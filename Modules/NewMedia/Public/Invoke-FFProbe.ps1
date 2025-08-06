@@ -36,12 +36,15 @@ function Invoke-FFProbe {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0)]
-        [string[]]$Arguments
+        [string[]]$Arguments,
+        [Parameter()]
+        [ValidateSet('quiet', 'panic', 'fatal', 'error', 'warning', 'info', 'verbose', 'debug', 'trace')]
+        [string]$Verbosity = 'error'
     )
     process {
         # Check if ffprobe is installed
         Test-FFMpegInstalled -Throw | Out-Null
-        $finalArguments = @('-v', 'error', '-of', 'json') + $Arguments
+        $finalArguments = @('-v', $Verbosity, '-of', 'json') + $Arguments
         Write-Message "Invoke-FFProbe: Arguments: $($finalArguments -join ' ')" -Type Verbose
         $result = Invoke-Process ffprobe $finalArguments
         Write-Message "Invoke-FFProbe: Process exit code: $($result?.ExitCode)" -Type Debug

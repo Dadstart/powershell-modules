@@ -87,7 +87,7 @@ function Copy-FileWithMetadata {
             # Copy files with TVDb metadata
             Write-Message "🎬 Copying $($allFiles.Count) files to destination" -Type Processing
             $copiedFiles = @()
-            $episodeIndex = $episodeStart - 1
+            $episodeIndex = $EpisodeStart - 1
             $maxCount = [Math]::Min($Episodes.Count - $episodeIndex, $allFiles.Count)
             for ($i = 0; $i -lt $maxCount; $i++) {
                 $episode = $Episodes[$episodeIndex++]

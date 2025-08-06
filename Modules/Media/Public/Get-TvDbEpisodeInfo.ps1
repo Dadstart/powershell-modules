@@ -30,7 +30,7 @@ function Get-TvDbEpisodeInfo {
             return @()
         }
         # Extract the IDs and sort them
-        $episodeIds = $episodeMatches | ForEach-Object { $_.Groups[1].Value } | Sort-Object { [int]$_ }
+        $episodeIds = $episodeMatches | ForEach-Object { $_.Groups[1].Value }
         # Try to extract episode titles
         # Look for title patterns in the HTML content
         $episodeInfo = @()
