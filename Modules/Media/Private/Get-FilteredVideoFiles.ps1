@@ -91,37 +91,35 @@ function Get-FilteredVideoFiles {
                         Status      = "Processing directory: $([System.IO.Path]::GetFileName($directory))"
                     })
                 Write-Message "📂 Processing directory: $directory" -Type Verbose
-                # Get all files matching any of the patterns
-                $allFiles = @()
-                foreach ($pattern in $FilePatterns) {
-                    $files = Get-ChildItem -Path $directory -Filter $pattern -File
-                    $allFiles += $files
-                }
-                # Remove duplicates
-                $allFiles = $allFiles | Sort-Object FullName -Unique
-                Write-Message "Found $($allFiles.Count) files in $directory" -Type Debug
+                # Process files in pattern order - files matching earlier patterns come first
                 $accepted = @()
                 $excluded = @()
-                foreach ($file in $allFiles) {
-                    # Check if file meets criteria: large size AND matches pattern
-                    $isLargeFile = $file.Length -gt $MinimumFileSize
-                    $matchesPattern = $FilePatterns | Where-Object {
-                        return $file.Name -like $_
-                    }
-                    if ($isLargeFile -and $matchesPattern) {
-                        $accepted += $file
-                    }
-                    else {
-                        $excluded += $file
+                $processedFiles = @{}  # Track files already processed to avoid duplicates
+                # Process each pattern in order
+                foreach ($pattern in $FilePatterns) {
+                    $files = Get-ChildItem -Path $directory -Filter $pattern -File
+                    Write-Message "Pattern '$pattern' matched $($files.Count) files" -Type Debug
+                    foreach ($file in $files) {
+                        # Skip if already processed (matches earlier pattern)
+                        if ($processedFiles.ContainsKey($file.FullName)) {
+                            continue
+                        }
+                        $processedFiles[$file.FullName] = $true
+                        # Check if file meets criteria: large size
+                        $isLargeFile = $file.Length -gt $MinimumFileSize
+                        if ($isLargeFile) {
+                            $accepted += $file
+                        }
+                        else {
+                            $excluded += $file
+                        }
                     }
                 }
                 # Log and display exclusions
                 foreach ($ex in $excluded) {
                     $sizeGB = [math]::Round($ex.Length / 1GB, 2)
-                    $reason = if ($ex.Length -le $MinimumFileSize) { "Size: ${sizeGB}GB" } else { 'Pattern mismatch' }
-                    Write-Message "⏭️ Excluded: $($ex.Name) ($reason)" -Type Verbose
+                    Write-Message "⏭️ Excluded: $($ex.Name) (Size: ${sizeGB}GB)" -Type Verbose
                 }
-                $accepted = $accepted | Sort-Object Name
                 Write-Message "✅ Accepted: $($accepted.Count) files from $directory" -Type Verbose
                 $allAcceptedFiles += $accepted
             }
