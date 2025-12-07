@@ -92,7 +92,8 @@ function Invoke-DvdProcessing {
         Extracts a 45-second clip from chapter 2 instead of the default chapter 3 with 30-second duration.
     .EXAMPLE
         # Process multiple DVD sources with various file types and custom directories
-        Invoke-DvdProcessing -Title "Game of Thrones" -Path "D:\DVD1,D:\DVD2,D:\DVD3" -FilePatterns "*.vob","*.m2ts","*.mkv" -Season 2 -TvDbSeriesUrl "https://thetvdb.com/series/game-of-thrones" -ClipsDirectory "samples" -CaptionDirectory "subtitles"
+        Invoke-DvdProcessing -Title "Game of Thrones" -Path "D:\DVD1,D:\DVD2,D:\DVD3" -FilePatterns "*.vob","*.m2ts","*.mkv"
+                             -Season 2 -TvDbSeriesUrl "https://thetvdb.com/series/game-of-thrones" -SkipChapterExtraction -SkipCaptionExtraction | Out-Null
         Processes Game of Thrones Season 2 from multiple DVD sources, handling various file
         formats and using custom directory names for clips and captions.
     .EXAMPLE
