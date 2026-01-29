@@ -47,10 +47,17 @@ function Invoke-DvdProcessing {
         - "https://thetvdb.com/series/breaking-bad"
         - "https://thetvdb.com/series/the-office-us"
         - "https://thetvdb.com/series/game-of-thrones"
-    .PARAMETER SkipChapterExtraction
-        When specified, skips the chapter extraction phase. Useful when you only want
-        to copy files and extract captions without creating sample chapter clips.
-        Default behavior (when not specified) is to extract chapter samples.
+    .PARAMETER TvDbSeasonUrl
+        Alternative to TvDbSeriesUrl. The direct TVDb season URL. If provided, this will be used
+        instead of constructing the season URL from TvDbSeriesUrl.
+        Format: "https://thetvdb.com/series/show-name/seasons/official/season-number"
+        Examples:
+        - "https://thetvdb.com/series/breaking-bad/seasons/official/1"
+        - "https://thetvdb.com/series/the-office-us/seasons/official/2"
+    .PARAMETER ExtractChapters
+        When specified, performs the chapter extraction phase, creating sample chapter clips.
+        Default behavior (when not specified) is to skip chapter extraction. Pass this switch
+        when you want to extract chapter samples in addition to copying files and captions.
     .PARAMETER SkipCaptionExtraction
         When specified, skips the caption extraction phase. Useful when you only want
         to copy files and extract chapters without processing subtitle files.
@@ -93,20 +100,20 @@ function Invoke-DvdProcessing {
     .EXAMPLE
         # Process multiple DVD sources with various file types and custom directories
         Invoke-DvdProcessing -Title "Game of Thrones" -Path "D:\DVD1,D:\DVD2,D:\DVD3" -FilePatterns "*.vob","*.m2ts","*.mkv"
-                             -Season 2 -TvDbSeriesUrl "https://thetvdb.com/series/game-of-thrones" -SkipChapterExtraction -SkipCaptionExtraction | Out-Null
-        Processes Game of Thrones Season 2 from multiple DVD sources, handling various file
-        formats and using custom directory names for clips and captions.
+                             -Season 2 -TvDbSeriesUrl "https://thetvdb.com/series/game-of-thrones" -SkipCaptionExtraction | Out-Null
+        Processes Game of Thrones Season 2 from multiple DVD sources, skipping both chapter
+        and caption extraction (chapters skipped by default; -SkipCaptionExtraction skips captions).
     .EXAMPLE
         # Process with specific file patterns for DVD rips
         Invoke-DvdProcessing -Title "The Office" -Path "C:\Rips" -FilePatterns "C4_*","B3_*" -Season 3 -TvDbSeriesUrl "https://thetvdb.com/series/the-office-us"
         Processes The Office Season 3 using specific naming patterns for DVD and Blu-ray rips.
     .EXAMPLE
-        # Process without chapter extraction (only copy files and extract captions)
-        Invoke-DvdProcessing -Title "Breaking Bad" -Path "D:\DVD1" -FilePatterns "*.vob" -Season 1 -TvDbSeriesUrl "https://thetvdb.com/series/breaking-bad" -SkipChapterExtraction
-        Processes Breaking Bad Season 1, copying files and extracting captions but skipping chapter sample creation.
+        # Process with default behavior (skip chapter extraction, extract captions)
+        Invoke-DvdProcessing -Title "Breaking Bad" -Path "D:\DVD1" -FilePatterns "*.vob" -Season 1 -TvDbSeriesUrl "https://thetvdb.com/series/breaking-bad"
+        Processes Breaking Bad Season 1, copying files and extracting captions. Chapter extraction is skipped by default.
     .EXAMPLE
         # Process without caption extraction (only copy files and extract chapters)
-        Invoke-DvdProcessing -Title "Game of Thrones" -Path "D:\DVD1,D:\DVD2" -FilePatterns "*.m2ts" -Season 2 -TvDbSeriesUrl "https://thetvdb.com/series/game-of-thrones" -SkipCaptionExtraction
+        Invoke-DvdProcessing -Title "Game of Thrones" -Path "D:\DVD1,D:\DVD2" -FilePatterns "*.m2ts" -Season 2 -TvDbSeriesUrl "https://thetvdb.com/series/game-of-thrones" -ExtractChapters -SkipCaptionExtraction
         Processes Game of Thrones Season 2, copying files and extracting chapter samples but skipping caption extraction.
     .NOTES
         PREREQUISITES:
@@ -163,11 +170,14 @@ function Invoke-DvdProcessing {
         [int]$Season,
         [Parameter()]
         [int]$EpisodeStart = 1,
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [string]$TvDbSeriesUrl,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$TvDbSeasonUrl,
         [Parameter()]
-        [switch]$SkipChapterExtraction,
+        [switch]$ExtractChapters,
         [Parameter()]
         [switch]$SkipCaptionExtraction
     )
@@ -178,7 +188,12 @@ function Invoke-DvdProcessing {
         Write-Message "Directories: $Path" -Type Verbose
         Write-Message "File patterns: $FilePatterns" -Type Verbose
         Write-Message "Season: $Season" -Type Verbose
-        Write-Message "TVDb URL: $TvDbSeriesUrl" -Type Verbose
+        if ($TvDbSeasonUrl) {
+            Write-Message "TVDb Season URL: $TvDbSeasonUrl" -Type Verbose
+        }
+        else {
+            Write-Message "TVDb URL: $TvDbSeriesUrl" -Type Verbose
+        }
     }
     process {
         Invoke-WithErrorHandling -OperationName 'DVD processing' -DefaultReturnValue @() -ErrorEmoji '🎬' -ScriptBlock {
@@ -197,7 +212,20 @@ function Invoke-DvdProcessing {
             $dirStructure = New-ProcessingDirectoryStructure -Title $Title -Season $Season
             $seasonDir = $dirStructure.SeasonDir
             # Step 2: Retrieve TVDb episode information using the season scan function
-            $episodes = Invoke-SeasonScan -Season $Season -TvDbSeriesUrl $TvDbSeriesUrl
+            $scanParams = @{
+                Season = $Season
+            }
+            if ($TvDbSeasonUrl) {
+                $scanParams['TvDbSeasonUrl'] = $TvDbSeasonUrl
+            }
+            else {
+                if (-not $TvDbSeriesUrl) {
+                    Write-Message '🚫 Either TvDbSeriesUrl or TvDbSeasonUrl must be provided.' -Type Error
+                    return
+                }
+                $scanParams['TvDbSeriesUrl'] = $TvDbSeriesUrl
+            }
+            $episodes = Invoke-SeasonScan @scanParams
             if ($episodes.Count -eq 0) {
                 Write-Message '🚫 Season scanning failed. Cannot proceed without episode information.' -Type Error
                 return
@@ -216,7 +244,7 @@ function Invoke-DvdProcessing {
                 return
             }
             # Step 4: Chapter extraction phase using the extracted helper function
-            if (-not $SkipChapterExtraction) {
+            if ($ExtractChapters) {
                 $chapterStats = Invoke-ChapterExtractionPhase -SeasonDir $seasonDir -CopiedFiles $copiedFiles
             }
             # Step 5: Caption extraction phase using the extracted helper function
