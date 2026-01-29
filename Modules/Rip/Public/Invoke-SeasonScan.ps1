@@ -14,6 +14,10 @@ function Invoke-SeasonScan {
         The season number to scan for episode information.
     .PARAMETER TvDbSeriesUrl
         The TVDb series URL for metadata retrieval.
+    .PARAMETER TvDbSeasonUrl
+        Alternative to TvDbSeriesUrl. The direct TVDb season URL. If provided, this will be used
+        instead of constructing the season URL from TvDbSeriesUrl.
+        Format: "https://thetvdb.com/series/show-name/seasons/official/season-number"
     .EXAMPLE
         $episodeInfo = Invoke-SeasonScan -Season 1 -TvDbSeriesUrl "https://thetvdb.com/series/breaking-bad"
         Retrieves episode information for Breaking Bad Season 1.
@@ -37,22 +41,43 @@ function Invoke-SeasonScan {
         [Parameter(Mandatory)]
         [ValidateRange(1, 1000)]
         [int]$Season,
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [string]$TvDbSeriesUrl
+        [string]$TvDbSeriesUrl,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$TvDbSeasonUrl
     )
     try {
         Write-Message '🎬 Episode scanning phase' -Type Processing
-        Write-Message "Scanning Season $Season from TVDb URL: $TvDbSeriesUrl" -Type Verbose
-        # Validate TVDb URL format
-        if (-not $TvDbSeriesUrl.StartsWith('https://thetvdb.com/series/')) {
-            Write-Message "🚫 Invalid TVDb URL format. Expected: 'https://thetvdb.com/series/show-name'" -Type Error
-            Write-Message "💡 Examples: 'https://thetvdb.com/series/breaking-bad', 'https://thetvdb.com/series/the-office-us'" -Type Error
-            return @()
+        if ($TvDbSeasonUrl) {
+            Write-Message "Scanning Season $Season from TVDb season URL: $TvDbSeasonUrl" -Type Verbose
+        }
+        else {
+            if (-not $TvDbSeriesUrl) {
+                Write-Message "🚫 Either TvDbSeriesUrl or TvDbSeasonUrl must be provided" -Type Error
+                return @()
+            }
+            Write-Message "Scanning Season $Season from TVDb URL: $TvDbSeriesUrl" -Type Verbose
+            # Validate TVDb URL format
+            if (-not $TvDbSeriesUrl.StartsWith('https://thetvdb.com/series/')) {
+                Write-Message "🚫 Invalid TVDb URL format. Expected: 'https://thetvdb.com/series/show-name'" -Type Error
+                Write-Message "💡 Examples: 'https://thetvdb.com/series/breaking-bad', 'https://thetvdb.com/series/the-office-us'" -Type Error
+                return @()
+            }
         }
         # Retrieve episode information from TVDb
         Write-Message "Retrieving episode information for Season $Season" -Type Verbose
-        $episodeInfo = @(Get-TvDbEpisodeInfo -SeriesUrl $TvDbSeriesUrl -SeasonNumber $Season)
+        $params = @{
+            SeasonNumber = $Season
+        }
+        if ($TvDbSeasonUrl) {
+            $params['SeasonUrl'] = $TvDbSeasonUrl
+        }
+        else {
+            $params['SeriesUrl'] = $TvDbSeriesUrl
+        }
+        $episodeInfo = @(Get-TvDbEpisodeInfo @params)
         if ($episodeInfo.Count -eq 0) {
             Write-Message "🚫 Failed to retrieve episode information for Season $Season" -Type Error
             Write-Message "💡 Please check the TVDb URL and ensure the season exists" -Type Error

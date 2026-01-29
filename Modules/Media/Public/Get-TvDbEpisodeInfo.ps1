@@ -1,22 +1,41 @@
 function Get-TvDbEpisodeInfo {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [string]$SeriesUrl,
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, 99)]
-        [int]$SeasonNumber
+        [int]$SeasonNumber,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$SeasonUrl
     )
-    Write-Message "🌐 Retrieving TVDb episode information for Season $SeasonNumber from: $SeriesUrl" -Type Verbose
     try {
-        # Validate URL format
-        if (-not $SeriesUrl.StartsWith("https://thetvdb.com/series/")) {
-            Write-Message "Invalid TVDb URL format. Expected: https://thetvdb.com/series/show-name" -Type Error
-            throw "Invalid TVDb URL format. Expected: https://thetvdb.com/series/show-name"
+        # Determine which URL to use
+        if ($SeasonUrl) {
+            Write-Message "🌐 Retrieving TVDb episode information for Season $SeasonNumber from season URL: $SeasonUrl" -Type Verbose
+            # Validate season URL format
+            if (-not $SeasonUrl.StartsWith("https://thetvdb.com/series/") -or -not $SeasonUrl.Contains("/seasons/")) {
+                Write-Message "Invalid TVDb season URL format. Expected: https://thetvdb.com/series/show-name/seasons/..." -Type Error
+                throw "Invalid TVDb season URL format. Expected: https://thetvdb.com/series/show-name/seasons/..."
+            }
+            $seasonUrl = $SeasonUrl
         }
-        # Construct the season URL directly
-        $seasonUrl = $SeriesUrl + "/seasons/official/$SeasonNumber"
+        else {
+            if (-not $SeriesUrl) {
+                Write-Message "Either SeriesUrl or TvDbSeasonUrl must be provided" -Type Error
+                throw "Either SeriesUrl or TvDbSeasonUrl must be provided"
+            }
+            Write-Message "🌐 Retrieving TVDb episode information for Season $SeasonNumber from: $SeriesUrl" -Type Verbose
+            # Validate URL format
+            if (-not $SeriesUrl.StartsWith("https://thetvdb.com/series/")) {
+                Write-Message "Invalid TVDb URL format. Expected: https://thetvdb.com/series/show-name" -Type Error
+                throw "Invalid TVDb URL format. Expected: https://thetvdb.com/series/show-name"
+            }
+            # Construct the season URL directly
+            $seasonUrl = $SeriesUrl + "/seasons/official/$SeasonNumber"
+        }
         Write-Message "🔗 Season URL: $seasonUrl" -Type Verbose
         # Get the season page
         Write-Message "📡 Fetching season page..." -Type Verbose
