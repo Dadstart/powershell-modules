@@ -49,11 +49,13 @@ function Invoke-DvdProcessing {
         - "https://thetvdb.com/series/game-of-thrones"
     .PARAMETER TvDbSeasonUrl
         Alternative to TvDbSeriesUrl. The direct TVDb season URL. If provided, this will be used
-        instead of constructing the season URL from TvDbSeriesUrl.
-        Format: "https://thetvdb.com/series/show-name/seasons/official/season-number"
+        instead of constructing the season URL from TvDbSeriesUrl. If season number is not provided,
+        $Season will be used.
+        Format: "https://thetvdb.com/series/show-name/seasons/official[/season-number]"
         Examples:
         - "https://thetvdb.com/series/breaking-bad/seasons/official/1"
-        - "https://thetvdb.com/series/the-office-us/seasons/official/2"
+        - "https://thetvdb.com/series/the-office-us/seasons/dvd/2"
+        - "https://thetvdb.com/series/the-office-us/seasons/official"
     .PARAMETER ExtractChapters
         When specified, performs the chapter extraction phase, creating sample chapter clips.
         Default behavior (when not specified) is to skip chapter extraction. Pass this switch
@@ -189,6 +191,9 @@ function Invoke-DvdProcessing {
         Write-Message "File patterns: $FilePatterns" -Type Verbose
         Write-Message "Season: $Season" -Type Verbose
         if ($TvDbSeasonUrl) {
+            if ($TvDbSeasonUrl -notmatch '\d$') {
+                $TvDbSeasonUrl = "$($TvDbSeasonUrl.TrimEnd('/'))/$Season"
+            }
             Write-Message "TVDb Season URL: $TvDbSeasonUrl" -Type Verbose
         }
         else {
