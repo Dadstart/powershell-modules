@@ -254,6 +254,13 @@ function Invoke-Test {
         Write-Warning 'Pester module not found. Installing Pester...'
         Install-Module -Name Pester -Force -Scope CurrentUser
     }
+    # Ensure Pester 5.x; import so config script can use New-PesterConfiguration
+    $pesterVersion = (Get-Module -ListAvailable -Name Pester | Sort-Object Version -Descending | Select-Object -First 1).Version
+    if ($pesterVersion.Major -lt 5) {
+        Write-Error "Pester 5.x or higher is required. Found Pester $($pesterVersion). Install with: Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser"
+        throw "Pester 5.x or higher is required. Found Pester $($pesterVersion)."
+    }
+    Import-Module Pester -Force
     # Check if Pester configuration file exists
     $PesterConfigScript = Join-Path $BuildRoot 'PesterConfig.ps1'
     if (-not (Test-Path $PesterConfigScript)) {
