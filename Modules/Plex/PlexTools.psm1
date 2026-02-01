@@ -59,18 +59,18 @@ $publicClasses += Get-ModuleType $ModuleRoot 'Classes'
 $publicFunctions += Get-ModuleType $ModuleRoot 'Public'
 $privateFunctions = Get-ModuleType $ModuleRoot 'Private'
 
-Write-Host 'Loading private functions' -ForegroundColor Cyan
+Write-Verbose 'Loading private functions'
 foreach ($function in $privateFunctions) {
     . $($function.FullName)
 }
 
-Write-Host 'Loading public functions' -ForegroundColor Cyan
+Write-Verbose 'Loading public functions'
 foreach ($function in $publicFunctions) {
     . $($function.FullName)
 }
 
 # 2) Dot-source every .ps1 under Classes
-Write-Host 'Loading public classes' -ForegroundColor Cyan
+Write-Verbose 'Loading public classes'
 foreach ($class in $publicClasses) {
     try {
         . $($class.FullName)
@@ -80,5 +80,5 @@ foreach ($class in $publicClasses) {
     }
 }
 
-Write-Host 'Exporting functions' -ForegroundColor Cyan
+Write-Verbose 'Exporting functions'
 Export-ModuleMember -Function ($publicFunctions | ForEach-Object { $_.BaseName })
