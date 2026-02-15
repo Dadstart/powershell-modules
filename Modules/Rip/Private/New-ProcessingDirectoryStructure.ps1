@@ -58,7 +58,7 @@ function New-ProcessingDirectoryStructure {
         $rootDir = New-ProcessingDirectory -Path (Get-Path -Path $BasePath, $Title -PathType Absolute) -Description "show"
         # Create season directory
         $seasonDir = New-ProcessingDirectory -Path (Get-Path -Path $rootDir, ('Season {0:D2}' -f $Season) -PathType Absolute) -Description "season"
-        Write-Message "Processing $Title in $seasonDir" -Type Processing
+        Write-Message "Processing $Title in $seasonDir" -Type Verbose
         # Create subdirectories for different processing stages
         $createdSubDirs = @()
         foreach ($subDir in $SubDirectories) {
@@ -72,7 +72,7 @@ function New-ProcessingDirectoryStructure {
             SeasonDir = $seasonDir
             SubDirs = $createdSubDirs
         }
-        Write-Message "✅ Directory structure created successfully" -Type Success
+        Write-Message "✅ Directory structure created successfully" -Type Verbose
         Write-Message "📂 Root: $rootDir" -Type Verbose
         Write-Message "📂 Season: $seasonDir" -Type Verbose
         Write-Message "📂 Subdirectories: $($createdSubDirs.Count)" -Type Verbose

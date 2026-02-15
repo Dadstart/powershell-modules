@@ -92,7 +92,8 @@ function Copy-FileWithMetadata {
             for ($i = 0; $i -lt $maxCount; $i++) {
                 $episode = $Episodes[$episodeIndex++]
                 $file = $allFiles[$i]
-                Write-Message "Episode: '$($episode.Title)' ($($file.Name))" -Type Processing
+                $displayTitle = [System.Net.WebUtility]::HtmlDecode($episode.Title)
+                Write-Message "Episode: '$displayTitle' ($($file.Name))" -Type Processing
                 # Create episode-based filename with TVDb metadata
                 $episodeNumber = $episode.EpisodeNumber
                 $episodeTitle = $episode.Title

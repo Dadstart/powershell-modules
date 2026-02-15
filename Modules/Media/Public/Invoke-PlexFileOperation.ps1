@@ -41,7 +41,7 @@ function Invoke-PlexFileOperation {
         [Parameter()]
         [switch]$Force
     )
-    Write-Host "Organizing files from $Source into Plex directory $Destination" -ForegroundColor Cyan
+    Write-Message "Organizing files from $Source into Plex directory $Destination" -Type Verbose
     # Validate paths before starting any operations
     try {
         if (-not (Test-Path -Path $Destination -PathType Container)) {
@@ -99,7 +99,7 @@ function Invoke-PlexFileOperation {
     }
     # Summary of operations
     if ($operationsCompleted.Count -eq 3) {
-        Write-Host "All Plex file operations completed successfully!" -ForegroundColor Green
+        Write-Message "All Plex file operations completed successfully!" -Type Verbose
     }
     else {
         Write-Warning "Plex file operations completed with some failures:"
