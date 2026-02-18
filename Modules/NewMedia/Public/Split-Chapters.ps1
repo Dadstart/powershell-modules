@@ -38,7 +38,7 @@ function Split-Chapters {
         [Parameter(Mandatory)]
         [array]$ChapterRanges,
         
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [string]$OutputPath
     )
     
